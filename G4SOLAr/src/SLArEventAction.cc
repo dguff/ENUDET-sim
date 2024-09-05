@@ -527,6 +527,11 @@ int SLArEventAction::FindAncestorID(int trkid) {
 //#endif
 
   while ( !caught ) {
+    if (fParentIDMap.find(trkid) == fParentIDMap.end()) {
+      fprintf(stderr, "SLArEventAction::FindAncestorID(%i) ERROR: cannot find track in event track table\n", trkid);
+      break;
+    }
+
     pid = fParentIDMap[trkid];
 #ifdef SLAR_DEBUG
     printf("local parent id: %i\n", pid);

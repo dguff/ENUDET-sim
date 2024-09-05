@@ -174,32 +174,37 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       auto& primaries = anaMngr->GetEvent().GetPrimaries();
 
       int primary_parent_id = fEventAction->FindAncestorID(aTrack->GetParentID()); 
-//#ifdef SLAR_DEBUG
-      //printf("Primary parent ID %i\n", primary_parent_id);
-//#endif
-      for (auto &p : primaries) {
-        if (p.GetTrackID() == primary_parent_id) {
-          primary = &p; 
-//#ifdef SLAR_DEBUG
-          //printf("primary parent found\n");
-//#endif
-          break; 
+      
+      const G4String creator_process = aTrack->GetCreatorProcess()->GetProcessName(); 
+
+      if (creator_process != "OpWLS") {
+        //#ifdef SLAR_DEBUG
+        //printf("Creator process: %s, Primary parent ID %i\n", primary_parent_id, creator_process.data());
+        //#endif
+        for (auto &p : primaries) {
+          if (p.GetTrackID() == primary_parent_id) {
+            primary = &p; 
+            //#ifdef SLAR_DEBUG
+            //printf("primary parent found\n");
+            //#endif
+            break; 
+          }
         }
-      }
-       
+
 #ifdef SLAR_DEBUG
-      if (!primary) printf("Unable to find corresponding primary particle\n");
+        if (!primary) printf("Unable to find corresponding primary particle\n");
 #endif
 
-      if(aTrack->GetCreatorProcess()->GetProcessName() == "Scintillation") {
-        fEventAction->IncPhotonCount_Scnt();
-        if (primary) primary->IncrementScintPhotons(); 
+        if(creator_process == "Scintillation") {
+          fEventAction->IncPhotonCount_Scnt();
+          if (primary) primary->IncrementScintPhotons(); 
+        }
+        else if(creator_process == "Cerenkov") {
+          fEventAction->IncPhotonCount_Cher();
+          if (primary) primary->IncrementCherPhotons();
+        }
       }
-      else if(aTrack->GetCreatorProcess()->GetProcessName() == "Cerenkov") {
-        fEventAction->IncPhotonCount_Cher();
-        if (primary) primary->IncrementCherPhotons();
-      }
-      else if(aTrack->GetCreatorProcess()->GetProcessName() == "WLS") {
+      else if(creator_process == "OpWLS") {
         fEventAction->IncPhotonCount_WLS();
       }
 #ifdef SLAR_DEBUG
