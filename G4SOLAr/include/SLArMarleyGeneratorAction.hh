@@ -28,6 +28,11 @@
 // MARLEY includes
 #include <marley/Generator.hh>
 
+// ROOT includes
+#include <TH2F.h>
+#include <TH1F.h>
+#include <TRandom3.h>
+
 class G4Event;
 
 namespace gen {
@@ -38,6 +43,8 @@ class SLArMarleyGeneratorAction : public SLArBaseGenerator
   public:
     struct MarleyConfig_t {
       G4String marley_config_path {};
+      G4String oscillogram_path {}; 
+      G4String oscillogram_key {};
       G4double time = 0.0; 
       G4int    n_particles = 1; 
       EDirectionMode direction_mode = EDirectionMode::kRandomDir;
@@ -62,9 +69,13 @@ class SLArMarleyGeneratorAction : public SLArBaseGenerator
     // MARLEY event generator object
     MarleyConfig_t fMarleyConfig;
     ::marley::Generator fMarleyGenerator;
-    double SampleDecayTime(const double half_life) const;
     std::map<double, double> fHalfLifeTable;
-    
+    std::unique_ptr<TH2F> fOscillogram;
+    std::unique_ptr<TH1D> fNadirHist; 
+    std::unique_ptr<TRandom3> fRandomEngine; 
+    void SetupMarleyGenOscillogram(); 
+    double SampleDecayTime(const double half_life) const;
+
 };
 }
 }

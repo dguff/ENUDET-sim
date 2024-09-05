@@ -30,6 +30,7 @@
 #include "marley/Event.hh"
 #include "marley/Particle.hh"
 #include "marley/RootJSONConfig.hh"
+#include <marley/marley_root.hh>
 
 #include "SLArAnalysisManager.hh"
 #include "SLArMarleyGeneratorAction.hh"
@@ -89,14 +90,28 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   std::array<double, 3> dir = 
   {fMarleyConfig.direction.x(), fMarleyConfig.direction.y(), fMarleyConfig.direction.z()};
-  if (fMarleyConfig.direction_mode == EDirectionMode::kRandomDir) {
-    G4ThreeVector dir_tmp = SampleRandomDirection();
-    dir.at(0) = dir_tmp.x(); 
-    dir.at(1) = dir_tmp.y(); 
-    dir.at(2) = dir_tmp.z();
-  }
-  fMarleyGenerator.set_neutrino_direction(dir); 
 
+  if (fOscillogram == nullptr) {
+    if (fMarleyConfig.direction_mode == EDirectionMode::kRandomDir) {
+      G4ThreeVector dir_tmp = SampleRandomDirection();
+      dir.at(0) = dir_tmp.x(); 
+      dir.at(1) = dir_tmp.y(); 
+      dir.at(2) = dir_tmp.z();
+    }
+  }
+  else {
+    const double cos_nadir = fNadirHist->GetRandom( fRandomEngine.get() );
+    const int ibin_nadir = fOscillogram->GetYaxis()->FindBin( cos_nadir ); 
+    std::unique_ptr<TH1D> energy_hist = std::unique_ptr<TH1D>(
+        fOscillogram->ProjectionX("energy_hist", ibin_nadir, ibin_nadir) );
+
+    auto marley_source = 
+      ::marley_root::make_root_neutrino_source( fMarleyGenerator.get_source().get_pid(), 
+          energy_hist.get() );
+    fMarleyGenerator.set_source( std::move(marley_source) );
+  }
+
+  fMarleyGenerator.set_neutrino_direction(dir); 
   // Generate a new MARLEY event using the owned marley::Generator object
   ::marley::Event ev = fMarleyGenerator.create_event();
 
@@ -160,6 +175,21 @@ void SLArMarleyGeneratorAction::Configure(const rapidjson::Value& config) {
     fMarleyConfig.marley_config_path = config["marley_config_path"].GetString(); 
   } else {
     throw std::invalid_argument("Marley gen missing mandatory field \"marley_config_path\"\n");
+  }
+
+  if (config.HasMember("oscillogram")) {
+    const auto& joscillogram = config["oscillogram"]; 
+    assert( joscillogram.HasMember("file_path") ); 
+    assert( joscillogram.HasMember("key") ); 
+
+    TFile oscillogram_file( joscillogram["file_path"].GetString() ); 
+    TH2F* h2 = oscillogram_file.Get<TH2F>( joscillogram["key"].GetString() ); 
+    h2->SetDirectory(nullptr); 
+    fOscillogram = std::unique_ptr<TH2F>( h2 );  
+    fNadirHist = std::unique_ptr<TH1D>(fOscillogram->ProjectionY("nadir_angle_distribution"));
+    oscillogram_file.Close(); 
+
+    fRandomEngine = std::make_unique<TRandom3>( G4Random::getTheSeed() ); 
   }
 
   if (config.HasMember("direction")) {
