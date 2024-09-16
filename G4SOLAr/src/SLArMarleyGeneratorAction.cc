@@ -100,15 +100,26 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     }
   }
   else {
+    // Select nadir angle
     const double cos_nadir = fNadirHist->GetRandom( fRandomEngine.get() );
+    // build neutrino energy pdf given cos(nadir)
     const int ibin_nadir = fOscillogram->GetYaxis()->FindBin( cos_nadir ); 
     std::unique_ptr<TH1D> energy_hist = std::unique_ptr<TH1D>(
         fOscillogram->ProjectionX("energy_hist", ibin_nadir, ibin_nadir) );
-
+    // setup generator
     auto marley_source = 
       ::marley_root::make_root_neutrino_source( fMarleyGenerator.get_source().get_pid(), 
           energy_hist.get() );
     fMarleyGenerator.set_source( std::move(marley_source) );
+
+    // set neutrino direction
+    const double azimuth_fnal = 107.7*TMath::DegToRad(); 
+    const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
+    dir = {
+      +2*cos_nadir * cos( azimuth_fnal ) / TMath::Pi(), 
+      -sin_nadir, 
+      -2*cos_nadir * sin( azimuth_fnal ) / TMath::Pi()
+    };
   }
 
   fMarleyGenerator.set_neutrino_direction(dir); 

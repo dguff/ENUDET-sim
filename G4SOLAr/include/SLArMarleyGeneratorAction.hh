@@ -73,7 +73,6 @@ class SLArMarleyGeneratorAction : public SLArBaseGenerator
     std::unique_ptr<TH2F> fOscillogram;
     std::unique_ptr<TH1D> fNadirHist; 
     std::unique_ptr<TRandom3> fRandomEngine; 
-    void SetupMarleyGenOscillogram(); 
     double SampleDecayTime(const double half_life) const;
 
 };
