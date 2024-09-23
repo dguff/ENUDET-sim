@@ -144,11 +144,11 @@ void SLArDetectorConstruction::Init() {
     fCavernGeoPars.ReadFromJSON(jcavern["dimensions"].GetArray()); 
   }
   else {
-    fCavernGeoPars.RegisterGeoPar("inner_size_x", 3*CLHEP::m); 
-    fCavernGeoPars.RegisterGeoPar("inner_size_y", 5*CLHEP::m); 
-    fCavernGeoPars.RegisterGeoPar("inner_size_z",18*CLHEP::m);
-    fCavernGeoPars.RegisterGeoPar("rock_thickness", 1*CLHEP::m); 
-    fCavernGeoPars.RegisterGeoPar("shotcrete_thickness", 20*CLHEP::cm); 
+    fCavernGeoPars.RegisterGeoPar("inner_size_x", fWorldGeoPars.GetGeoPar("size_x")-1.0*CLHEP::m); 
+    fCavernGeoPars.RegisterGeoPar("inner_size_y", fWorldGeoPars.GetGeoPar("size_y")-1.0*CLHEP::m); 
+    fCavernGeoPars.RegisterGeoPar("inner_size_z", fWorldGeoPars.GetGeoPar("size_z")-1.0*CLHEP::m);
+    fCavernGeoPars.RegisterGeoPar("rock_thickness", 10*CLHEP::cm); 
+    fCavernGeoPars.RegisterGeoPar("shotcrete_thickness", 5*CLHEP::cm); 
   }
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
