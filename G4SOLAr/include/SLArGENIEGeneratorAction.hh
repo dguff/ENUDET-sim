@@ -48,7 +48,8 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     G4String GetGeneratorType() const override {return "genie";}
     EGenerator GetGeneratorEnum() const override {return kGENIE;}
     
-    void Configure(const rapidjson::Value &config) override;
+    void SourceConfiguration(const rapidjson::Value& config) override;
+    void Configure() override;
 
     void SetGENIEEvntExt(G4int evntID);  
     void Initialize();

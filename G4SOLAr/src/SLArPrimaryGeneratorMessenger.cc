@@ -288,7 +288,7 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   }
   else if (command == fCmdGenConfig) {
     G4String config_file = newValue;
-    fSLArAction->Configure( config_file ); 
+    fSLArAction->SourceConfiguration( config_file ); 
   }
   //else if (command == fCmdGENIEEvtSeed) {
     //G4int evnt = fCmdGENIEEvtSeed->GetNewIntValue(newValue); 

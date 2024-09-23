@@ -294,7 +294,7 @@ int main(int argc,char** argv)
     gen::SLArPrimaryGeneratorAction* gen = 
       (gen::SLArPrimaryGeneratorAction*)runManager->GetUserPrimaryGeneratorAction(); 
     printf("Configuring generator as per %s", generator_file.data()); 
-    gen->Configure( generator_file ); 
+    gen->SourceConfiguration( generator_file ); 
     printf("Done\n"); 
   }
 

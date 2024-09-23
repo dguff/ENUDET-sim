@@ -796,7 +796,8 @@ namespace bxdecay0_g4{
     return;
   }
 
-  void SLArDecay0GeneratorAction::Configure(const rapidjson::Value& config) {
+  void SLArDecay0GeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
+    SLArBaseGenerator::SourceConfiguration( config, fConfig ); 
     if ( config.HasMember("nuclide")) {
       fConfig.nuclide = config["nuclide"].GetString();
     } else {
@@ -813,21 +814,24 @@ namespace bxdecay0_g4{
       fConfig.n_decays = config["n_decays"].GetInt(); 
     }
 
-    if (config.HasMember("seed")) {
-      fConfig.seed = config["seed"].GetInt();
-    } else {
-      fConfig.seed = SLArAnalysisManager::Instance()->GetSeed(); 
-    }
+    //if (config.HasMember("seed")) {
+      //fConfig.seed = config["seed"].GetInt();
+    //} else {
+      //fConfig.seed = SLArAnalysisManager::Instance()->GetSeed(); 
+    //}
 
-    if (config.HasMember("vertex_gen")) {
-      ConfigureVertexGenerator( config["vertex_gen"] ); 
-    }
-    else {
-      fVtxGen = std::make_unique<SLArPointVertexGenerator>();
-    }
+    //if (config.HasMember("vertex_gen")) {
+      //ConfigureVertexGenerator( config["vertex_gen"] ); 
+    //}
+    //else {
+      //fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    //}
 
-    SetConfiguration(fConfig); 
     return;
+  }
+
+  void SLArDecay0GeneratorAction::Configure() {
+    SetConfiguration( fConfig ); 
   }
 
   G4String SLArDecay0GeneratorAction::WriteConfig() const {

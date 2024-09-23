@@ -39,7 +39,7 @@ SLArGENIEGeneratorAction::SLArGENIEGeneratorAction(const G4String label, const G
 SLArGENIEGeneratorAction::~SLArGENIEGeneratorAction()
 {}
 
-void SLArGENIEGeneratorAction::Configure(const rapidjson::Value& config) {
+void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
   assert( config.HasMember("genie_file_path") ); 
   fConfig.genie_file_path = config["genie_file_path"].GetString(); 
 
@@ -53,8 +53,11 @@ void SLArGENIEGeneratorAction::Configure(const rapidjson::Value& config) {
     fConfig.tree_first_entry = config["tree_first_entry"].GetInt(); 
   }
 
-  Initialize(); 
   return;
+}
+
+void SLArGENIEGeneratorAction::Configure() {
+  Initialize(); 
 }
 
 G4String SLArGENIEGeneratorAction::WriteConfig() const {
