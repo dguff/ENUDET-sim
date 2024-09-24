@@ -45,6 +45,9 @@ class SLArPBombGeneratorAction : public SLArBaseGenerator
       {fConfig.n_particles = n_particles;} 
     void SetParticle(const char* particle_name); 
     void SetParticle(G4ParticleDefinition* particle_def); 
+    inline virtual void SetGenRecord( SLArGenRecord& record) const override {
+      SLArBaseGenerator::SetGenRecord(record, fConfig);
+    } 
     void Configure() override;
     void GeneratePrimaries(G4Event*) override; 
 

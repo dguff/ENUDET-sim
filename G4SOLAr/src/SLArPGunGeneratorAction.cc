@@ -5,6 +5,7 @@
  */
 
 #include <SLArPGunGeneratorAction.hh>
+#include <SLArAnalysisManager.hh>
 #include <SLArRandomExtra.hh>
 #include <G4ParticlePropertyTable.hh>
 
@@ -46,15 +47,25 @@ void SLArPGunGeneratorAction::SetParticle(G4ParticleDefinition* particle_def)
 
 void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent) 
 {
+  SLArAnalysisManager* mngr = SLArAnalysisManager::Instance();
+  auto& gen_status_vec = mngr->GetGenRecords();
+
   for (size_t i = 0; i < fConfig.n_particles; i++) {
     G4ThreeVector vtx(0, 0, 0); 
-    G4ParticleMomentum p(0, 0, 1); 
     
     fVtxGen->ShootVertex( vtx ); 
     fParticleGun->SetParticlePosition( vtx ); 
     fParticleGun->SetParticleMomentumDirection( SampleDirection(fConfig.dir_config) );
     fParticleGun->SetParticleEnergy( SampleEnergy(fConfig.ene_config) ); 
     fParticleGun->GeneratePrimaryVertex(anEvent);
+
+    fConfig.ene_config.energy_tmp = fParticleGun->GetParticleEnergy();
+    fConfig.dir_config.direction_tmp.set(
+        fParticleGun->GetParticleMomentumDirection().x(), 
+        fParticleGun->GetParticleMomentumDirection().y(), 
+        fParticleGun->GetParticleMomentumDirection().z());
+    
+    auto& record = gen_status_vec.AddRecord(GetGeneratorEnum(), GetLabel());
   }
 }
 

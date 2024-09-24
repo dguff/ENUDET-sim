@@ -144,7 +144,9 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
 
     auto& slar_event = SLArAnaMgr->GetEvent();
+    auto& slar_gen_records = SLArAnaMgr->GetGenRecords();
     slar_event.SetEvNumber(event->GetEventID());
+    slar_gen_records.SetEventNumber( event->GetEventID() ); 
 
     // set global edep, electrons and photon counts per primary
     auto& primaries = slar_event.GetPrimaries(); 
@@ -192,6 +194,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
 #endif 
     
     SLArAnaMgr->FillEvTree();
+    SLArAnaMgr->FillGenTree();
+    
 
     if (verbose > 0) {
       printf("SLArEventAction::EndOfEventAction()\n"); 
@@ -219,7 +223,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     fParentIDMap.clear(); 
     fExtraProcessInfo.clear(); 
 
-    SLArAnaMgr->GetEvent().Reset();
+    slar_event.Reset();
+    slar_gen_records.Reset();
 }
 
 G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& verbose)

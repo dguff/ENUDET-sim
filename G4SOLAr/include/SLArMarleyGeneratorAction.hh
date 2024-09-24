@@ -63,7 +63,9 @@ class SLArMarleyGeneratorAction : public SLArBaseGenerator
     void SetupMarleyGen(const std::string& config_file_name);
     void SetupMarleyGen(); 
     virtual void GeneratePrimaries(G4Event*) override;
-
+    inline virtual void SetGenRecord( SLArGenRecord& record) const override {
+      SLArBaseGenerator::SetGenRecord(record, fConfig);
+    } 
     //G4String WriteConfig() const override;
 
   protected:

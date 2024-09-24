@@ -726,6 +726,8 @@ namespace bxdecay0_g4{
     if (IsTrace()) std::cerr << "[trace] bxdecay0_g4::SLArDecay0GeneratorAction::GeneratePrimaries: Entering..." << '\n';
     bxdecay0::event gendecay;
 
+    auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
+
     for (int iev = 0; iev < fConfig.n_decays; iev++) {
 
       //printf("Setting gendecay time to %g\n", _decaytime_);
@@ -791,6 +793,9 @@ namespace bxdecay0_g4{
         // Push the BxDecay0 generated  particle in the stack of Geant4 primaries:
         _particle_gun_->GeneratePrimaryVertex(event_);
       }
+
+      gen_records.AddRecord( GetGeneratorEnum(), fLabel ); 
+
     }
     if (IsTrace()) std::cerr << "[trace] bxdecay0_g4::SLArDecay0GeneratorAction::GeneratePrimaries: Exiting..." << '\n';
     return;

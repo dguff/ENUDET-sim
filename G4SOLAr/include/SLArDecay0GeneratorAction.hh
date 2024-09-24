@@ -117,6 +117,10 @@ class SLArDecay0GeneratorAction : public SLArBaseGenerator {
 
     void SetDecayTime(const double time); 
 
+    inline virtual void SetGenRecord( SLArGenRecord& record) const override {
+      SLArBaseGenerator::SetGenRecord(record, fConfig);
+    } 
+
     bool IsInfo() const;
  
     bool IsDebug() const;

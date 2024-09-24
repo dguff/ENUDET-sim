@@ -699,6 +699,20 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
 
 }
 
+void SLArBaseGenerator::SetGenRecord(SLArGenRecord& record, const GenConfig_t& config) const {
+  record.GetGenCode() = this->GetGeneratorEnum(); 
+  record.GetGenLabel() = this->GetLabel(); 
+
+  auto& status = record.GetGenStatus(); 
+  status.resize(4, 0.0); 
+  status.at(0) = config.ene_config.energy_tmp;
+  status.at(1) = config.dir_config.direction_tmp.x(); 
+  status.at(2) = config.dir_config.direction_tmp.y(); 
+  status.at(3) = config.dir_config.direction_tmp.z(); 
+
+  return; 
+}
+
 G4String SLArBaseGenerator::WriteConfig() const {
   G4String config_str = "";
 

@@ -37,6 +37,9 @@ class SLArExternalGeneratorAction : public SLArBaseGenerator
     void SourceConfiguration(const rapidjson::Value& config) override;
     virtual void GeneratePrimaries(G4Event* ev) override; 
 
+    inline virtual void SetGenRecord( SLArGenRecord& record) const override {
+      SLArBaseGenerator::SetGenRecord(record, fConfig);
+    } 
     //G4String WriteConfig() const override;
 
   protected:

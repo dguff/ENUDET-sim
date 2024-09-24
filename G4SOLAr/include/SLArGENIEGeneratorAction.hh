@@ -36,7 +36,7 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
   private:
 
   public:
-    struct GENIEConfig_t {
+    struct GENIEConfig_t : public GenConfig_t {
       G4String genie_file_path {}; 
       G4String genie_tree_key  {}; 
       G4int    tree_first_entry = 0; 
@@ -57,6 +57,10 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     G4String WriteConfig() const override;
 
     virtual void GeneratePrimaries(G4Event* evnt) override;
+
+    inline virtual void SetGenRecord( SLArGenRecord& record) const override {
+      SLArBaseGenerator::SetGenRecord(record, fConfig);
+    }
 
   protected:
     GENIEConfig_t fConfig; 

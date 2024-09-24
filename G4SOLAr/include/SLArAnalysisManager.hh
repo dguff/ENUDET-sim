@@ -23,6 +23,7 @@
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
 #include "event/SLArMCEvent.hh"
+#include "event/SLArGenRecords.hpp"
 
 #include "SLArBacktrackerManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
@@ -61,6 +62,7 @@ class SLArAnalysisManager
     G4bool LoadPDSCfg         (SLArCfgSystemSuperCell&  pdsCfg );
     G4bool LoadAnodeCfg       (SLArCfgAnode&  pixCfg );
     G4bool FillEvTree         ();
+    G4bool FillGenTree        (); 
     void   SetOutputPath      (G4String path);
     void   SetOutputName      (G4String filename);
     void   WriteSysCfg        ();
@@ -102,7 +104,8 @@ class SLArAnalysisManager
     }
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    SLArMCEvent& GetEvent()  {return fMCEvent;}
+    inline SLArMCEvent& GetEvent()  {return fMCEvent;}
+    inline SLArGenRecordsVector& GetGenRecords() {return fGenRecords;}
     G4bool Save ();
 
     // mock fake access
@@ -138,7 +141,9 @@ class SLArAnalysisManager
 
     TFile* fRootFile;
     TTree* fEventTree;
+    TTree* fGenTree;
     SLArMCEvent  fMCEvent;
+    SLArGenRecordsVector fGenRecords; 
 #ifdef SLAR_EXTERNAL
     SLArEventTrajectoryLite fExternalRecord;
     TTree* fExternalsTree;

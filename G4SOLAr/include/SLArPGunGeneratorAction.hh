@@ -41,6 +41,9 @@ class SLArPGunGeneratorAction : public SLArBaseGenerator
       {fParticleGun->SetParticleTime(time);}
     void SetParticle(const char* particle_name); 
     void SetParticle(G4ParticleDefinition* particle_def); 
+    inline virtual void SetGenRecord( SLArGenRecord& record) const override {
+      SLArBaseGenerator::SetGenRecord(record, fConfig);
+    } 
     void GeneratePrimaries(G4Event*) override; 
 
     //G4String WriteConfig() const override; 

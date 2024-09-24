@@ -4,6 +4,7 @@
  * @created     Tua Apr 11, 2023 09:44:12 CEST
  */
 
+#include <SLArAnalysisManager.hh>
 #include <SLArExternalGeneratorAction.hh>
 #include <SLArBoxSurfaceVertexGenerator.hh>
 #include <SLArBulkVertexGenerator.hh>
@@ -99,6 +100,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   printf("SLArExternalGeneratorAction::GeneratePrimaries\n");
 #endif
 
+  auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
   SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
   const auto slar_random = run_action->GetTRandomInterface();
   
@@ -108,7 +110,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
-    G4double energy = SampleEnergy(fConfig.ene_config); 
+    fConfig.ene_config.energy_tmp = SampleEnergy(fConfig.ene_config); 
 
     G4ThreeVector dir = SampleDirection(fConfig.dir_config); 
 
@@ -124,15 +126,17 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
       }
     }
 
+    fConfig.dir_config.direction_tmp = dir;
     //G4cout << "Momentum direction is: " << dir << G4endl; 
     fParticleGun->SetParticleDefinition(fParticleDef); 
-    fParticleGun->SetParticleMomentumDirection(dir); 
+    fParticleGun->SetParticleMomentumDirection(fConfig.dir_config.direction_tmp); 
     fParticleGun->SetParticlePosition(vtx_pos); 
-    fParticleGun->SetParticleEnergy(energy); 
+    fParticleGun->SetParticleEnergy(fConfig.ene_config.energy_tmp); 
     fParticleGun->SetParticleTime(0); 
 
     fParticleGun->GeneratePrimaryVertex(ev); 
 
+    auto& record = gen_records.AddRecord( GetGeneratorEnum(), fLabel ); 
     //getchar(); 
   }
 

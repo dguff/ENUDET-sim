@@ -5,6 +5,7 @@
  */
 
 #include "SLArPBombGeneratorAction.hh"
+#include <SLArAnalysisManager.hh>
 #include "SLArRandomExtra.hh"
 #include "G4ParticlePropertyTable.hh"
 #include "G4OpticalPhoton.hh"
@@ -29,7 +30,6 @@ SLArPBombGeneratorAction::SLArPBombGeneratorAction(const G4String label, const i
   fConfig.n_particles = n_particle;
   fParticleTable = G4ParticleTable::GetParticleTable(); 
 }
-
 
 void SLArPBombGeneratorAction::SetParticle(const char* particle_name) {
   G4ParticleDefinition* particle = fParticleTable->FindParticle(particle_name); 
@@ -58,27 +58,30 @@ void SLArPBombGeneratorAction::Configure() {
 void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent) 
 {
   G4PrimaryVertex* vertex = new G4PrimaryVertex( fVertex, fConfig.time ); 
-  G4ThreeVector dir(0, 0, 0); 
+  auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
 
+#ifdef SLAR_DEBUG
   printf("SLArPBombGeneratorAction::GeneratePrimaries(): Generating %i %ss\n", 
       fConfig.n_particles, fConfig.particle_name.data()); 
+#endif // DEBUG
+
+  auto& record = gen_records.AddRecord( GetGeneratorEnum(), GetLabel() ); 
 
   for (size_t n=0; n<fConfig.n_particles; n++) {
     G4PrimaryParticle* particle = new G4PrimaryParticle(fParticleDefinition);
 
-    dir = SampleDirection(fConfig.dir_config);
+    fConfig.dir_config.direction_tmp = SampleDirection(fConfig.dir_config);
+    fConfig.ene_config.energy_tmp = SampleEnergy();
 
-    particle->SetMomentumDirection( dir ); 
-    particle->SetKineticEnergy( SampleEnergy() ); 
-
-    printf("particle definition name: %s\n", fParticleDefinition->GetParticleName().data());
+    particle->SetMomentumDirection( fConfig.dir_config.direction_tmp ); 
+    particle->SetKineticEnergy( fConfig.ene_config.energy_tmp ); 
 
     if (fParticleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()) {
-      G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( dir ); 
-
-      printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
+      G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( fConfig.dir_config.direction_tmp ); 
+      //printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
       particle->SetPolarization(polarization.x(), polarization.y(), polarization.z()); 
     }
+
 
     vertex->SetPrimary( particle ) ; 
   }
@@ -94,6 +97,12 @@ SLArPBombGeneratorAction::~SLArPBombGeneratorAction()
 
 void SLArPBombGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
   SLArBaseGenerator::SourceConfiguration( config, fConfig ); 
+
+  if (fConfig.dir_config.mode == EDirectionMode::kFixedDir) {
+    fprintf(stderr, "SLArPBombGeneratorAction::SourceConfiguration() WARNING. ");
+    fprintf(stderr, "Fixed direction with more than 1 particle is not allowed. Reverting to isotropic sampling\n");
+    fConfig.dir_config.mode = EDirectionMode::kRandomDir;
+  }
 
   if (config.HasMember("particle")) {
     fConfig.particle_name = config["particle"].GetString();

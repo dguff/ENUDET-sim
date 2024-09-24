@@ -12,6 +12,7 @@
 #include <G4SystemOfUnits.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <SLArVertextGenerator.hh>
+#include <event/SLArGenRecords.hpp>
 #include <rapidjson/document.h>
 #include <TFile.h>
 #include <TH1D.h>
@@ -192,6 +193,10 @@ namespace gen{
           return std::move(obj);
         }
 
+      virtual void SetGenRecord( SLArGenRecord& record, const GenConfig_t& config ) const; 
+      inline virtual void SetGenRecord( SLArGenRecord& record) const {
+        SetGenRecord( record, fConfig ); 
+      } 
       virtual G4String WriteConfig() const;
 
       virtual void GeneratePrimaries(G4Event*) = 0; 

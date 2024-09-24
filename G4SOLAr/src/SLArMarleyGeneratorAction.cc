@@ -178,6 +178,7 @@ double SLArMarleyGeneratorAction::SampleDecayTime(const double half_life) const 
 
 void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+
   SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
   SLArRandom* slar_random = run_action->GetTRandomInterface(); 
   // Create a new primary vertex at the spacetime origin.
@@ -186,10 +187,15 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fVtxGen->ShootVertex(vtx); 
   }
 
+  auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
+
   G4double marley_time = 0.; 
 
-  G4ThreeVector g4dir = SampleDirection(fConfig.dir_config);
-  std::array<double, 3> dir = {g4dir.x(), g4dir.y(), g4dir.z()};
+  fConfig.dir_config.direction_tmp = SampleDirection(fConfig.dir_config);
+  std::array<double, 3> dir = {
+    fConfig.dir_config.direction_tmp.x(), 
+    fConfig.dir_config.direction_tmp.y(), 
+    fConfig.dir_config.direction_tmp.z()};
 
   if (fOscillogram) {
     // build neutrino energy pdf given cos(nadir)
@@ -206,6 +212,16 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   fMarleyGenerator.set_neutrino_direction(dir); 
   // Generate a new MARLEY event using the owned marley::Generator object
   ::marley::Event ev = fMarleyGenerator.create_event();
+
+  for (const auto &ip : ev.get_initial_particles()) {
+    const int fabs_pdg = fabs( ip->pdg_code() );
+    if ( fabs_pdg == 12 || fabs_pdg == 14 || fabs_pdg == 16 ) {
+      fConfig.ene_config.energy_tmp = ip->kinetic_energy();
+    }
+  }
+
+  auto& record = gen_records.AddRecord( GetGeneratorEnum(), GetLabel() ); 
+  SetGenRecord( record ); 
 
   // Get nuclear cascade info
   const auto& marley_cascades = ev.get_cascade_levels(); 
