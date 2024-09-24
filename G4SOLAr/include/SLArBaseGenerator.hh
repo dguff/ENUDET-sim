@@ -134,6 +134,7 @@ namespace gen{
         std::vector<G4double> energy_bin_left = {};
         std::vector<G4double> energies = {};
         std::vector<G4double> weights = {};
+        std::vector<G4double> prob_densities = {};
         G4String interpolation_rule = {};
       };
 

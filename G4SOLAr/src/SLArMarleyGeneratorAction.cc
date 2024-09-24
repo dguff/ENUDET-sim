@@ -118,6 +118,7 @@ void SLArMarleyGeneratorAction::SetupMarleyGen()
       rapidjson::Value jweights; jweights.SetArray();
       for (const auto& b : econfig.weights) jweights.PushBack(b, mdoc.GetAllocator());
       source.AddMember("weights", jweights, mdoc.GetAllocator());
+      source.AddMember("Emax", econfig.energy_max, mdoc.GetAllocator());
     }
     else if (distr_label == "grid") {
       rapidjson::Value jene; jene.SetArray(); 

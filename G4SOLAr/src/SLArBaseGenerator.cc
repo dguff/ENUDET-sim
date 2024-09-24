@@ -4,6 +4,7 @@
  * @created     : Saturday Mar 30, 2024 22:08:11 CET
  */
 
+#include <cstdio>
 #include <memory>
 #include <G4Event.hh>
 #include <G4EventManager.hh>
@@ -293,44 +294,6 @@ G4double SLArBaseGenerator::SampleEnergy() {
 
 void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config) {
   SourceDirectionConfig(dir_config, fConfig.dir_config); 
-  //if (dir_config.IsObject() == false) {
-    //fprintf(stderr, "ConfigureDirection ERROR: Direction configuration must be an object\n"); 
-    //exit(EXIT_FAILURE); 
-  //}
-
-  //if (dir_config.HasMember("mode") == false) {
-    //fprintf(stderr, "ConfigureDirection ERROR: User must specify direction \"mode\" (fixed, isotropic, sun)\n");
-    //exit(EXIT_FAILURE);
-  //}
-
-  //G4String dir_mode = dir_config["mode"].GetString(); 
-  //auto& config = fConfig.dir_config; 
-
-  //if (dir_mode == "isotropic") {
-    //config.mode = EDirectionMode::kRandomDir;
-    //return;
-  //} 
-  //else if (dir_mode == "fixed") {
-    //config.mode = EDirectionMode::kFixedDir;
-    //config.axis.set(0, 0, 1); 
-    //if (dir_config.HasMember("axis")) {
-      //assert( dir_config["axis"].GetArray().Size() == 3 ); 
-      //G4double dir[3] = {0}; 
-      //G4int idir = 0; 
-      //for (const auto& p : dir_config["axis"].GetArray()) {
-        //dir[idir] = p.GetDouble(); idir++; 
-      //}
-      //config.axis.set(dir[0], dir[1], dir[2]); 
-    //}
-  //} 
-  //else if (dir_mode == "sun") {
-    //config.mode = EDirectionMode::kSunDir;
-    //if (dir_config.HasMember("nadir_histogram") == false) {
-      //fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
-      //exit(EXIT_FAILURE); 
-    //}
-    //config.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
-  //}
 }
 
 void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config, DirectionConfig_t& local) {
@@ -414,100 +377,6 @@ const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
 
 void SLArBaseGenerator::SourceEnergyConfig(const rapidjson::Value& ene_config) {
   SourceEnergyConfig( ene_config, fConfig.ene_config ); 
-  //if (ene_config.IsObject() == false) {
-    //fprintf(stderr, "ConfigureEnergy ERROR: Energy configuration must be an object\n"); 
-    //exit(EXIT_FAILURE); 
-  //}
-
-  //if (ene_config.HasMember("mode") == false) {
-    //fprintf(stderr, "ConfigureEnergy ERROR: User must specify direction \"mode\" (monoenergetic, custom, spectrum)\n");
-    //exit(EXIT_FAILURE);
-  //}
-
-  //G4String ene_mode = ene_config["mode"].GetString(); 
-  //auto& config = fConfig.ene_config;
-
-  //if (ene_mode == "monoenergetic" || ene_mode == "mono") {
-    //config.mode = EEnergyMode::kFixed;
-    //config.energy_distribution_label = "monoenergetic"; 
-
-    //if ( ene_config.HasMember("value") == false ) {
-      //fprintf(stderr, "ConfigureEnergy ERROR: monoenergetic particle set but no energy value provided\n"); 
-      //exit(EXIT_FAILURE); 
-    //}
-    //config.energy_value = unit::ParseJsonVal( ene_config["value"] ); 
-    //printf("set energy to %g MeV\n", config.energy_value); 
-  //}
-  //else if (ene_mode == "custom") {
-    //config.mode = EEnergyMode::kCustom; 
-    //if ( ene_config.HasMember("label") == false ) {
-      //fprintf(stderr, "ConfigureEnergy ERROR: custom energy spectrum set but no label given\n");
-      //exit(EXIT_FAILURE); 
-    //}
-    //config.energy_distribution_label = ene_config["label"].GetString(); 
-
-    //if (ene_config.HasMember("Emin")) {
-      //config.energy_min = ene_config["Emin"].GetDouble();
-    //}
-    //if (ene_config.HasMember("Emax")) {
-      //config.energy_min = ene_config["Emax"].GetDouble();
-    //}
-    //if (ene_config.HasMember("temperature")) {
-      //config.temperature = ene_config["temperature"].GetDouble();
-    //}
-    //if (ene_config.HasMember("eta")) {
-      //config.eta = ene_config["eta"].GetDouble();
-    //}
-    //if (ene_config.HasMember("Emean")) {
-      //config.energy_mean = ene_config["Emean"].GetDouble();
-    //}
-    //if (ene_config.HasMember("beta")) {
-      //config.beta = ene_config["beta"].GetDouble();
-    //}
-    //if (ene_config.HasMember("E_bin_lefts")) {
-      //if (ene_config["E_bin_lefts"].IsArray() == false) {
-        //fprintf(stderr, "SourceEnergyConfiguration ERROR: \"E_bin_lefts\" MUST be an array\n"); 
-        //exit(EXIT_FAILURE);
-      //}
-
-      //for (const auto& jb : ene_config["E_bin_lefts"].GetArray()) {
-        //config.energy_bin_left.push_back( jb.GetDouble() ); 
-      //}
-    //}
-    //if (ene_config.HasMember("energies")) {
-      //if (ene_config["energies"].IsArray() == false) {
-        //fprintf(stderr, "SourceEnergyConfiguration ERROR: \"energies\" MUST be an array\n"); 
-        //exit(EXIT_FAILURE);
-      //}
-
-      //for (const auto& jb : ene_config["energies"].GetArray()) {
-        //config.energies.push_back( jb.GetDouble() ); 
-      //}
-    //}
-    //if (ene_config.HasMember("weights")) {
-      //if (ene_config["weights"].IsArray() == false) {
-        //fprintf(stderr, "SourceEnergyConfiguration ERROR: \"weights\" MUST be an array\n"); 
-        //exit(EXIT_FAILURE);
-      //}
-
-      //for (const auto& jb : ene_config["weights"].GetArray()) {
-        //config.energies.push_back( jb.GetDouble() ); 
-      //}
-    //}
-    //if (ene_config.HasMember("interpolation_rule")) {
-      //config.interpolation_rule = ene_config["interpolation_rule"].GetString(); 
-    //}
-  //}
-  //else if (ene_mode == "ext_spectrum") {
-    //config.mode = EEnergyMode::kExtSpectrum; 
-    //config.energy_distribution_label = "th1"; 
-    //if (ene_config.HasMember("energy_distribution") == false) {
-      //fprintf(stderr, "ConfigureEnergy ERROR: energy spectrum set but no file or object info given\n");
-      //exit(EXIT_FAILURE); 
-    //}
-    //config.spectrum_hist.Configure( ene_config["energy_distribution"] );
-  //}
-
   return;
 }
 
@@ -547,7 +416,7 @@ void SLArBaseGenerator::SourceEnergyConfig(const rapidjson::Value& ene_config, E
       local.energy_min = ene_config["Emin"].GetDouble();
     }
     if (ene_config.HasMember("Emax")) {
-      local.energy_min = ene_config["Emax"].GetDouble();
+      local.energy_max = ene_config["Emax"].GetDouble();
     }
     if (ene_config.HasMember("temperature")) {
       local.temperature = ene_config["temperature"].GetDouble();
@@ -588,7 +457,17 @@ void SLArBaseGenerator::SourceEnergyConfig(const rapidjson::Value& ene_config, E
       }
 
       for (const auto& jb : ene_config["weights"].GetArray()) {
-        local.energies.push_back( jb.GetDouble() ); 
+        local.weights.push_back( jb.GetDouble() ); 
+      }
+    }
+    if (ene_config.HasMember("prob_densities")) {
+      if (ene_config["prob_densities"].IsArray() == false) {
+        fprintf(stderr, "SourceEnergyConfiguration ERROR: \"prob_densities\" MUST be an array\n");
+        exit(EXIT_FAILURE);
+      }
+
+      for (const auto& p : ene_config["prob_densities"].GetArray()) {
+        local.prob_densities.push_back( p.GetDouble() );
       }
     }
     if (ene_config.HasMember("interpolation_rule")) {
