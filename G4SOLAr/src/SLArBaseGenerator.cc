@@ -217,10 +217,11 @@ G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) 
     const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
     const double azimuth = 107.7*TMath::DegToRad(); 
     const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
+    const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
     dir_config.direction_tmp.set(
-      +2*cos_nadir * cos( azimuth ) / TMath::Pi(), 
-      -sin_nadir, 
-      -2*cos_nadir * sin( azimuth ) / TMath::Pi()
+      sin_nadir * cos( azimuth ) * cos(phi) + sin(azimuth)*sin_nadir*sin(phi),
+      +cos_nadir, 
+      -sin(azimuth)*sin_nadir*cos(phi) + cos(azimuth)*sin_nadir*sin(phi)
       );
     dir_config.direction_tmp = dir_config.direction_tmp.unit(); 
   }
