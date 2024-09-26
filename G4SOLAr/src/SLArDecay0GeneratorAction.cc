@@ -836,6 +836,7 @@ namespace bxdecay0_g4{
   }
 
   void SLArDecay0GeneratorAction::Configure() {
+    SLArBaseGenerator::Configure( fConfig ); 
     SetConfiguration( fConfig ); 
   }
 

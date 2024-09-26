@@ -16,10 +16,8 @@
 #include <G4PrimaryVertex.hh>
 #include <G4PrimaryParticle.hh>
 
-
-
 namespace gen {
-struct GenieEvent{
+struct GenieEvent_t{
   Long64_t EvtNum;
   int nPart;
   int pdg[100];
@@ -29,17 +27,14 @@ struct GenieEvent{
   double vtx[4];
 };
 
-
-
 class SLArGENIEGeneratorAction : public SLArBaseGenerator
 {
   private:
 
   public:
     struct GENIEConfig_t : public GenConfig_t {
-      G4String genie_file_path {}; 
-      G4String genie_tree_key  {}; 
-      G4int    tree_first_entry = 0; 
+      ExtSourceInfo_t tree_info; 
+      G4int           tree_first_entry = 0; 
     };
     SLArGENIEGeneratorAction(const G4String label = "");
     SLArGENIEGeneratorAction(const G4String label, const G4String genie_file);
@@ -66,7 +61,7 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     GENIEConfig_t fConfig; 
     TTree *m_gtree {};
     TFile *m_gfile {}; 
-    GenieEvent gVar;
+    GenieEvent_t gVar;
 };
 
 }

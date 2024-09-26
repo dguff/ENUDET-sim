@@ -52,6 +52,7 @@ void SLArPBombGeneratorAction::SetParticle(G4ParticleDefinition* particle_def)
 }
 
 void SLArPBombGeneratorAction::Configure() {
+  SLArBaseGenerator::Configure( fConfig ); 
   SetParticle( fConfig.particle_name.data() );
 }
 

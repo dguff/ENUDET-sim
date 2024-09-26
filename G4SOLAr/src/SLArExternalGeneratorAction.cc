@@ -144,21 +144,22 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
 }
 
 void SLArExternalGeneratorAction::Configure() {
-  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-        fConfig.dir_config.nadir_hist.filename, 
-        fConfig.dir_config.nadir_hist.objname);
+  SLArBaseGenerator::Configure( fConfig ); 
+  //if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
+    //TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
+        //fConfig.dir_config.nadir_hist.filename, 
+        //fConfig.dir_config.nadir_hist.objname);
 
-    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-  }
+    //fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
+  //}
 
-  if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
-        fConfig.ene_config.spectrum_hist.filename , 
-        fConfig.ene_config.spectrum_hist.objname );
+  //if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
+    //TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+        //fConfig.ene_config.spectrum_hist.filename , 
+        //fConfig.ene_config.spectrum_hist.objname );
 
-    fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
-  }
+    //fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
+  //}
 
   fParticleDef = G4ParticleTable::GetParticleTable()->FindParticle( fConfig.ext_primary_particle ); 
 }

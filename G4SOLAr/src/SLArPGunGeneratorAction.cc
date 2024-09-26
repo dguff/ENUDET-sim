@@ -24,6 +24,7 @@ SLArPGunGeneratorAction::SLArPGunGeneratorAction(const G4String label)
 }
 
 void SLArPGunGeneratorAction::Configure() {
+  SLArBaseGenerator::Configure( fConfig );
   SetParticle( fConfig.particle_name.data() ); 
 }
 
