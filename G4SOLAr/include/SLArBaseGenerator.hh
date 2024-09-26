@@ -9,6 +9,8 @@
 #define SLARBASEGENERATOR_HH
 
 #include <G4String.hh>
+#include <G4IonTable.hh>
+#include <G4ParticleTable.hh>
 #include <G4SystemOfUnits.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
 #include <SLArVertextGenerator.hh>
@@ -156,7 +158,9 @@ namespace gen{
       inline G4String GetLabel() const {return fLabel;}
       virtual void SourceConfiguration(const rapidjson::Value& config); 
       virtual void SourceConfiguration(const rapidjson::Value& config, GenConfig_t& local); 
-      virtual void Configure(); 
+      virtual void Configure() { Configure(fConfig); } 
+      virtual void Configure(const GenConfig_t& config); 
+
       void SetupVertexGenerator(const rapidjson::Value& config);
 
       virtual G4String GetGeneratorType() const = 0; 
@@ -202,6 +206,15 @@ namespace gen{
 
       virtual void GeneratePrimaries(G4Event*) = 0; 
       void RegisterPrimaries(const G4Event*, const G4int); 
+
+      inline static G4bool PDGCodeIsValid(const G4int pdgcode) {
+        G4ParticleDefinition* def = nullptr; 
+        def = G4ParticleTable::GetParticleTable()->FindParticle(pdgcode);
+        if ( def != nullptr ) {return true;}
+        def = G4IonTable::GetIonTable()->GetIon(pdgcode);
+        if ( def != nullptr ) {return true;}
+        return false;
+      }
 
     protected: 
       G4int fVerbose;

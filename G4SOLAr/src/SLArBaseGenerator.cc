@@ -8,7 +8,6 @@
 #include <memory>
 #include <G4Event.hh>
 #include <G4EventManager.hh>
-#include <G4IonTable.hh>
 #include <G4RunManager.hh>
 
 #include <SLArBaseGenerator.hh>
@@ -110,7 +109,6 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
   return;
 }
 
-
 void SLArBaseGenerator::SourceConfiguration(const rapidjson::Value& config, GenConfig_t& local) {
 
   rapidjson::Document d; 
@@ -145,7 +143,6 @@ void SLArBaseGenerator::SourceConfiguration(const rapidjson::Value& config, GenC
     fVtxGen = std::make_unique<SLArPointVertexGenerator>();
   }
 }
-
 
 void SLArBaseGenerator::SourceConfiguration(const rapidjson::Value& config) {
 
@@ -182,7 +179,7 @@ void SLArBaseGenerator::SourceConfiguration(const rapidjson::Value& config) {
   }
 }
 
-void SLArBaseGenerator::Configure() {
+void SLArBaseGenerator::Configure(const GenConfig_t& config) {
   if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
     TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
         fConfig.dir_config.nadir_hist.filename, 
@@ -274,7 +271,6 @@ G4double SLArBaseGenerator::SampleEnergy(EnergyConfig_t& ene_config) {
   return ene_config.energy_tmp;
 }
 
-
 G4double SLArBaseGenerator::SampleEnergy() {
   return SampleEnergy(fConfig.ene_config); 
   //auto& ene_config = fConfig.ene_config; 
@@ -336,7 +332,6 @@ void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config
     local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
   }
 }
-
 
 const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
   rapidjson::Document doc;
