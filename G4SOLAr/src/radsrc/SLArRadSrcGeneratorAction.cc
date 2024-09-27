@@ -102,6 +102,7 @@ void SLArRadSrcGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   costheta = 2.0*G4UniformRand()-1.0;
   sintheta = sqrt(1.0-costheta*costheta);
   particleGun->SetParticleMomentumDirection(G4ThreeVector(costheta,sintheta*cos(phi),sintheta*sin(phi)));
+  particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
   particleGun->GeneratePrimaryVertex(anEvent);
 }
 
@@ -133,7 +134,7 @@ void SLArRadSrcGeneratorAction::RadSrcConfig_t::to_input() {
   return;
  }
 
-void SLArRadSrcGeneratorAction::Configure(const rapidjson::Value& config) {
+void SLArRadSrcGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
   if ( !config.HasMember("isotopes")) {
     throw std::invalid_argument("radsrc configuration missing mandatory \"isotopes\" field\n");
   } else {
@@ -180,16 +181,19 @@ void SLArRadSrcGeneratorAction::Configure(const rapidjson::Value& config) {
   }
 
   if (config.HasMember("vertex_gen")) {
-    ConfigureVertexGenerator( config["vertex_gen"] ); 
+    SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
     fVtxGen = std::make_unique<SLArPointVertexGenerator>();
   }
   
-  fConfig.to_input(); 
+  return;
+}
 
+void SLArRadSrcGeneratorAction::Configure() {
+  fConfig.to_input(); 
   UpdateRadSrc(); 
-  
+
   return;
 }
 

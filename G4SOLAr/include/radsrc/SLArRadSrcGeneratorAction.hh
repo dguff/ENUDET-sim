@@ -24,7 +24,7 @@ namespace radsrc {
 class SLArRadSrcGeneratorAction : public SLArBaseGenerator 
 {
   public: 
-    struct RadSrcConfig_t {
+    struct RadSrcConfig_t : public GenConfig_t {
       std::map<G4String, G4double> isotopes;
       G4double age = 10000; 
       G4bool add_brem = true;
@@ -38,7 +38,8 @@ class SLArRadSrcGeneratorAction : public SLArBaseGenerator
 
     virtual void GeneratePrimaries(G4Event* ev) override; 
 
-    void Configure(const rapidjson::Value& config) override; 
+    void SourceConfiguration(const rapidjson::Value& config) override; 
+    void Configure() override;
     G4String WriteConfig() const override;
 
     G4String GetGeneratorType() const override {return "radsrc";}

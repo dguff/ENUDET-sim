@@ -136,7 +136,7 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         G4ThreeVector((*vect)[j]->x()*CLHEP::m, fConfig.cry_gen_y, (*vect)[j]->y()*CLHEP::m));
     particleGun->SetParticleMomentumDirection(
         G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v()));
-    //particleGun->SetParticleTime((*vect)[j]->t()*CLHEP::s);
+    particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
     particleGun->SetParticleTime(0.0*CLHEP::s);
     particleGun->GeneratePrimaryVertex(anEvent);
     delete (*vect)[j];
@@ -187,7 +187,9 @@ void SLArCRYGeneratorAction::CRYConfig_t::to_input() {
   cry_mess_input.append( line_altitude );
 }
 
-void SLArCRYGeneratorAction::Configure(const rapidjson::Value& config) {
+void SLArCRYGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
+  CopyConfigurationToString(config);
+
   if ( !config.HasMember("particles")) {
     throw std::invalid_argument("cry configuration missing mandatory \"particles\" field\n");
   } else {
@@ -241,11 +243,19 @@ void SLArCRYGeneratorAction::Configure(const rapidjson::Value& config) {
     fConfig.cry_gen_y = unit::ParseJsonVal( config["generator_y"] ); 
   }
 
-  fConfig.to_input(); 
+  if (config.HasMember("vertex_gen")) {
+    SetupVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+  }
 
-  UpdateCRY(); 
-  
   return;
+}
+
+void SLArCRYGeneratorAction::Configure() {
+  fConfig.to_input(); 
+  UpdateCRY(); 
 }
 
 G4String SLArCRYGeneratorAction::WriteConfig() const {

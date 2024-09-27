@@ -221,7 +221,8 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
     case (kCRY) : 
       {
         auto gen = new cry::SLArCRYGeneratorAction(label); 
-        gen->Configure( jgen["config"] ); 
+        gen->SourceConfiguration( jgen["config"] ); 
+        gen->Configure();
         this_gen = gen; 
         break;
       }
@@ -231,7 +232,8 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
     case (kRadSrc) : 
       {
         auto gen = new radsrc::SLArRadSrcGeneratorAction(label);
-        gen->Configure( jgen["config"] ); 
+        gen->SourceConfiguration( jgen["config"] ); 
+        gen->Configure();
         this_gen = gen;
         break;
       }
