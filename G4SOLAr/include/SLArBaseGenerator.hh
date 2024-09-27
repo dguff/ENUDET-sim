@@ -144,7 +144,6 @@ namespace gen{
         G4int n_particles = 1; 
         DirectionConfig_t  dir_config = {};
         EnergyConfig_t ene_config = {}; 
-        G4double time = 0.0; 
       };
 
       inline SLArBaseGenerator(const G4String label="") 
@@ -156,8 +155,8 @@ namespace gen{
 
       inline void SetLabel(const G4String& label) {fLabel = label;}
       inline G4String GetLabel() const {return fLabel;}
-      virtual void SourceConfiguration(const rapidjson::Value& config); 
-      virtual void SourceConfiguration(const rapidjson::Value& config, GenConfig_t& local); 
+      virtual void SourceConfiguration(const rapidjson::Value& config) = 0; 
+      //virtual void SourceConfiguration(const rapidjson::Value& config, GenConfig_t& local) = 0; 
       virtual void Configure() { Configure(fConfig); } 
       virtual void Configure(const GenConfig_t& config); 
 
@@ -225,6 +224,7 @@ namespace gen{
       std::unique_ptr<TH1D> fEnergySpectrum; 
       G4String fJSONConfigDump;
 
+      void CopyConfigurationToString(const rapidjson::Value& config); 
       virtual void SourceDirectionConfig(const rapidjson::Value& dir_config); 
       virtual void SourceDirectionConfig(const rapidjson::Value& dir_config, DirectionConfig_t& local); 
       virtual void SourceEnergyConfig(const rapidjson::Value& ene_config); 

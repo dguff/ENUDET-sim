@@ -39,8 +39,6 @@ class SLArPBombGeneratorAction : public SLArBaseGenerator
       //{fConfig.particle_energy = Ekin;}
     //inline void SetParticlePosition(const G4ThreeVector pos) 
       //{fVertex = pos;}
-    inline void SetParticleTime(const G4double time) 
-      {fConfig.time = time;}
     inline void SetNumberOfParticles(const G4int n_particles) 
       {fConfig.n_particles = n_particles;} 
     void SetParticle(const char* particle_name); 
@@ -55,7 +53,6 @@ class SLArPBombGeneratorAction : public SLArBaseGenerator
 
   protected: 
     PBombConfig_t fConfig;
-    G4ThreeVector fVertex; 
     G4ParticleDefinition* fParticleDefinition; 
     G4ParticleTable* fParticleTable; 
 
