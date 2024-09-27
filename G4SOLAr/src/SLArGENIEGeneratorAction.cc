@@ -30,19 +30,23 @@ SLArGENIEGeneratorAction::~SLArGENIEGeneratorAction()
 
 void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
   assert( config.HasMember("genie_tree") ); 
+  CopyConfigurationToString(config);
 
   fConfig.tree_info.Configure(config["genie_tree"]); 
 
   if (config.HasMember("tree_first_entry")) {
     fConfig.tree_first_entry = config["tree_first_entry"].GetInt(); 
   }
-
+  if (config.HasMember("vertex_gen")) {
+    SetupVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+  }
   return;
 }
 
 void SLArGENIEGeneratorAction::Configure() {
-  SLArBaseGenerator::Configure( fConfig );
-
   TFile *GENIEInput = TFile::Open(fConfig.tree_info.filename);
 
   m_gtree = (TTree*) GENIEInput->Get(fConfig.tree_info.objname);
@@ -54,7 +58,6 @@ void SLArGENIEGeneratorAction::Configure() {
   m_gtree->SetBranchAddress("StdHepP4",&gVar.p4);
   m_gtree->SetBranchAddress("StdHepX4",&gVar.x4);
   m_gtree->SetBranchAddress("EvtVtx",&gVar.vtx);
-
 }
 
 G4String SLArGENIEGeneratorAction::WriteConfig() const {

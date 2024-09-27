@@ -24,7 +24,22 @@ SLArPGunGeneratorAction::SLArPGunGeneratorAction(const G4String label)
 }
 
 void SLArPGunGeneratorAction::Configure() {
-  SLArBaseGenerator::Configure( fConfig );
+  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
+    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
+        fConfig.dir_config.nadir_hist.filename, 
+        fConfig.dir_config.nadir_hist.objname);
+
+    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
+    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
+  }
+  if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
+    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+        fConfig.ene_config.spectrum_hist.filename , 
+        fConfig.ene_config.spectrum_hist.objname );
+
+    fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
+    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+  }
   SetParticle( fConfig.particle_name.data() ); 
 }
 
@@ -55,9 +70,12 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4ThreeVector vtx(0, 0, 0); 
     
     fVtxGen->ShootVertex( vtx ); 
+    const G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
     fParticleGun->SetParticlePosition( vtx ); 
     fParticleGun->SetParticleMomentumDirection( SampleDirection(fConfig.dir_config) );
     fParticleGun->SetParticleEnergy( SampleEnergy(fConfig.ene_config) ); 
+    fParticleGun->SetParticleTime( vtx_time ); 
+    printf("PGun time: %g\n", vtx_time);
     fParticleGun->GeneratePrimaryVertex(anEvent);
 
     fConfig.ene_config.energy_tmp = fParticleGun->GetParticleEnergy();
@@ -78,11 +96,31 @@ SLArPGunGeneratorAction::~SLArPGunGeneratorAction()
 }
 
 void SLArPGunGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
-  SLArBaseGenerator::SourceConfiguration( config, fConfig ); 
+
+  CopyConfigurationToString(config);
+
+  if (config.HasMember("n_particles")) {
+    fConfig.n_particles = config["n_particles"].GetInt();
+  }
+
+  if (config.HasMember("direction")) {
+    SourceDirectionConfig( config["direction"], fConfig.dir_config );
+  }
+
+  if (config.HasMember("energy")) {
+    SourceEnergyConfig( config["energy"], fConfig.ene_config );
+  }
 
   if (config.HasMember("particle")) {
     fConfig.particle_name = config["particle"].GetString();
     SetParticle( fConfig.particle_name ); 
+  }
+
+  if (config.HasMember("vertex_gen")) {
+    SetupVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
   }
 
   return;

@@ -18,8 +18,7 @@
 
 namespace gen {
 SLArPBombGeneratorAction::SLArPBombGeneratorAction(const G4String label) : 
-  SLArBaseGenerator(label), 
-  fVertex( G4ThreeVector(0, 0, 0) )
+  SLArBaseGenerator(label)
 {
   fParticleTable = G4ParticleTable::GetParticleTable(); 
 }
@@ -52,13 +51,34 @@ void SLArPBombGeneratorAction::SetParticle(G4ParticleDefinition* particle_def)
 }
 
 void SLArPBombGeneratorAction::Configure() {
-  SLArBaseGenerator::Configure( fConfig ); 
+  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
+    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
+        fConfig.dir_config.nadir_hist.filename, 
+        fConfig.dir_config.nadir_hist.objname);
+
+    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
+    printf("SLArPBombGenerator::Configure() Sourcing nadir angle distribution\n"); 
+    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
+  }
+  if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
+    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+        fConfig.ene_config.spectrum_hist.filename , 
+        fConfig.ene_config.spectrum_hist.objname );
+
+    fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
+    printf("SLArPBombGenerator::Configure() Sourcing external energy spectrum\n"); 
+    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+  }
+
   SetParticle( fConfig.particle_name.data() );
 }
 
 void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent) 
 {
-  G4PrimaryVertex* vertex = new G4PrimaryVertex( fVertex, fConfig.time ); 
+  G4ThreeVector vtx; fVtxGen->ShootVertex( vtx ); 
+  G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
+
+  G4PrimaryVertex* vertex = new G4PrimaryVertex( vtx, vtx_time ); 
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
 
 #ifdef SLAR_DEBUG
@@ -97,7 +117,20 @@ SLArPBombGeneratorAction::~SLArPBombGeneratorAction()
 }
 
 void SLArPBombGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
-  SLArBaseGenerator::SourceConfiguration( config, fConfig ); 
+
+  CopyConfigurationToString(config);
+
+  if (config.HasMember("n_particles")) {
+    fConfig.n_particles = config["n_particles"].GetInt();
+  }
+
+  if (config.HasMember("direction")) {
+    SourceDirectionConfig( config["direction"], fConfig.dir_config );
+  }
+
+  if (config.HasMember("energy")) {
+    SourceEnergyConfig( config["energy"], fConfig.ene_config );
+  }
 
   if (fConfig.dir_config.mode == EDirectionMode::kFixedDir) {
     fprintf(stderr, "SLArPBombGeneratorAction::SourceConfiguration() WARNING. ");
@@ -108,6 +141,13 @@ void SLArPBombGeneratorAction::SourceConfiguration(const rapidjson::Value& confi
   if (config.HasMember("particle")) {
     fConfig.particle_name = config["particle"].GetString();
     SetParticle( fConfig.particle_name ); 
+  }
+
+  if (config.HasMember("vertex_gen")) {
+    SetupVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
   }
 
   return;

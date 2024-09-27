@@ -107,6 +107,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   for (size_t iev = 0; iev < fConfig.n_particles; iev++) {
     G4ThreeVector vtx_pos(0, 0, 0); 
     fVtxGen->ShootVertex(vtx_pos);
+    //G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
@@ -132,46 +133,64 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     fParticleGun->SetParticleMomentumDirection(fConfig.dir_config.direction_tmp); 
     fParticleGun->SetParticlePosition(vtx_pos); 
     fParticleGun->SetParticleEnergy(fConfig.ene_config.energy_tmp); 
-    fParticleGun->SetParticleTime(0); 
+    //fParticleGun->SetParticleTime(vtx_time); 
 
     fParticleGun->GeneratePrimaryVertex(ev); 
 
     auto& record = gen_records.AddRecord( GetGeneratorEnum(), fLabel ); 
-    //getchar(); 
   }
 
   return;
 }
 
 void SLArExternalGeneratorAction::Configure() {
-  SLArBaseGenerator::Configure( fConfig ); 
-  //if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    //TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-        //fConfig.dir_config.nadir_hist.filename, 
-        //fConfig.dir_config.nadir_hist.objname);
+  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
+    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
+        fConfig.dir_config.nadir_hist.filename, 
+        fConfig.dir_config.nadir_hist.objname);
 
-    //fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-  //}
+    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
+    printf("SLArExternalGenerator::Configure() Sourcing nadir angle distribution\n"); 
+    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
+  }
+  if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
+    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+        fConfig.ene_config.spectrum_hist.filename , 
+        fConfig.ene_config.spectrum_hist.objname );
 
-  //if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    //TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
-        //fConfig.ene_config.spectrum_hist.filename , 
-        //fConfig.ene_config.spectrum_hist.objname );
-
-    //fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
-  //}
+    fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
+    printf("SLArExternalGenerator::Configure() Sourcing external energy spectrum\n"); 
+    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+  }
 
   fParticleDef = G4ParticleTable::GetParticleTable()->FindParticle( fConfig.ext_primary_particle ); 
 }
 
 void SLArExternalGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
 
-  SLArBaseGenerator::SourceConfiguration(config, fConfig);
+  CopyConfigurationToString(config); 
+
+  if (config.HasMember("energy")) {
+    SourceEnergyConfig(config["energy"], fConfig.ene_config);
+  }
+  if (config.HasMember("direction")) {
+    SourceDirectionConfig(config["direction"], fConfig.dir_config);
+  }
+  if (config.HasMember("n_particles")) {
+    fConfig.n_particles = config["n_particles"].GetInt();
+  }
 
   if (config.HasMember("particle")) {
     fConfig.ext_primary_particle = config["particle"].GetString(); 
   } else {
     throw std::invalid_argument("ext gen missing mandatory \"particle\" field.\n"); 
+  }
+
+  if (config.HasMember("vertex_gen")) {
+    SetupVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
   }
 
   return;

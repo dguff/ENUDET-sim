@@ -179,18 +179,17 @@ double SLArMarleyGeneratorAction::SampleDecayTime(const double half_life) const 
 
 void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-
   SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
   SLArRandom* slar_random = run_action->GetTRandomInterface(); 
   // Create a new primary vertex at the spacetime origin.
   G4ThreeVector vtx(0., 0., 0); 
+  G4double time_reference = 0.0; 
   if (fVtxGen) {
     fVtxGen->ShootVertex(vtx); 
+    time_reference = fVtxGen->GetTimeGenerator().SampleTime();
   }
 
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
-
-  G4double marley_time = 0.; 
 
   fConfig.dir_config.direction_tmp = SampleDirection(fConfig.dir_config);
   std::array<double, 3> dir = {
@@ -252,7 +251,7 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       auto iter = fHalfLifeTable.find(excited_state);
       if (iter != fHalfLifeTable.end()) {
         double decay_time = SampleDecayTime(iter->second);
-        vertex->SetT0(marley_time + decay_time);
+        vertex->SetT0(time_reference + decay_time);
 #ifdef SLAR_DEBUG
         std::cout << "Decay time: " << decay_time << std::endl;
         std::cout << "Energy: " << excited_state << std::endl;
@@ -279,23 +278,24 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 }
 
 void SLArMarleyGeneratorAction::Configure() {
-  SLArBaseGenerator::Configure(fConfig);
+  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
+    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
+        fConfig.dir_config.nadir_hist.filename, 
+        fConfig.dir_config.nadir_hist.objname);
 
-  //if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    //TH1D* hist_nadir = GetFromRootfile<TH1D>(
-        //fConfig.dir_config.nadir_hist.filename, 
-        //fConfig.dir_config.nadir_hist.objname);
+    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
+    printf("SLArMarleyGenerator::Configure() Sourcing nadir angle distribution\n"); 
+    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
+  }
+  if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
+    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+        fConfig.ene_config.spectrum_hist.filename , 
+        fConfig.ene_config.spectrum_hist.objname );
 
-    //fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-  //}
-
-  //if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    //TH1D* hist_spectrum = GetFromRootfile<TH1D>( 
-        //fConfig.ene_config.spectrum_hist.filename , 
-        //fConfig.ene_config.spectrum_hist.objname );
-
-    //fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
-  //}
+    fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
+    printf("SLArMarleyGenerator::Configure() Sourcing external energy spectrum\n"); 
+    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+  }
 
   if (fConfig.oscillogram_info.is_empty() == false) {
     fOscillogram = std::unique_ptr<TH2F>(
@@ -309,8 +309,20 @@ void SLArMarleyGeneratorAction::Configure() {
 }
 
 void SLArMarleyGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
-  
-  SLArBaseGenerator::SourceConfiguration( config, fConfig ); 
+
+  CopyConfigurationToString(config);
+
+  if (config.HasMember("direction")) {
+    SourceDirectionConfig( config["direction"], fConfig.dir_config );
+  }
+
+  if (config.HasMember("energy")) {
+    SourceEnergyConfig( config["energy"], fConfig.ene_config );
+  }
+
+  if (config.HasMember("n_particles")) {
+    fConfig.n_particles = config["n_particles"].GetInt();
+  }
 
   if (config.HasMember("neutrino")) {
     fConfig.neutrino_label = config["neutrino"].GetString();
@@ -346,6 +358,12 @@ void SLArMarleyGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
     fConfig.oscillogram_info.Configure( config["oscillogram"] ); 
   }
 
+  if (config.HasMember("vertex_gen")) {
+    SetupVertexGenerator( config["vertex_gen"] ); 
+  }
+  else {
+    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+  }
   return;
 }
 

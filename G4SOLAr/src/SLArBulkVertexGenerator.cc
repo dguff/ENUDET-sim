@@ -199,6 +199,10 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
     fMaterial = cfg["material"].GetString(); 
     fRequireMaterialMatch = true;
   }
+  if ( cfg.HasMember("time") ) {
+    fTimeGen.SourceConfiguration( cfg["time"] );
+  }
+
   Config(volName);
 }
 
@@ -239,6 +243,13 @@ const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
   mass_val.AddMember("val", GetMassVolumeGenerator()/CLHEP::kg, vtx_info.GetAllocator()); 
   mass_val.AddMember("unit", "kg", vtx_info.GetAllocator()); 
   vtx_info.AddMember("mass", mass_val, vtx_info.GetAllocator()); 
+
+  auto dtime = fTimeGen.ExportConfig();
+  rapidjson::Value jtime; jtime.SetObject();
+  jtime.CopyFrom( dtime, vtx_info.GetAllocator() );
+  vtx_info.AddMember("time", jtime, vtx_info.GetAllocator());
+
+
   return vtx_info;
 }
 }

@@ -15,7 +15,10 @@
         },
         "vertex_gen" : {
           "type" : "point", 
-          "config" : {"xyz" : [0, 15, 35], "unit" : "cm"}
+          "config" : {
+            "xyz" : [0, 15, 35], "unit" : "cm",
+            "time" : {"mode" : "fixed", "event_time" : {"val" : 4.0, "unit" : "ns"}}
+          }
         }
       }
     }
@@ -74,7 +77,16 @@
         "n_decays" : 5,
         "vertex_gen" : {
           "type" : "bulk", 
-          "config" : {"volume" : "TPC10", "fiducial_fraction" : 0.20}
+          "config" : {
+            "volume" : "TPC10", 
+            "fiducial_fraction" : 0.20,
+            "time" : {
+              "mode" : "window", 
+              "event_window_limits" : {
+                "t0" : {"val": -10, "unit" : "ns"}, "t1" : {"val" : 10, "unit" : "ns"}
+              }
+            }
+          } 
         }
       }
     }, 
