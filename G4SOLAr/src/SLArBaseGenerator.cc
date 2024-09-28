@@ -213,13 +213,18 @@ G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) 
   else if (dir_config.mode == EDirectionMode::kSunDir) {
     // Select nadir angle
     const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
-    const double azimuth = 107.7*TMath::DegToRad(); 
     const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
+    const double theta = 107.7*TMath::DegToRad(); 
+    const double cos_theta = cos( theta ); 
+    const double sin_theta = sin( theta ); 
     const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
+    const double cos_phi = cos( phi ); 
+    const double sin_phi = sin( phi );
+
     dir_config.direction_tmp.set(
-      sin_nadir * cos( azimuth ) * cos(phi) + sin(azimuth)*sin_nadir*sin(phi),
-      +cos_nadir, 
-      -sin(azimuth)*sin_nadir*cos(phi) + cos(azimuth)*sin_nadir*sin(phi)
+      cos_theta*sin_nadir*cos_phi + sin_theta*sin_nadir*sin_phi,
+      -cos_nadir, 
+      -sin_theta*sin_nadir*cos_phi + cos_theta*sin_nadir*sin_phi
       );
     dir_config.direction_tmp = dir_config.direction_tmp.unit(); 
   }
