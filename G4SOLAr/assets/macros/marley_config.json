@@ -23,7 +23,7 @@
         "type" : "bulk", 
         "config" : {
           "volume" : "TPC11", 
-          "fiducial_fraction" : 0.75, 
+          "fiducial_fraction" : 0.80, 
           "avoid_daughters" : false
         }
       }
