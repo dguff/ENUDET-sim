@@ -238,7 +238,7 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     // Do this by first setting the PDG code and the 4-momentum components.
     G4PrimaryParticle* particle = new G4PrimaryParticle( fp->pdg_code(),
       fp->px(), fp->py(), fp->pz(), fp->total_energy() );
-    auto vertex = new G4PrimaryVertex(vtx, 0.); 
+    auto vertex = new G4PrimaryVertex(vtx, time_reference); 
 
     // Also set the charge of the G4PrimaryParticle appropriately
     particle->SetCharge( fp->charge() );
@@ -287,6 +287,7 @@ void SLArMarleyGeneratorAction::Configure() {
     printf("SLArMarleyGenerator::Configure() Sourcing nadir angle distribution\n"); 
     printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
   }
+  
   if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
     TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
         fConfig.ene_config.spectrum_hist.filename , 
