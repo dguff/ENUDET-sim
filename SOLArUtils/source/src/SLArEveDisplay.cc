@@ -46,7 +46,7 @@ namespace display {
     fPalette = std::make_unique<TEveRGBAPalette>();
 
     fParticleSelector.insert( {"gammas", MCParticleSelector_t("gammas", true, 1.0, kYellow-7, 7)} ); 
-    fParticleSelector.insert( {"light leptons", MCParticleSelector_t("light leptons", true, 1.0, kOrange+7)} ); 
+    fParticleSelector.insert( {"electrons", MCParticleSelector_t("electrons", true, 1.0, kOrange+7)} ); 
     fParticleSelector.insert( {"heavy leptons", MCParticleSelector_t("heavy leptons", true, 1.0, kOrange)} ); 
     fParticleSelector.insert( {"neutrinos", MCParticleSelector_t("neutrinos", false, 1.0, kAzure-9, 2)} ); 
     fParticleSelector.insert( {"mesons", MCParticleSelector_t("mesons", true, 1.0, kMagenta+1)} ); 
@@ -277,8 +277,8 @@ namespace display {
       auto track_list = std::unique_ptr<TEveTrackList>( 
           new TEveTrackList(Form("%s_%i", p.GetName(), p.GetTrackID())) ); 
       auto propagator = track_list->GetPropagator();
-      propagator->SetMaxZ(1e4); 
-      propagator->SetMaxR(1e4); 
+      propagator->SetMaxZ(1e5); 
+      propagator->SetMaxR(1e5); 
       const auto& trajectories = p.GetConstTrajectories(); 
       double p_tot = 0.0; 
       for (const auto& p_ : p.GetMomentum()) p_tot += TMath::Sq( p_ ); 
@@ -316,10 +316,11 @@ namespace display {
         if (pdgP) track->SetCharge( pdgP->Charge() ); 
         
         Long64_t istep = 0;
-        for (const auto& step : points) {
+        for (auto it = points.begin(); it != points.end(); ++it) {
+          const auto& step = *it;
           TEveVectorF v( step.fX, step.fY, step.fZ );
           //printf("adding steppoint at [%.2f, %.2f, %.2f] mm - t %g ns\n", v.fX, v.fY, v.fZ, t->GetTime()); 
-          if (istep%10 == 0) {
+          if (istep%10 == 0 || (it == points.end()-1) ) {
             auto pm = new TEvePathMarkF(TEvePathMarkF::kReference, v, t->GetTime());
             track->AddPathMark( *pm );
           }

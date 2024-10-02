@@ -14,6 +14,7 @@
 #include <TApplication.h>
 #include <TTimer.h>
 #include <TCanvas.h>
+#include <TStyle.h>
 
 #include <rapidjson/document.h>
 #include <rapidjson/filereadstream.h>
@@ -72,6 +73,9 @@ int main (int argc, char *argv[]) {
   }
 
   TApplication app("hit_viewer", &argc, argv); 
+
+  gStyle->SetPalette(kBlackBody); 
+  TColor::InvertPalette(); 
 
   process_file( input_file_path, control_file_path) ; 
 

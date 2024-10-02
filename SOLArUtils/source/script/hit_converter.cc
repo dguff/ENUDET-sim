@@ -187,13 +187,11 @@ int main (int argc, char *argv[]) {
       SLArCfgAnode* anode_cfg = anodeConfig[anode_itr.first]; 
       const TVector3 drift_direction = anode_cfg->GetNormal(); 
 
-      ch_analyzer.set_anode_config( anode_cfg ); 
       ch_analyzer.set_drift_direction( drift_direction ); 
       ch_analyzer.set_drift_velocity( drift_velocity );
       ch_analyzer.set_tpc_id( itpc ); 
       ch_analyzer.set_tpc_center_position( tpcCenterPos[itpc] ); 
       ch_analyzer.set_channel_rms( noise_rms_eeV ); 
-
 
       const auto& mt_map = anode.GetConstMegaTilesMap();
       for (const auto& mt_itr : mt_map) {

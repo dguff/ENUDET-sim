@@ -79,12 +79,16 @@ int TChannelAnalyzer::record_hit(const Int_t& pix_bin, const UInt_t& q, const UI
 
     //printf("pad_anode_pos: %.2f, %.2f, %.2f mm\n", pad_anode_pos.x(), pad_anode_pos.y(), pad_anode_pos.z()); 
     //printf("pad_anode_phys: %.2f, %.2f, %.2f mm\n", pad_anode_phys.x(), pad_anode_phys.y(), pad_anode_phys.z()); 
-    //getchar();
 
     TVector3 hit_phys = pad_anode_phys ;
-    TVector3 drift_coordinate = fDriftVelocity * trigger_t * fClockUnit * (*fDriftDirection);
+    TVector3 drift_coordinate = fDriftVelocity * hit.time * (*fDriftDirection);
     TVector3 hit_coordinates = hit_phys + drift_coordinate;
     
+    //printf("trigger_t: %i -> drift coordinates: (%g, %g, %g) mm\n", 
+        //trigger_t*fClockUnit, drift_coordinate.x(), drift_coordinate.y(), drift_coordinate.z());
+    //printf("hit coordinates: %.2f, %.2f, %.2f mm\n\n", hit_coordinates.x(), hit_coordinates.y(), hit_coordinates.z()); 
+    //getchar();
+
     hit.x = hit_coordinates.x(); 
     hit.y = hit_coordinates.y(); 
     hit.z = hit_coordinates.z(); 
