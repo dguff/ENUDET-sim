@@ -11,7 +11,7 @@ add_library(SLArHitConverter
 
 target_link_libraries(SLArHitConverter PUBLIC 
   ${ROOT_LIBRARIES}
-  Geant4::G4clhep Geant4::G4intercoms)
+  Geant4::G4intercoms)
 
 add_library(SLArEveDisplay
   SHARED
