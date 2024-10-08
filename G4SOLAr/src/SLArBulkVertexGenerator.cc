@@ -116,13 +116,13 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   G4ThreeVector hi;
   fSolid->BoundingLimits(lo, hi);
 
-  printf("lo: [%.1f, %.1f, %.1f]\nhi: [%.1f, %.1f, %.1f]\n", 
-      lo.x(), lo.y(), lo.z(), hi.x(), hi.y(), hi.z());
+  //printf("lo: [%.1f, %.1f, %.1f]\nhi: [%.1f, %.1f, %.1f]\n", 
+      //lo.x(), lo.y(), lo.z(), hi.x(), hi.y(), hi.z());
 
   double delta = 0.; 
   if (fFVFraction < 1.0) {
     delta = ComputeDeltaX(lo, hi); 
-    printf("delta = %g\n", delta);
+    //printf("delta = %g\n", delta);
   }
 
   auto navigator = G4TransportationManager::GetTransportationManager()->GetNavigator("World"); 
