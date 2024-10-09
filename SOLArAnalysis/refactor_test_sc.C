@@ -125,7 +125,8 @@ void refactor_test_sc(const TString file_path, const int iev)
     std::vector<TH2Poly*> h2mt; h2mt.reserve(50); 
     std::vector<TH2Poly*> h2pix; h2pix.reserve(500); 
 
-    double z_max = 0; 
+    double ophits_max = 0; 
+    double qhits_max = 0;
     printf("ANODE %i:\n", anode_event.GetID());
     for (const auto &_mtevent: anode_event.GetConstMegaTilesMap()) {
       const SLArEventMegatile& mtevent = _mtevent.second;
@@ -148,11 +149,14 @@ void refactor_test_sc(const TString file_path, const int iev)
           const SLArCfgReadoutTile& tileconfig = mtconfig.GetBaseElement(_tilevent.first); 
 
           if (tilevent.GetNhits() > 0) {
+            // Get number of hits on all SiPMs in the tile
+            const int& nhits = tilevent.GetNhits();
+            if (ophits_max < nhits) ophits_max = nhits;
             // retrieve the univocal bin index from the tile id
             const Int_t tile_bin_idx = tileconfig.GetBinIdx(); 
             // set bin content in the hit map
             TH2Poly* h2 = h2AnodeTiles[tpc_id].find(mtevent.GetIdx())->second; 
-            h2->SetBinContent(tile_bin_idx, tilevent.GetNhits());
+            h2->SetBinContent(tile_bin_idx, nhits);
             // just for fun, let's get the photons' hit time
             for (const auto& hit : tilevent.GetConstHits()) {
               hTime->Fill(hit.first, hit.second);
@@ -165,7 +169,7 @@ void refactor_test_sc(const TString file_path, const int iev)
               //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second.GetNhits());
               h2t_->SetBinContent( p.first, p.second.GetNhits() );
               //p.second.PrintHits();
-              if (p.second.GetNhits() > z_max) z_max = p.second.GetNhits(); 
+              if (p.second.GetNhits() > qhits_max) qhits_max = p.second.GetNhits(); 
             }
             h2pix.push_back( h2t_ ); 
           }
@@ -181,9 +185,11 @@ void refactor_test_sc(const TString file_path, const int iev)
       for (const auto& _module : wallevent.second.GetConstSuperCellMap()) {
         const SLArEventSuperCell& modulevent = _module.second; 
         const SLArCfgSuperCell& moduleconfig = wallconfig.GetBaseElement(_module.first); 
+        const int& nhits = modulevent.GetNhits();
+        if (nhits > ophits_max) ophits_max = nhits;
         const Int_t module_bin_index = moduleconfig.GetBinIdx(); 
         // Set bin content in the hit map
-        h2PDArray[wallevent.first]->SetBinContent(module_bin_index, modulevent.GetNhits());
+        h2PDArray[wallevent.first]->SetBinContent(module_bin_index, nhits);
         // fill time histogram
         for (const auto &hit : modulevent.GetConstHits()) {
           hTime->Fill( hit.first, hit.second ); 
@@ -192,18 +198,21 @@ void refactor_test_sc(const TString file_path, const int iev)
     }
 
     //- - - - - - - - - - - - - - - - - plot hit maps for this TPC
+    gStyle->SetOptStat(0);
     TCanvas* cPhotons = new TCanvas(Form("cPhotonHits_TPC%i", tpc_id), 
         Form("Photon hits - TPC %i", tpc_id), 0, 0, 1000, 1000);
     std::vector<std::pair<TVector3, TPad*>> plot_pads = {
-      {TVector3(-1,  0,  0), new TPad(Form("p%iSouth" , tpc_id), "south_side", 0.25, 0, 0.75, 0.25) },
-      {TVector3( 0,  1,  0), new TPad(Form("p%iBottom", tpc_id), "bottom_side", 0.25, 0.25, 0.75, 0.50) }, 
-      {TVector3( 1,  0,  0), new TPad(Form("p%iNorth" , tpc_id), "north_side", 0.25, 0.50, 0.75, 0.75) },
-      {TVector3( 0, -1,  0), new TPad(Form("p%iTop"   , tpc_id), "top_side", 0.25, 0.75, 0.75, 1.0) }, 
-      {TVector3( 0,  0,  1), new TPad(Form("p%iWest"  , tpc_id), "west_side", 0, 0.25, 0.25, 0.50) },
-      {TVector3( 0,  0, -1), new TPad(Form("p%iEast"  , tpc_id), "east_side", 0.75, 0.25, 1.0, 0.50) }
+      {TVector3( 1,  0,  0), new TPad(Form("p%iSouth" , tpc_id), "south side", 0.25, 0, 0.75, 0.25) },
+      {TVector3( 0,  1,  0), new TPad(Form("p%iBottom", tpc_id), "bottom side", 0.25, 0.25, 0.75, 0.50) }, 
+      {TVector3(-1,  0,  0), new TPad(Form("p%iNorth" , tpc_id), "north side", 0.25, 0.50, 0.75, 0.75) },
+      {TVector3( 0, -1,  0), new TPad(Form("p%iTop"   , tpc_id), "top side", 0.25, 0.75, 0.75, 1.0) }, 
+      {TVector3( 0,  0,  1), new TPad(Form("p%iWest"  , tpc_id), "west side", 0, 0.25, 0.25, 0.50) },
+      {TVector3( 0,  0, -1), new TPad(Form("p%iEast"  , tpc_id), "east side", 0.75, 0.25, 1.0, 0.50) }
     };
 
     for (auto& pad : plot_pads) {
+      TString frame_titl = Form("TPC%i - %s", tpc_id, pad.second->GetTitle());
+
       for (auto& hwalls : h2PDArray) {
         if (tpc_id == 10 && hwalls.first >= 40) continue;
         else if (tpc_id == 11 && hwalls.first < 40) continue;
@@ -214,8 +223,14 @@ void refactor_test_sc(const TString file_path, const int iev)
           pad.second->Draw(); 
           pad.second->cd(); 
           TString frame_name = Form("frame_%s", wallCfg.GetName()); 
-          hwalls.second->SetNameTitle( frame_name, frame_name ); 
-          hwalls.second->Draw("colz l"); 
+          hwalls.second->SetNameTitle( frame_name,  frame_titl); 
+          hwalls.second->GetZaxis()->SetRangeUser(0, 1.1*ophits_max);
+          if (hwalls.second->GetEntries() > 0) {
+            hwalls.second->Draw("col0"); 
+            hwalls.second->Draw("l same");
+          } else {
+            hwalls.second->Draw("l"); 
+          }
           continue;
         }
       }
@@ -223,9 +238,13 @@ void refactor_test_sc(const TString file_path, const int iev)
       if ( pad.first.Dot( AnodeSysCfg[tpc_id]->GetNormal()) == 1 ) {
         cPhotons->cd(0); pad.second->Draw(); pad.second->cd();
         TH2Poly* hframe = AnodeSysCfg[tpc_id]->GetAnodeMap(0); 
+        hframe->SetTitle( frame_titl ); 
         hframe->Draw();
         for (const auto& hmt : h2AnodeTiles[tpc_id]) {
-          hmt.second->Draw("col same l");
+          hmt.second->GetZaxis()->SetRangeUser(0, 1.1*ophits_max);
+          if (hmt.second->GetEntries() > 0) {
+            hmt.second->Draw("col0 same l");
+          }
         }
         continue;
       }
