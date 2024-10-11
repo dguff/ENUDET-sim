@@ -5,7 +5,6 @@
  */
 
 #include <memory>
-#include <SLArAnalysisManager.hh>
 #include "event/SLArEventAnode.hh"
 #include "config/SLArCfgMegaTile.hh"
 

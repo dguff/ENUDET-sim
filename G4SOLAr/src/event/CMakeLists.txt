@@ -14,7 +14,7 @@ add_library(SLArMCPrimaryInfo
   )
 target_include_directories(SLArMCPrimaryInfo 
   PUBLIC 
-  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
+  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
 target_link_libraries(SLArMCPrimaryInfo PUBLIC ${ROOT_LIBRARIES})
 ROOT_GENERATE_DICTIONARY(G__SLArMCPrimaryInfo
   ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfo.hh
@@ -57,7 +57,7 @@ add_library(SLArMCEventReadout
   )
 target_include_directories(SLArMCEventReadout 
   PUBLIC 
-  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
+  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
 target_link_libraries(
   SLArMCEventReadout 
   PUBLIC 
@@ -88,7 +88,7 @@ add_library(SLArMCEvent
   )
 target_include_directories(SLArMCEvent 
   PUBLIC 
-  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>")
+  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
 target_link_libraries(SLArMCEvent 
                       PUBLIC
                       ${ROOT_LIBRARIES} 
