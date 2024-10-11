@@ -44,8 +44,6 @@ typedef std::map<Int_t, TH2Poly*> AnodeTileMap;
 
 void refactor_test_sc(const TString file_path, const int iev) 
 {
-  gStyle->SetPalette(kBlackBody); 
-  TColor::InvertPalette(); 
   TFile* mc_file = new TFile(file_path); 
   TTree* mc_tree = mc_file->Get<TTree>("EventTree"); 
 
@@ -56,7 +54,9 @@ void refactor_test_sc(const TString file_path, const int iev)
 
   //- - - - - - - - - - - - - - - - book histograms
   TH1D* hTime = new TH1D("hPhTime", "Photon hit time;Time [ns];Entries", 1000, 0, 5e3); 
+  hTime->SetDirectory(nullptr);
   TH1D* hBacktracker = new TH1D("hBacktracker", "backtracker: trkID", 1000, 0, 1000 );
+  hBacktracker->SetDirectory(nullptr);
   // 2D histograms of photodetectors arrays. These include just membrane walls
   // instrumented with X-ARAPUCA-style detectors
   std::map<int, TH2Poly*> h2PDArray;
@@ -80,6 +80,7 @@ void refactor_test_sc(const TString file_path, const int iev)
           cfgSCArray.GetPsi()*TMath::RadToDeg());
       cfgSCArray.BuildGShape(); 
       auto h2 = cfgSCArray.BuildPolyBinHist(SLArCfgSuperCellArray::kWorld);  
+      h2->SetDirectory(nullptr);
       h2PDArray.insert( std::make_pair(cfgSCArray.GetIdx(), std::move(h2)) ); 
     }
   }
@@ -101,6 +102,7 @@ void refactor_test_sc(const TString file_path, const int iev)
     AnodeTileMap tile_map; 
     for (const auto& megatile_cfg : cfgAnode->GetConstMap()) {
       auto h2 = cfgAnode->ConstructPixHistMap(1, std::vector<int>{megatile_cfg.GetIdx()}); 
+      h2->SetDirectory(nullptr);
       tile_map.insert({megatile_cfg.GetIdx(), std::move(h2)}); 
     }
     h2AnodeTiles.insert({anodeCfg_.first, tile_map}); 
@@ -318,6 +320,7 @@ void refactor_test_sc(const TString file_path, const int iev)
   TCanvas* cTime = new TCanvas(); 
   hTime->Draw("hist");
 
+  mc_file->Close();
   return;
 }
 
