@@ -50,6 +50,7 @@ class SLArMarleyGeneratorAction : public SLArBaseGenerator
       std::vector<G4String> reactions; 
       TargetConfig_t target; 
       ExtSourceInfo_t oscillogram_info;
+      G4bool weight_flux = true;
     };
 
     SLArMarleyGeneratorAction(G4String label = "");

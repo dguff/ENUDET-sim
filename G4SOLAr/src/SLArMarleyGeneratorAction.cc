@@ -128,7 +128,7 @@ void SLArMarleyGeneratorAction::SetupMarleyGen()
       source.AddMember("energies", jene, mdoc.GetAllocator());
       rapidjson::Value jweights; jweights.SetArray();
       for (const auto& b : econfig.weights) jweights.PushBack(b, mdoc.GetAllocator());
-      source.AddMember("weights", jweights, mdoc.GetAllocator());
+      source.AddMember("prob_densities", jweights, mdoc.GetAllocator());
     }
   } 
   else if (econfig.mode == EEnergyMode::kFixed) {
@@ -141,6 +141,7 @@ void SLArMarleyGeneratorAction::SetupMarleyGen()
     source.AddMember("tfile", rapidjson::StringRef(econfig.spectrum_hist.filename.data()), mdoc.GetAllocator()); 
     source.AddMember("namecycle", rapidjson::StringRef(econfig.spectrum_hist.objname.data()), mdoc.GetAllocator()); 
   }
+  source.AddMember("weight_flux", fConfig.weight_flux, mdoc.GetAllocator());
   mdoc.AddMember("source", source, mdoc.GetAllocator()); 
 
   FILE* marley_cfg_tmp; 
@@ -216,7 +217,9 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   for (const auto &ip : ev.get_initial_particles()) {
     const int fabs_pdg = fabs( ip->pdg_code() );
     if ( fabs_pdg == 12 || fabs_pdg == 14 || fabs_pdg == 16 ) {
+      double total_energy = ip->total_energy();
       fConfig.ene_config.energy_tmp = ip->kinetic_energy();
+      printf("neutrino energy: total = %g - kinetic = %g\n", total_energy, fConfig.ene_config.energy_tmp);
     }
   }
 
@@ -365,6 +368,11 @@ void SLArMarleyGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
   else {
     fVtxGen = std::make_unique<SLArPointVertexGenerator>();
   }
+
+  if (config.HasMember("weight_flux")) {
+    fConfig.weight_flux = config["weight_flux"].GetBool();
+  }
+
   return;
 }
 
