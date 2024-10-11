@@ -86,7 +86,7 @@ class SLArMCEvent : public TObject
     std::map<int, SLArEventSuperCellArray> fEvSuperCellArray; 
 
   public:
-    ClassDef(SLArMCEvent, 3);
+    ClassDef(SLArMCEvent, 4);
 };
 
 #endif /* end of include guard SLArEVENT_HH */
