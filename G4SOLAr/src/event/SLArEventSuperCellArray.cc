@@ -3,7 +3,6 @@
  * @file        SLArEventSuperCellArray.cc
  * @created     Thur Oct 20, 2022 16:16:03 CEST
  */
-#include <SLArAnalysisManager.hh>
 #include "event/SLArEventSuperCellArray.hh"
 
 ClassImp(SLArEventSuperCellArray)

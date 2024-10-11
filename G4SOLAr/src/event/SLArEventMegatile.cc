@@ -5,7 +5,6 @@
  */
 
 #include <memory>
-#include <SLArAnalysisManager.hh>
 #include "event/SLArEventMegatile.hh"
 
 ClassImp(SLArEventMegatile)
