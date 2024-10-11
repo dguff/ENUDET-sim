@@ -36,7 +36,7 @@ void SLArDetSuperCellArray::Init(const rapidjson::Value& jconf) {
   assert(jconf.IsObject()); 
   auto jarray = jconf.GetObject(); 
 
-  assert(jarrry.HasMember("name"));
+  assert(jarray.HasMember("name"));
   assert(jarray.HasMember("copyID")); 
   assert(jarray.HasMember("position")); 
   assert(jarray.HasMember("dimensions")); 
