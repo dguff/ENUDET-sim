@@ -30,9 +30,8 @@
 
 
 SLArDetTPC::SLArDetTPC() : SLArBaseDetModule(),
-  fMatTarget(nullptr), fMatFieldCage(nullptr), fFieldCage(nullptr)
+  fMatTarget(nullptr), fMatFieldCage(nullptr), fFieldCage(nullptr), fFieldCageVisibility(true)
 {
-
   fGeoInfo = new SLArGeoInfo();
 }
 
@@ -262,6 +261,27 @@ void SLArDetTPC::SetVisAttributes()
   visAttributes->SetVisibility(true); 
   visAttributes->SetColor(0.607, 0.847, 0.992, 0.1);
   fModLV->SetVisAttributes( G4VisAttributes(false) );
+
+  return;
+}
+
+void SLArDetTPC::SetFieldCageVisibility(const G4bool val) {
+  G4Colour col(0.3, 0.3, 0.3, 0.45);
+  G4VisAttributes vis;
+
+  fFieldCageVisibility = val;
+
+  (fFieldCageVisibility) ? vis.SetColor( col ) : vis.SetVisibility( false );
+
+  const size_t ndaughters = fFieldCage->GetModLV()->GetNoDaughters();
+  for (size_t i = 0; i < ndaughters; i++) {
+    G4LogicalVolume* lv = fFieldCage->GetModLV()->GetDaughter(i)->GetLogicalVolume(); 
+    const size_t lv_nd = lv->GetNoDaughters();
+    for (size_t j = 0; j < lv_nd; j++) {
+      G4LogicalVolume* llv = lv->GetDaughter(j)->GetLogicalVolume();
+      llv->SetVisAttributes( vis ); 
+    }
+  }
 
   return;
 }

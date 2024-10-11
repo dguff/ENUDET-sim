@@ -30,6 +30,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdOutputFileName(nullptr),  fCmdOutputPath(nullptr), 
   fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
   fCmdGeoAnodeDepth(nullptr), 
+  fCmdGeoFieldCageVis(nullptr),
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr), 
@@ -106,6 +107,11 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdGeoAnodeDepth->SetGuidance("Set visualization depth for SoLAr anode");
   fCmdGeoAnodeDepth->SetParameterName("depth", false);
 
+  fCmdGeoFieldCageVis =
+    new G4UIcmdWithABool(UIGeometryPath+"setFieldCageVisibility", this);
+  fCmdGeoFieldCageVis->SetGuidance("Set field cage visibility");
+  fCmdGeoFieldCageVis->SetParameterName("vis", false, true);
+
   fCmdAddExtScorer = 
     new G4UIcmdWithAString(UIManagerPath+"addExtScorer", this);
   fCmdAddExtScorer->SetGuidance("Add external scorer volume (only for EXT mode)");
@@ -136,6 +142,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdWriteCfgFile       ) delete fCmdWriteCfgFile       ; 
   if (fCmdPlotXSec           ) delete fCmdPlotXSec           ; 
   if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
+  if (fCmdGeoFieldCageVis    ) delete fCmdGeoFieldCageVis    ; 
   if (fCmdStoreFullTrajectory) delete fCmdStoreFullTrajectory;
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
@@ -195,6 +202,12 @@ void SLArAnalysisManagerMsgr::SetNewValue
   }
   else if (cmd == fCmdGeoAnodeDepth) {
     fConstr_->SetAnodeVisAttributes( std::atoi(newVal) ); 
+  }
+  else if (cmd == fCmdGeoFieldCageVis) {
+    for (auto& tpc_ : fConstr_->GetDetTPCs()) {
+      auto tpc = tpc_.second;
+      tpc->SetFieldCageVisibility( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+    }
   }
   else if (cmd == fCmdStoreFullTrajectory) {
     SLArAnaMgr->SetStoreTrajectoryFull( G4UIcmdWithABool::GetNewBoolValue(newVal) );

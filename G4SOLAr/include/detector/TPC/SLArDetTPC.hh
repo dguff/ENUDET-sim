@@ -34,7 +34,8 @@ public:
   SLArBaseDetModule* GetFieldCage() {return fFieldCage;}
   virtual void  Init(const rapidjson::Value& jconf) override; 
   void  InitFieldCage(const rapidjson::Value& jcon); 
-  void          SetVisAttributes();
+  void  SetVisAttributes();
+  void  SetFieldCageVisibility(const G4bool); 
 
 
 private:
@@ -44,6 +45,7 @@ private:
   SLArBaseDetModule* fFieldCage; 
   G4double      fElectricField; 
   G4ThreeVector fElectronDriftDir; 
+  G4bool fFieldCageVisibility;
 
  
 };
