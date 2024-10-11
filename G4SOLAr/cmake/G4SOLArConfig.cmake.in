@@ -9,6 +9,7 @@
 set_and_check(G4SOLAR_INCLUDE_DIR "@PACKAGE_G4SOLAR_INCLUDE_DIR@")
 set_and_check(G4SOLAR_LIB_DIR "@PACKAGE_G4SOLAR_LIB_DIR@")
 set_and_check(G4SOLAR_BIN_DIR "@PACKAGE_G4SOLAR_BIN_DIR@")
+set_and_check(G4SOLAR_EXT_DIR "@PACKAGE_G4SOLAR_EXT_DIR@")
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 include("@PACKAGE_G4SOLAR_INSTALL_CMAKE_DIR@/G4SOLArTargets.cmake")
