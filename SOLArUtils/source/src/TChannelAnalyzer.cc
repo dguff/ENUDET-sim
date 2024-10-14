@@ -14,7 +14,7 @@ int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventCharg
   int nhit = 0;
   if (pix_ev.GetNhits() < 200) return nhit;
 
-  //printf("\t\tpixel [%i]: %i hits\n", pixel_itr.first, pixel_itr.second.GetNhits());
+  //printf("\t\tpixel [%i]: %i hits\n", pix_bin, pix_ev.GetNhits());
   if (fClockUnit == 0) fClockUnit = pix_ev.GetClockUnit(); 
   UInt_t window_int_cu = std::round(fIntegrationWindow * 1000 / fClockUnit);
   const auto& hit_stream = pix_ev.GetConstHits();
@@ -25,7 +25,6 @@ int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventCharg
   UInt_t sampled_time = 0;
   for (auto stream_itr = hit_stream.begin(); stream_itr != hit_stream.end(); stream_itr++) {
     q += stream_itr->second;
-    //printf("\t\t\t q = %u\n", q);
     if ( q > fHitThreshold ) {
       trigger_t = stream_itr->first;
       sampling = true;
@@ -59,7 +58,6 @@ int TChannelAnalyzer::record_hit(const Int_t& pix_bin, const UInt_t& q, const UI
   TH2PolyBin* bin = nullptr;
   bin = (TH2PolyBin*)hbin->GetBins()->At(pix_bin-1);
 
-  //printf("%i: %p\n", pix_bin-1, static_cast<void*>(bin)); 
   if (bin != nullptr) {
     TVector3 pad_pos = get_bin_center( bin, fCfgAnode->GetAxis0(), fCfgAnode->GetAxis1() ); 
     TVector3 t_phys( fCfgTile->GetPhysX(), fCfgTile->GetPhysY(), fCfgTile->GetPhysZ() ); 
