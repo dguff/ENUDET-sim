@@ -47,6 +47,18 @@ typedef std::map<Int_t, TH2Poly*> AnodeTileMap;
 
 const bool verbose = 0; 
 
+Color_t get_color(const int& pdg_code) {
+  if      ( pdg_code ==   11) return (kBlue-6);
+  else if ( pdg_code ==  -11) return (kRed-7); 
+  else if ( pdg_code ==   22) return (kYellow);
+  else if ( pdg_code == 2212) return (kRed+1); 
+  else if ( pdg_code == 2112) return (kBlue+1); 
+  else if ( pdg_code == -211) return (kOrange+7);
+  else if ( pdg_code ==  211) return (kViolet-2);
+  else if ( pdg_code ==  111) return (kGreen);
+  else return (kGray+2);
+}
+
 int process_anode_light( 
     const SLArEventAnode& ev_anode, 
     SLArCfgAnode* cfg_anode, 
@@ -101,6 +113,73 @@ int process_anode_light(
   }
 
   return nhits_anode;
+}
+
+void get_mctruth_tracks(
+    std::vector<TGraph>& gtracks,
+    const std::vector<SLArMCPrimaryInfo>& primaries, 
+    SLArCfgAnode* cfg_anode) {
+  int tpc_copy = cfg_anode->GetTPCID(); 
+
+  for (const auto& primary : primaries) {
+    const auto& trajectories = primary.GetConstTrajectories(); 
+    for (const auto& t : trajectories) {
+      const auto& points = t->GetConstPoints();
+      
+      TGraph g;
+      g.SetLineWidth(3); 
+      for (const auto& p : points) {
+        if (p.fCopy == tpc_copy) {
+          g.AddPoint(p.fZ, p.fX);
+        }
+      }
+
+      if (g.GetN() > 10) {
+        g.SetName( 
+            Form("g_%s_trkid%i_%gMeV", 
+              t->GetParticleName().Data(), t->GetTrackID(), t->GetInitKineticEne()));
+        g.SetLineColor( get_color(t->GetPDGID()) ); 
+        gtracks.emplace_back(g);
+      }
+    }
+  }
+}
+
+int process_anode_charge(const SLArEventAnode& ev_anode, SLArCfgAnode* cfg_anode) 
+{
+  int qhits_total = 0; 
+  
+  for ( const auto& itr_megatile : ev_anode.GetConstMegaTilesMap() ) {
+    int qhits_mt = 0;
+    const int& idx_megatile = itr_megatile.first;
+    const SLArEventMegatile& ev_megatile = itr_megatile.second;
+
+    if (ev_megatile.GetNChargeHits() == 0) continue;
+
+    for ( const auto& itr_tile : ev_megatile.GetConstTileMap() ) {
+      int qhits_t = 0;
+      const int& idx_tile = itr_tile.first; 
+      const SLArEventTile& ev_tile = itr_tile.second;
+
+      if (ev_tile.GetNPixelHits() == 0) continue;
+
+      for (const auto& itr_pixel : ev_tile.GetConstPixelEvents()) {
+        const int& idx_pixel = itr_pixel.first; 
+        const SLArEventChargePixel& ev_pixel = itr_pixel.second; 
+
+        for (const auto& hit : ev_pixel.GetConstHits()) {
+          qhits_t += hit.second;
+        }
+      }
+      printf("\t\tTile %i: %i charge hits\n", idx_tile, qhits_t);
+      qhits_mt += qhits_t;
+    }
+
+    printf("\tMegatile %i: %i charge hits\n", idx_megatile, qhits_mt);
+    qhits_total += qhits_mt;
+  }
+
+  return qhits_total;
 }
 
 /*
@@ -163,6 +242,9 @@ int process_event(SLArMCEvent* ev,
     const SLArEventAnode& ev_anode = anode_.second;
     int nhits = process_anode_light( 
         ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTiles.at(anode_.first), hTime);
+    int qhits = process_anode_charge(
+        ev_anode, AnodeSysCfg.at(anode_.first)
+        );
     nhits_total += nhits;
   }
   // let's read the wall modules now
@@ -202,7 +284,6 @@ void draw_colorscale(TH2* h2) {
   gPad->Update();
 }
 
-
 TCanvas* setup_canvas(const int& tpc_id) {
   TCanvas* cPhotons = new TCanvas(Form("cPhotonHits_TPC%i", tpc_id), 
       Form("Photon hits - TPC %i", tpc_id), 0, 0, 1000, 1000);
@@ -224,7 +305,7 @@ TCanvas* setup_canvas(const int& tpc_id) {
   return cPhotons;
 };
 
-void refactor_test_photons(const TString file_path) 
+void refactor_test_full_display(const TString file_path) 
 {
   TFile* mc_file = new TFile(file_path); 
   TTree* mc_tree = mc_file->Get<TTree>("EventTree"); 
@@ -333,14 +414,17 @@ void refactor_test_photons(const TString file_path)
     }
 
     // draw hit maps
+    std::vector<TGraph> gtracks; 
+
     for (const auto& anode_cfg : AnodeSysCfg) {
       const int& tpc_id = anode_cfg.first; 
-      TCanvas* c = cPhotons.at(tpc_id); 
+      TCanvas* c = cPhotons.at(tpc_id); c->cd();
 
       // get anode map
       AnodeTileMap& anode_map = h2AnodeTiles.at(tpc_id); 
       // get "frame" covering the full anode size
       TH2Poly* hframe = anode_cfg.second->GetAnodeMap(0); 
+      hframe->SetNameTitle(Form("anode_tpc%i", tpc_id), Form("anode_tpc%i", tpc_id)); 
       const int pad_nr = get_pad_number( anode_cfg.second->GetNormal() ); 
       TPad* pad = (TPad*)c->GetListOfPrimitives()->At(pad_nr-1);
       pad->cd();
@@ -349,9 +433,20 @@ void refactor_test_photons(const TString file_path)
         if (h2.second->GetEntries() > 0) {
           h2.second->GetZaxis()->SetRangeUser(0, 1.05*hit_max); 
           h2.second->SetTitle( pad->GetTitle() ); 
-          h2.second->Draw("col l same"); 
+          h2.second->Draw("col0 l same"); 
         }
       }
+      // display MC truth
+      gtracks.clear(); 
+      get_mctruth_tracks(gtracks, ev->GetPrimaries(), AnodeSysCfg.at(tpc_id)); 
+      printf("Drawing %ld tracks for TPC %i on canvas %s.%s\n", 
+          gtracks.size(), tpc_id, c->GetName(), pad->GetName());
+      for (auto& g : gtracks) {
+        g.Draw("l same"); 
+      }
+      pad->Modified();
+      pad->Update();
+
 
       // loop over the photodetector arrays and select those beloging to 
       // this TPC 
@@ -377,7 +472,8 @@ void refactor_test_photons(const TString file_path)
         TPad* pad = (TPad*)c->GetListOfPrimitives()->At(pad_nr-1);
         pad->cd();
         h2->SetTitle( pad->GetTitle() ); 
-        h2->Draw("col l"); 
+        h2->Draw("col0");
+        h2->Draw("l same"); 
       }
 
       c->Modified(); 
