@@ -30,7 +30,7 @@ class TChannelAnalyzer {
     inline void set_tile_config(const SLArCfgReadoutTile* tile_cfg) {fCfgTile = tile_cfg;}
     inline void set_tpc_id(const Int_t itpc) {fTPCID = itpc;} 
 
-    int process_channel(const Int_t& pix_bin, const SLArEventChargePixel& pix_ev, hitvarContainers_t& hitvars); 
+    int process_channel(const Int_t& pix_bin, const SLArEventChargePixel& pix_ev, hitvarContainer_t& hitvars); 
 
   private: 
     Float_t fIntegrationWindow = {}; 
@@ -46,7 +46,7 @@ class TChannelAnalyzer {
     const TVector3* fDriftDirection = {};
     const TVector3* fTPCCenterPosition = {};
 
-    int record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, hitvarContainers_t& hitvars);
+    int record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, hitvarContainer_t& hitvars);
     TVector3 get_bin_center(TH2PolyBin* bin, const TVector3& axis_x, const TVector3& axis_y);
 };
 

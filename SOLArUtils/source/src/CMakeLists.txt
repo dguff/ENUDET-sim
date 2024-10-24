@@ -20,7 +20,8 @@ add_library(SLArEveDisplay
   )
 
 target_link_libraries(SLArEveDisplay PUBLIC 
-  ${ROOT_LIBRARIES} ROOT::Geom ROOT::Gui ROOT::Eve ${Geant4_LIBRARIES})
+  G4SOLAr::SLArReadoutSystemConfig
+  ${ROOT_LIBRARIES} ROOT::Geom ROOT::ROOTVecOps ROOT::Gui ROOT::Eve ${Geant4_LIBRARIES})
 
 ROOT_GENERATE_DICTIONARY(G__SLArEveDisplay 
   ${SOLAR_UTILS_INC_DIR}/SLArEveDisplay.hh

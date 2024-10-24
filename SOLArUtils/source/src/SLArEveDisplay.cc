@@ -4,12 +4,16 @@
  * @created     : Thursday Apr 11, 2024 16:58:14 CEST
  */
 
-#include "TObject.h"
+#include <TObject.h>
+#include <TKey.h>
+#include <TClass.h>
 #include <SLArEveDisplay.hh>
 #include <SLArUnit.hpp>
-#include <cstdio>
 #include <event/SLArMCPrimaryInfo.hh>
 #include <event/SLArEventTrajectory.hh>
+
+#include <Math/EulerAngles.h>
+
 #include <TParticle.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
@@ -31,7 +35,6 @@
 #include <TSystem.h>
 
 #include <TStyle.h>
-#include <cstddef>
 
 ClassImp(display::SLArEveDisplay)
 
@@ -114,7 +117,7 @@ namespace display {
     return 0;
   }
 
-  int SLArEveDisplay::LoadTrackFile(const TString file_path, const TString tree_key) {
+  int SLArEveDisplay::LoadMCTruthFile(const TString file_path, const TString tree_key) {
     if (fMCTruthFile) {
       fMCTruthFile->Close();
       fMCTruthTree = nullptr;
@@ -124,6 +127,28 @@ namespace display {
     if (fHitTree) {
       fMCTruthTree->SetBranchAddress("MCEvent"  , &fMCEvent); 
     }
+
+    for (const auto &itr : *fMCTruthFile->GetListOfKeys()) {
+      TKey* key = static_cast<TKey*>(itr); 
+      
+      printf("obj_name: %s - obj_class: %s\n", key->GetName(), key->GetClassName()); 
+      if (strcmp(key->GetClassName(), "SLArCfgAnode") == 0) 
+      {
+        SLArCfgAnode* cfg_anode = dynamic_cast<SLArCfgAnode*>(key->ReadObj()); 
+        fCfgAnodes.insert({cfg_anode->GetTPCID(), std::unique_ptr<SLArCfgAnode>(cfg_anode)} );
+      }
+      else if ( strcmp(key->GetClassName(), "SLArCfgBaseSystem<SLArCfgSuperCellArray>") == 0) 
+      {
+        SLArCfgBaseSystem<SLArCfgSuperCellArray>* cfg_pds = 
+          dynamic_cast<SLArCfgBaseSystem<SLArCfgSuperCellArray>*>(key->ReadObj()); 
+        fCfgPDS = std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>>( cfg_pds ); 
+      }
+    }
+
+    for (const auto& cfg_anode : fCfgAnodes) {
+      printf("Anode cfg: %s\n", cfg_anode.second->GetName()); 
+    }
+    printf("PDF cfg: %s\n", fCfgPDS->GetName()); 
 
     return 0;
   }
@@ -267,10 +292,99 @@ namespace display {
     return 0;
   }
 
-  int SLArEveDisplay::ReadTracks() {
-    fMCEvent->Reset();
-    fMCTruthTree->GetEntry( fCurEvent );
+  int SLArEveDisplay::ReadMCTruth() {
+    fMCEvent->Reset(); 
+    fMCTruthTree->GetEntry( fCurEvent ); 
 
+    ReadTracks();
+
+    ReadOpHits();
+
+    return 0;
+  }
+
+  int SLArEveDisplay::ReadOpHits() {
+    const auto& ev_anodes = fMCEvent->GetEventAnode(); 
+    const auto& ev_pds = fMCEvent->GetEventSuperCellArray(); 
+
+    for (const auto& ev_wall_itr : ev_pds) {
+      const auto& idx_wall = ev_wall_itr.first;
+      const auto& ev_wall = ev_wall_itr.second;
+      if (ev_wall.GetNhits() == 0) continue;
+
+      const auto& cfg_wall = fCfgPDS->GetBaseElement(idx_wall); 
+
+      for (const auto& ev_xa_itr : ev_wall.GetConstSuperCellMap()) {
+        const auto& idx_xa = ev_xa_itr.first; 
+        const auto& ev_xa = ev_xa_itr.second;
+
+        const auto& cfg_xa = cfg_wall.GetBaseElement(idx_xa); 
+
+        int nhit = ev_xa.GetNhits();
+
+        
+        ROOT::Math::XYZVectorD pos = {cfg_xa.GetPhysX(), cfg_xa.GetPhysY(), cfg_xa.GetPhysZ() }; 
+        ROOT::Math::XYZVectorD size = {cfg_xa.GetSizeX(), cfg_xa.GetSizeY(), cfg_xa.GetSizeZ()}; 
+
+        ROOT::Math::EulerAngles rot( cfg_wall.GetPhi(), cfg_wall.GetTheta(), cfg_wall.GetPsi() ); 
+
+        auto size_rot = rot*size;
+
+
+        const auto normal = cfg_wall.GetNormal(); 
+
+        printf("XA position: (%.0f, %.0f, %.0f) - XA size: (%.0f, %.0f, %.0f) -> (%.0f, %.0f, %.0f) \n", 
+            pos.x(), pos.y(), pos.z(),
+            size.x(), size.y(), size.z(),
+            size_rot.x(), size_rot.y(), size_rot.z()
+            );
+        getchar();
+      }
+    }
+
+    for(const auto& ev_anode_itr : ev_anodes) {
+      const auto& tpc_id = ev_anode_itr.first;
+      const auto& ev_anode = ev_anode_itr.second;
+
+      auto& cfg_anode = fCfgAnodes.at(tpc_id);
+      const auto tpc_index = GetTPCindex(tpc_id);
+
+      fPhotonDetectors.push_back(
+          std::make_unique<TEveBoxSet>(
+          Form("ophit_anode_tpc%i", tpc_id),
+          Form("Anode OpHit - TPC %i", tpc_id) ) ); 
+
+      for (const auto& ev_mt_itr : ev_anode.GetConstMegaTilesMap()) {
+        const auto& idx_mt = ev_mt_itr.first;
+        const auto& ev_mt = ev_mt_itr.second;
+        if (ev_mt.GetNPhotonHits() == 0) continue;
+
+        auto& cfg_mt = cfg_anode->GetBaseElement(idx_mt);
+        for (const auto& ev_t_itr : ev_mt.GetConstTileMap()) {
+          const auto& idx_t = ev_t_itr.first;
+          const auto& ev_t = ev_t_itr.second;
+
+          if (ev_t.GetNhits() == 0) continue;
+
+          auto& cfg_t = cfg_mt.GetBaseElement(idx_t); 
+
+          int nhit = ev_t.GetNhits();
+
+          
+          ROOT::Math::XYZVectorD t_pos = {cfg_t.GetPhysX(), cfg_t.GetPhysY(), cfg_t.GetPhysZ() }; 
+          ROOT::Math::XYZVectorD& tpc_pos = fTPCs[tpc_index].fPosition;
+
+          const auto normal = cfg_anode->GetNormal(); 
+          TVector3 t_size = {cfg_t.GetSizeX(), cfg_t.GetSizeY(), cfg_t.GetSizeZ()}; 
+        }
+      }
+    }
+    
+    getchar();
+    return 1;
+  }
+
+  int SLArEveDisplay::ReadTracks() {
     const auto& primaries = fMCEvent->GetPrimaries();
 
     for (const auto& p : primaries) {
@@ -371,7 +485,10 @@ namespace display {
       //fEveManager->GetCurrentEvent()->DestroyElements();
     }
 
-    fTrackLists.clear(); 
+    fTrackLists.clear();
+
+    fPhotonDetectors.clear(); 
+
     return;
   }
 
@@ -379,6 +496,8 @@ namespace display {
     printf("display event %lld\n", fCurEvent);
 
     ResetHits(); 
+
+    ReadMCTruth(); 
 
     ReadTracks();
 
