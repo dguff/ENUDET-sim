@@ -34,9 +34,9 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr), 
-  fCmdElectronLifetime(nullptr)
+  fCmdElectronLifetime(nullptr),
 #ifdef SLAR_GDML
-  ,fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr),
+  fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr),
 #endif
   fCmdAddExtScorer(nullptr),
   fGDMLFileName("slar_export.gdml")
