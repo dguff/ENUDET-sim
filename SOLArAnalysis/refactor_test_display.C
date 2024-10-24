@@ -121,6 +121,9 @@ void get_mctruth_tracks(
     SLArCfgAnode* cfg_anode) {
   int tpc_copy = cfg_anode->GetTPCID(); 
 
+  const TVector3& axis0 = cfg_anode->GetAxis0();
+  const TVector3& axis1 = cfg_anode->GetAxis1();
+
   for (const auto& primary : primaries) {
     const auto& trajectories = primary.GetConstTrajectories(); 
     for (const auto& t : trajectories) {
@@ -130,7 +133,8 @@ void get_mctruth_tracks(
       g.SetLineWidth(3); 
       for (const auto& p : points) {
         if (p.fCopy == tpc_copy) {
-          g.AddPoint(p.fZ, p.fX);
+          TVector3 ppos(p.fX, p.fY, p.fZ);
+          g.AddPoint(axis0.Dot(ppos), axis1.Dot(ppos));
         }
       }
 
@@ -145,8 +149,11 @@ void get_mctruth_tracks(
   }
 }
 
-int process_anode_charge(const SLArEventAnode& ev_anode, SLArCfgAnode* cfg_anode) 
+int process_anode_charge(const SLArEventAnode& ev_anode, 
+    SLArCfgAnode* cfg_anode, 
+    std::vector<TH2Poly*>& h2AnodeCharge) 
 {
+  int qmax = 0; 
   int qhits_total = 0; 
   
   for ( const auto& itr_megatile : ev_anode.GetConstMegaTilesMap() ) {
@@ -156,6 +163,8 @@ int process_anode_charge(const SLArEventAnode& ev_anode, SLArCfgAnode* cfg_anode
 
     if (ev_megatile.GetNChargeHits() == 0) continue;
 
+    const SLArCfgMegaTile& cfg_megatile = cfg_anode->GetBaseElement(idx_megatile);
+
     for ( const auto& itr_tile : ev_megatile.GetConstTileMap() ) {
       int qhits_t = 0;
       const int& idx_tile = itr_tile.first; 
@@ -163,14 +172,20 @@ int process_anode_charge(const SLArEventAnode& ev_anode, SLArCfgAnode* cfg_anode
 
       if (ev_tile.GetNPixelHits() == 0) continue;
 
+      const SLArCfgReadoutTile& cfg_tile = cfg_megatile.GetBaseElement(idx_tile); 
+      TH2Poly* h2 = cfg_anode->ConstructPixHistMap(2, std::vector<int>{idx_megatile, idx_tile});
+
       for (const auto& itr_pixel : ev_tile.GetConstPixelEvents()) {
         const int& idx_pixel = itr_pixel.first; 
         const SLArEventChargePixel& ev_pixel = itr_pixel.second; 
-
+        const int& qpix = ev_pixel.GetNhits(); 
+        if (qpix > qmax) qmax = qpix;
+        h2->SetBinContent( idx_pixel, qpix ); 
         for (const auto& hit : ev_pixel.GetConstHits()) {
           qhits_t += hit.second;
         }
       }
+      h2AnodeCharge.emplace_back( std::move(h2) ); 
       printf("\t\tTile %i: %i charge hits\n", idx_tile, qhits_t);
       qhits_mt += qhits_t;
     }
@@ -179,25 +194,12 @@ int process_anode_charge(const SLArEventAnode& ev_anode, SLArCfgAnode* cfg_anode
     qhits_total += qhits_mt;
   }
 
+  for (auto& h2 : h2AnodeCharge) {
+    h2->GetZaxis()->SetRangeUser(0, qmax);
+  }
+
   return qhits_total;
 }
-
-/*
- *int process_anode_charge()
- *{
- *    if (tilevent.GetPixelHits() > 0) {
- *          auto h2t_ = AnodeSysCfg.at(tpc_id)->ConstructPixHistMap(2, std::vector<int>{_mtevent.first, _tilevent.first}); 
- *          for (const auto &p : tilevent.GetConstPixelEvents()) {
- *            //printf("\t\t\tPixel %i has %i hits\n", p.first, p.second.GetNhits());
- *            h2t_->SetBinContent( p.first, p.second.GetNhits() );
- *            //p.second.PrintHits();
- *            if (p.second.GetNhits() > qhits_max) qhits_max = p.second.GetNhits(); 
- *          }
- *          h2pix.push_back( h2t_ ); 
- *        }
- *
- *}
- */
 
 int process_pdarray(
     const SLArEventSuperCellArray& ev_pdwall, 
@@ -228,6 +230,7 @@ int process_pdarray(
 int process_event(SLArMCEvent* ev, 
     const std::map<int, SLArCfgAnode*>& AnodeSysCfg, 
     SLArCfgBaseSystem<SLArCfgSuperCellArray>* PDSSysConfig, 
+    std::map<int, std::vector<TH2Poly*>>& h2AnodeTilesCharge,
     std::map<int, AnodeTileMap>& h2AnodeTiles, 
     std::map<int, TH2Poly*>& h2PDArray, 
     TH1D* hTime)
@@ -243,7 +246,7 @@ int process_event(SLArMCEvent* ev,
     int nhits = process_anode_light( 
         ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTiles.at(anode_.first), hTime);
     int qhits = process_anode_charge(
-        ev_anode, AnodeSysCfg.at(anode_.first)
+        ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTilesCharge.at(anode_.first)
         );
     nhits_total += nhits;
   }
@@ -326,13 +329,20 @@ void refactor_test_full_display(const TString file_path)
   // let's put here the anode "tiles" instrumented with VUV-sensitive SiPMs, which 
   // are identified by a pair of indices (megatile, tile)
   std::map<int, AnodeTileMap> h2AnodeTiles;
+  std::map<int, std::vector<TH2Poly*>> h2AnodeTilesCharge; 
+
   // - - - - - - - - - - - - - - - setup canvas for event display 
   gStyle->SetOptStat(0);
   std::map<int, TCanvas*> cPhotons; 
+  std::map<int, TCanvas*> cCharge;
   for (const auto& cfg_anode : AnodeSysCfg) {
     const auto& tpc_id = cfg_anode.first;
     TCanvas* c = setup_canvas(tpc_id); 
     cPhotons.insert( {tpc_id, c} ); 
+
+    TCanvas* cq = new TCanvas(Form("cChargeTPC%i", tpc_id), Form("Anode charge - TPC %i", tpc_id), 
+        0, 0, 800, 600);
+    cCharge.insert( {tpc_id, cq} ); 
   }
 
   // fill h2PDArray with wall modules first
@@ -377,6 +387,8 @@ void refactor_test_full_display(const TString file_path)
       tile_map.insert({megatile_cfg.GetIdx(), std::move(h2)}); 
     }
     h2AnodeTiles.insert({anodeCfg_.first, tile_map}); 
+
+    h2AnodeTilesCharge.insert( {anodeCfg_.first, std::vector<TH2Poly*>()} );
   }
 
 
@@ -387,12 +399,19 @@ void refactor_test_full_display(const TString file_path)
   TTimer* timer = new TTimer("gSystem->ProcessEvents();", 50, false); 
 
   for (Long64_t iev = 0; iev < mc_tree->GetEntries(); iev++) {
-    // reset maps and clar canvas
+    // reset maps and clear canvas
     for (auto& h2 : h2PDArray) h2.second->Reset("M"); 
     for (auto & anode_tile : h2AnodeTiles) {
       for (auto& h2 : anode_tile.second) h2.second->Reset("M"); 
     }
+    for (auto & anode_tiles_vector : h2AnodeTilesCharge) {
+      for (auto* tiles : anode_tiles_vector.second) {
+        delete tiles;
+      }
+      anode_tiles_vector.second.clear();
+    }
     for (auto & canvas : cPhotons) canvas.second->Clear("D"); 
+    for (auto & canvas : cCharge ) canvas.second->Clear("D"); 
 
 
     // read new event
@@ -400,8 +419,7 @@ void refactor_test_full_display(const TString file_path)
 
     // fill hit maps
     int n_photon_hits = 
-      process_event(ev, AnodeSysCfg, PDSSysConfig, h2AnodeTiles, h2PDArray, hTime); 
-
+      process_event(ev, AnodeSysCfg, PDSSysConfig, h2AnodeTilesCharge, h2AnodeTiles, h2PDArray, hTime); 
     // get the maximum number of hits in all the maps for proper colorscale handling
     double hit_max = 0; 
     for (const auto& h2 : h2PDArray) {
@@ -478,6 +496,19 @@ void refactor_test_full_display(const TString file_path)
 
       c->Modified(); 
       c->Update(); 
+
+      TCanvas* cq = cCharge.at(tpc_id); cq->cd(); 
+      hframe->Draw("l"); 
+      auto& h2tiles = h2AnodeTilesCharge.at(tpc_id); 
+      for (auto& h2 : h2tiles) {
+        printf("Drawing tile charge %s\n", h2->GetName());
+        h2->Draw("col0 same"); 
+      }
+      for (auto& g : gtracks) {
+        g.Draw("l same"); 
+      }
+      cq->Modified(); 
+      cq->Update(); 
     }
     
 
