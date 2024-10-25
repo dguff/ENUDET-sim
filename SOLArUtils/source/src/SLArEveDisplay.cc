@@ -46,7 +46,8 @@ namespace display {
     //gStyle->SetPalette(kSunset);
     fTimer = std::make_unique<TTimer>("gSystem->ProcessEvents();", 50, kFALSE);
     fEveManager = std::unique_ptr<TEveManager>( TEveManager::Create() );
-    fPalette = std::make_unique<TEveRGBAPalette>();
+    fPaletteQHits = std::make_unique<TEveRGBAPalette>();
+    fPaletteOpHits = std::make_unique<TEveRGBAPalette>();
 
     fParticleSelector.insert( {"gammas", MCParticleSelector_t("gammas", true, 1.0, kYellow-7, 7)} ); 
     fParticleSelector.insert( {"electrons", MCParticleSelector_t("electrons", true, 1.0, kOrange+7)} ); 
@@ -90,6 +91,8 @@ namespace display {
 
   SLArEveDisplay::~SLArEveDisplay()
   { 
+    ResetHits();
+
     if (fHitFile) {
       fHitFile->Close(); 
       delete fHitFile;
@@ -135,20 +138,32 @@ namespace display {
       if (strcmp(key->GetClassName(), "SLArCfgAnode") == 0) 
       {
         SLArCfgAnode* cfg_anode = dynamic_cast<SLArCfgAnode*>(key->ReadObj()); 
-        fCfgAnodes.insert({cfg_anode->GetTPCID(), std::unique_ptr<SLArCfgAnode>(cfg_anode)} );
+        const int tpc_id = cfg_anode->GetTPCID(); 
+        fCfgAnodes.insert({tpc_id, std::unique_ptr<SLArCfgAnode>(cfg_anode)} );
+        const TString name = Form("opHit_%s", cfg_anode->GetName()); 
+        const TString titl = Form("TPC %i Anode optical hits", tpc_id);
+
+        fPhotonDetectors.emplace( tpc_id, std::make_unique<TEveBoxSet>(name, titl) );
+        fPhotonDetectors.at(tpc_id)->Reset(TEveBoxSet::kBT_AABox, false, 100);
+        printf("addbing box set with key %i\n", tpc_id);
       }
       else if ( strcmp(key->GetClassName(), "SLArCfgBaseSystem<SLArCfgSuperCellArray>") == 0) 
       {
         SLArCfgBaseSystem<SLArCfgSuperCellArray>* cfg_pds = 
           dynamic_cast<SLArCfgBaseSystem<SLArCfgSuperCellArray>*>(key->ReadObj()); 
         fCfgPDS = std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>>( cfg_pds ); 
+
+        for (const auto& wall_cfg_itr : fCfgPDS->GetConstMap()) {
+          const TString name = Form("opHit_%s", wall_cfg_itr.second.GetName()); 
+          const TString titl = Form("XA wall %i optical hits", wall_cfg_itr.first);
+          fPhotonDetectors.emplace(wall_cfg_itr.first, std::make_unique<TEveBoxSet>(name, titl));
+          fPhotonDetectors.at(wall_cfg_itr.first)->Reset(TEveBoxSet::kBT_AABox, false, 100);
+          printf("addbing box set with key %i\n", wall_cfg_itr.first);
+        }
       }
     }
 
-    for (const auto& cfg_anode : fCfgAnodes) {
-      printf("Anode cfg: %s\n", cfg_anode.second->GetName()); 
-    }
-    printf("PDF cfg: %s\n", fCfgPDS->GetName()); 
+    printf("PDS cfg: %s\n", fCfgPDS->GetName()); 
 
     return 0;
   }
@@ -205,29 +220,29 @@ namespace display {
     auto sum  = geo_tpc.fPosition + 0.5*geo_tpc.fDimension;
 
     if (diff.x() < fXmin) {
-      if (diff.x() < 0 ) fXmin = 1.1*(diff.x());
-      else               fXmin = 0.9*(diff.x());
+      if (diff.x() < 0 ) fXmin = 1.3*(diff.x());
+      else               fXmin = 0.7*(diff.x());
     } 
     if (diff.y() < fYmin) {
-      if (diff.y() < 0 ) fYmin = 1.1*(diff.y());
-      else               fYmin = 0.9*(diff.y());
+      if (diff.y() < 0 ) fYmin = 1.3*(diff.y());
+      else               fYmin = 0.7*(diff.y());
     } 
     if (diff.z() < fZmin) {
-      if (diff.z() < 0 ) fZmin = 1.1*(diff.z());
-      else               fZmin = 0.9*(diff.z());
+      if (diff.z() < 0 ) fZmin = 1.3*(diff.z());
+      else               fZmin = 0.7*(diff.z());
     } 
 
     if (sum.x() < fXmax) {
-      if (sum.x() < 0 ) fXmax = 1.1*(sum.x());
-      else              fXmax = 0.9*(sum.x());
+      if (sum.x() < 0 ) fXmax = 1.3*(sum.x());
+      else              fXmax = 0.7*(sum.x());
     } 
     if (sum.y() < fYmax) {
-      if (sum.y() < 0 ) fYmax = 1.1*(sum.y());
-      else              fYmax = 0.9*(sum.y());
+      if (sum.y() < 0 ) fYmax = 1.3*(sum.y());
+      else              fYmax = 0.7*(sum.y());
     } 
     if (sum.z() < fZmax) {
-      if (sum.z() < 0 ) fZmax = 1.1*(sum.z());
-      else              fZmax = 0.9*(sum.z());
+      if (sum.z() < 0 ) fZmax = 1.3*(sum.z());
+      else              fZmax = 0.7*(sum.z());
     } 
 
     fTPCs.push_back( std::move(geo_tpc) ); 
@@ -254,6 +269,10 @@ namespace display {
       fEveManager->AddElement( track_list.get() );
     }
 
+    for (auto& ophit_set : fPhotonDetectors) {
+      fEveManager->AddElement( ophit_set.second.get() ); 
+    }
+
     fEveManager->GetEditor(); 
 
     fEveManager->Redraw3D( false, true ); 
@@ -277,15 +296,15 @@ namespace display {
       if (fHitVars.hit_q->at(ihit) > q_max) q_max = fHitVars.hit_q->at(ihit);
     }
 
-    fPalette->SetMax(1.1*q_max); 
-    fPalette->SetMin(1500); 
+    fPaletteQHits->SetMax(1.1*q_max); 
+    fPaletteQHits->SetMin(1500); 
   
     for (auto &hitset : fHitSet) {
       hitset->RefitPlex(); 
       hitset->SetDefDepth(4.0); 
       hitset->SetDefWidth(4.0); 
       hitset->SetDefHeight(4.0); 
-      hitset->SetPalette( fPalette.get() ); 
+      hitset->SetPalette( fPaletteQHits.get() ); 
     }
 
 
@@ -307,12 +326,18 @@ namespace display {
     const auto& ev_anodes = fMCEvent->GetEventAnode(); 
     const auto& ev_pds = fMCEvent->GetEventSuperCellArray(); 
 
+    int nhit_max = 0; 
+
     for (const auto& ev_wall_itr : ev_pds) {
       const auto& idx_wall = ev_wall_itr.first;
       const auto& ev_wall = ev_wall_itr.second;
       if (ev_wall.GetNhits() == 0) continue;
 
       const auto& cfg_wall = fCfgPDS->GetBaseElement(idx_wall); 
+      const ROOT::Math::EulerAngles rot( cfg_wall.GetPhi(), cfg_wall.GetTheta(), cfg_wall.GetPsi() ); 
+      const ROOT::Math::EulerAngles rrot = rot.Inverse();
+
+      auto& hitset = fPhotonDetectors.at(idx_wall);
 
       for (const auto& ev_xa_itr : ev_wall.GetConstSuperCellMap()) {
         const auto& idx_xa = ev_xa_itr.first; 
@@ -321,25 +346,22 @@ namespace display {
         const auto& cfg_xa = cfg_wall.GetBaseElement(idx_xa); 
 
         int nhit = ev_xa.GetNhits();
+        if (nhit > nhit_max) nhit_max = nhit;
 
-        
-        ROOT::Math::XYZVectorD pos = {cfg_xa.GetPhysX(), cfg_xa.GetPhysY(), cfg_xa.GetPhysZ() }; 
-        ROOT::Math::XYZVectorD size = {cfg_xa.GetSizeX(), cfg_xa.GetSizeY(), cfg_xa.GetSizeZ()}; 
+        const ROOT::Math::XYZVectorD pos = {cfg_xa.GetPhysX(), cfg_xa.GetPhysY(), cfg_xa.GetPhysZ() }; 
+        const ROOT::Math::XYZVectorD size = {cfg_xa.GetSizeX(), cfg_xa.GetSizeY(), cfg_xa.GetSizeZ()}; 
+        ROOT::Math::XYZVectorD size_rot = rrot*size;
+        size_rot.SetXYZ( fabs(size_rot.x()), fabs(size_rot.y()), fabs(size_rot.z()) ); 
+        const ROOT::Math::XYZVectorD pos_center = pos - 0.5*size_rot;
+        printf("[%i] Adding box at (%.0f, %.0f, %.0f) with size [%.0f, %.0f, %.0f]: digi val: %i\n", idx_wall,
+            pos.x(), pos.y(), pos.z(), size_rot.x(), size_rot.y(), size_rot.z(), nhit);
 
-        ROOT::Math::EulerAngles rot( cfg_wall.GetPhi(), cfg_wall.GetTheta(), cfg_wall.GetPsi() ); 
-
-        auto size_rot = rot*size;
-
-
-        const auto normal = cfg_wall.GetNormal(); 
-
-        printf("XA position: (%.0f, %.0f, %.0f) - XA size: (%.0f, %.0f, %.0f) -> (%.0f, %.0f, %.0f) \n", 
-            pos.x(), pos.y(), pos.z(),
-            size.x(), size.y(), size.z(),
-            size_rot.x(), size_rot.y(), size_rot.z()
-            );
-        getchar();
+        hitset->AddBox(pos_center.x(), pos_center.y(), pos_center.z(), size_rot.x(), size_rot.y(), size_rot.z());
+        hitset->DigitValue( nhit );
       }
+      hitset->RefitPlex(); 
+      hitset->SetPickable(1);
+      hitset->SetAlwaysSecSelect(1);
     }
 
     for(const auto& ev_anode_itr : ev_anodes) {
@@ -349,10 +371,8 @@ namespace display {
       auto& cfg_anode = fCfgAnodes.at(tpc_id);
       const auto tpc_index = GetTPCindex(tpc_id);
 
-      fPhotonDetectors.push_back(
-          std::make_unique<TEveBoxSet>(
-          Form("ophit_anode_tpc%i", tpc_id),
-          Form("Anode OpHit - TPC %i", tpc_id) ) ); 
+      const ROOT::Math::EulerAngles rot(cfg_anode->GetPhi(), cfg_anode->GetTheta(), cfg_anode->GetPsi()); 
+      const ROOT::Math::EulerAngles rrot = rot.Inverse();
 
       for (const auto& ev_mt_itr : ev_anode.GetConstMegaTilesMap()) {
         const auto& idx_mt = ev_mt_itr.first;
@@ -360,6 +380,9 @@ namespace display {
         if (ev_mt.GetNPhotonHits() == 0) continue;
 
         auto& cfg_mt = cfg_anode->GetBaseElement(idx_mt);
+        
+        auto& hitset = fPhotonDetectors.at(tpc_id);
+
         for (const auto& ev_t_itr : ev_mt.GetConstTileMap()) {
           const auto& idx_t = ev_t_itr.first;
           const auto& ev_t = ev_t_itr.second;
@@ -369,18 +392,31 @@ namespace display {
           auto& cfg_t = cfg_mt.GetBaseElement(idx_t); 
 
           int nhit = ev_t.GetNhits();
+          if (nhit > nhit_max) nhit_max = nhit;
 
-          
-          ROOT::Math::XYZVectorD t_pos = {cfg_t.GetPhysX(), cfg_t.GetPhysY(), cfg_t.GetPhysZ() }; 
-          ROOT::Math::XYZVectorD& tpc_pos = fTPCs[tpc_index].fPosition;
-
-          const auto normal = cfg_anode->GetNormal(); 
-          TVector3 t_size = {cfg_t.GetSizeX(), cfg_t.GetSizeY(), cfg_t.GetSizeZ()}; 
+          const ROOT::Math::XYZVectorD t_pos = {cfg_t.GetPhysX(), cfg_t.GetPhysY(), cfg_t.GetPhysZ() }; 
+          const ROOT::Math::XYZVectorD& tpc_pos = fTPCs[tpc_index].fPosition;
+          const ROOT::Math::XYZVectorD t_size = {cfg_t.GetSizeX(), cfg_t.GetSizeY(), cfg_t.GetSizeZ()}; 
+          ROOT::Math::XYZVectorD size_rot = rrot*t_size;
+          size_rot.SetXYZ( fabs(size_rot.x()), fabs(size_rot.y()), fabs(size_rot.z()) ); 
+          const ROOT::Math::XYZVectorD world_pos = tpc_pos + t_pos - 0.5*size_rot;
+          printf("[%i] Adding box at (%.0f, %.0f, %.0f) with size [%.0f, %.0f, %.0f]: digi val: %i\n", tpc_id,
+              world_pos.x(), world_pos.y(), world_pos.z(), size_rot.x(), size_rot.y(), size_rot.z(), nhit);
+          size_rot *= 0.95;
+          hitset->AddBox(world_pos.x(), world_pos.y(), world_pos.z(), size_rot.x(), size_rot.y(), size_rot.z() );
+          hitset->DigitValue( nhit); 
         }
+        hitset->RefitPlex(); 
+        hitset->SetPickable(1);
+        hitset->SetAlwaysSecSelect(1);
       }
     }
     
-    getchar();
+    fPaletteOpHits->SetLimitsScaleMinMax(0, 1.2*nhit_max);
+    for (auto& ophitset_itr : fPhotonDetectors) {
+      ophitset_itr.second->SetPalette( fPaletteOpHits.get() ); 
+    }
+
     return 1;
   }
 
@@ -485,9 +521,12 @@ namespace display {
       //fEveManager->GetCurrentEvent()->DestroyElements();
     }
 
-    fTrackLists.clear();
+    for (auto& hitset_itr : fPhotonDetectors) {
+      printf("deleting ophits...\n");
+      hitset_itr.second->Reset(TEveBoxSet::kBT_AABox, false, 100);
+    }
 
-    fPhotonDetectors.clear(); 
+    fTrackLists.clear();
 
     return;
   }

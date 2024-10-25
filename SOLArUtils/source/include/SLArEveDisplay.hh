@@ -143,9 +143,10 @@ namespace display {
       std::unique_ptr<TEveManager> fEveManager = {};
       std::vector<std::unique_ptr<TEveBoxSet>> fHitSet = {};
       std::vector<std::unique_ptr<TEveTrackList>> fTrackLists = {}; 
-      std::vector<std::unique_ptr<TEveBoxSet>> fPhotonDetectors = {}; 
+      std::map<int, std::unique_ptr<TEveBoxSet>> fPhotonDetectors = {}; 
       TEveTrackPropagator* fPropagator = {};
-      std::unique_ptr<TEveRGBAPalette> fPalette = {};
+      std::unique_ptr<TEveRGBAPalette> fPaletteQHits = {};
+      std::unique_ptr<TEveRGBAPalette> fPaletteOpHits = {};
       std::vector<GeoTPC_t> fTPCs;
 
       Long64_t  fCurEvent = {};
