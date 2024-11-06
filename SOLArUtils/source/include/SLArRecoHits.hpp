@@ -8,6 +8,8 @@
 
 #define SLARRECOHITS_HPP
 
+#include <stdio.h>
+#include <assert.h>
 #include <TNamed.h>
 
 struct RecoHit_t {
@@ -32,7 +34,7 @@ struct RecoHit_t {
   }
 };
 
-struct hitvarContainers_t {
+struct hitvarContainer_t {
   std::vector<Float_t> hit_x;
   std::vector<Float_t> hit_y;
   std::vector<Float_t> hit_z; 
@@ -59,7 +61,7 @@ struct hitvarContainers_t {
   }
 };
 
-struct hitvarContainersPtr_t {
+struct hitvarContainerPtr_t {
   std::vector<Float_t>* hit_x;
   std::vector<Float_t>* hit_y;
   std::vector<Float_t>* hit_z; 
@@ -85,7 +87,7 @@ struct hitvarContainersPtr_t {
     hit_tpc->clear(); hit_tpc->reserve(500);
   }
 
-  inline hitvarContainersPtr_t() {
+  inline hitvarContainerPtr_t() {
     hit_x = new std::vector<Float_t>();
     hit_y = new std::vector<Float_t>();    
     hit_z = new std::vector<Float_t>();    
@@ -94,7 +96,7 @@ struct hitvarContainersPtr_t {
     hit_tpc = new std::vector<Int_t>();
   }
 
-  inline ~hitvarContainersPtr_t() {
+  inline ~hitvarContainerPtr_t() {
     if (hit_x) delete hit_x;
     if (hit_y) delete hit_y;
     if (hit_z) delete hit_z;
@@ -104,7 +106,53 @@ struct hitvarContainersPtr_t {
   }
 
 };
+struct OpHit_t {
+  Float_t charge = {}; 
+  Float_t time = {};
 
+  OpHit_t() { }
+
+  OpHit_t(const OpHit_t& h) {
+    charge = h.charge; 
+    time = h.time; 
+  }
+
+  void reset() {
+    charge = 0.0; 
+    time = 0.0; 
+  }
+};
+
+typedef std::array<UInt_t, 3> OpDetID_t; 
+
+struct OpDetEvent_t {
+  OpDetID_t id = {0,0,0}; 
+  std::vector<OpHit_t> hits;
+
+  OpDetEvent_t(const UInt_t idx0, const UInt_t idx1, const UInt_t idx2) :
+    id{idx0, idx1, idx2} {
+      hits.reserve(50);
+    }
+
+  OpDetEvent_t(const OpDetEvent_t& opdetev) {
+    id = opdetev.id; 
+    hits.reserve(opdetev.hits.size()); 
+    for (const auto& h : opdetev.hits) {
+      hits.emplace_back( h ); 
+    }
+  }
+  
+  void register_hit(const OpHit_t& h) {
+    hits.emplace_back( h ); 
+  }
+
+  void reset() {
+    id = {}; 
+    hits.clear();
+    hits.reserve(50);
+  }
+
+};
 
 
 

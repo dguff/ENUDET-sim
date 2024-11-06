@@ -9,7 +9,7 @@
 #include <TList.h>
 #include <TRandom3.h>
 
-int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventChargePixel& pix_ev, hitvarContainers_t& hitvars)
+int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventChargePixel& pix_ev, hitvarContainer_t& hitvars)
 {
   int nhit = 0;
   if (pix_ev.GetNhits() < 200) return nhit;
@@ -50,7 +50,7 @@ int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventCharg
   return nhit;
 }
 
-int TChannelAnalyzer::record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, hitvarContainers_t& hitvars) {
+int TChannelAnalyzer::record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, hitvarContainer_t& hitvars) {
   //create hit and reset
   RecoHit_t hit; 
   hit.time = trigger_t * fClockUnit;

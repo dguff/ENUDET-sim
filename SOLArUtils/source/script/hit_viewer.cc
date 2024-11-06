@@ -108,7 +108,7 @@ int process_file(const TString input_file_path, const TString control_file_path)
       eve_display->Configure( d.GetObj() ); 
     }
 
-    eve_display->LoadTrackFile( control_file_path, "EventTree" ); 
+    eve_display->LoadMCTruthFile( control_file_path, "EventTree" ); 
   }
 
   eve_display->MakeGUI();
