@@ -7,10 +7,16 @@
 
 include(FetchContent)
 
+set(G4CASCADE_BRANCH "main")
+if (Geant4_VERSION VERSION_GREATER_EQUAL 11.2)
+  set(G4CASCADE_BRANCH "geant4_11_2_pXX")
+  message(STATUS "CASCADE is not officially supported for Geant4 version >= 10.7. Trying to use experimental branch \"${G4CASCADE_BRANCH}\".")
+endif()
+
 FetchContent_Declare(
   G4CASCADE
   GIT_REPOSITORY "https://github.com/SoLAr-Neutrinos/CASCADE.git"
-  GIT_TAG "main"
+  GIT_TAG ${G4CASCADE_BRANCH}
 )
 
 FetchContent_MakeAvailable( G4CASCADE )
