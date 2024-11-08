@@ -26,6 +26,7 @@ option(SLAR_EXTERNAL "Build code with special external background features" OFF)
 option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
 option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
 option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
+#option(SLAR_USE_G4CASCADE "Use G4CASCADE for hadronic interactions" OFF)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -151,11 +152,11 @@ if (CLHEP_EXTERNAL)
 endif()
 
 file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
-                    ${G4SOLAR_SRC_DIR}/physics/cascade/*.cc
                     ${G4SOLAR_SRC_DIR}/event/*.cc
                     ${G4SOLAR_SRC_DIR}/config/*.cc
                     ${G4SOLAR_SRC_DIR}/material/*.cc
                     ${G4SOLAR_SRC_DIR}/physics/*.cc
+                    ${G4SOLAR_SRC_DIR}/physics/cascade/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/TPC/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
@@ -163,9 +164,9 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
 )
 
 file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/physics/cascade/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/event/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/physics/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/physics/cascade/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/config/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/material/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
@@ -178,12 +179,16 @@ if (SLAR_CRY_INTERFACE)
   include_directories(${CRY_INCLUDE_DIRS})
   file(GLOB cry_sources ${G4SOLAR_SRC_DIR}/cry/*.cc)
   file(GLOB cry_headers ${G4SOLAR_INCLUDE_DIR}/cry/*.hh)
+  list(APPEND sources ${cry_sources})
+  list(APPEND headers ${cry_headers})
 endif()
 
 if (SLAR_RADSRC_INTERFACE)
   include_directories(${RADSRC_INCLUDE_DIRS})
   file(GLOB radsrc_sources ${G4SOLAR_SRC_DIR}/radsrc/*.cc)
   file(GLOB radsrc_headers ${G4SOLAR_INCLUDE_DIR}/radsrc/*.hh)
+  list(APPEND sources ${radsrc_sources})
+  list(APPEND headers ${radsrc_headers})
 endif()
 
 add_definitions(${ROOT_CXX_FLAGS})
@@ -253,18 +258,7 @@ execute_process(
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-
-if (SLAR_CRY_INTERFACE)
-  if (SLAR_RADSRC_INTERFACE) 
-    add_executable(solar_sim solar_sim.cc 
-      ${sources} ${cry_sources} ${radsrc_sources} 
-      ${headers} ${cry_headers} ${radsrc_headers})
-  else()
-    add_executable(solar_sim solar_sim.cc ${sources} ${cry_sources} ${headers} ${cry_headers})
-  endif()
-else()
-  add_executable(solar_sim solar_sim.cc ${sources} ${headers})
-endif()
+add_executable(solar_sim solar_sim.cc ${sources} ${headers})
 
 target_link_libraries(solar_sim ${Geant4_LIBRARIES})
 target_link_libraries(solar_sim ${ROOT_LIBRARIES})
