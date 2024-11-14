@@ -68,10 +68,10 @@ SLArDetectorConstruction::SLArDetectorConstruction(
  : G4VUserDetectorConstruction(),
    fGeometryCfgFile(""), 
    fMaterialDBFile(""),
+   fExpHall(nullptr),
    fSuperCell(nullptr),
    fWorldLog(nullptr), 
-   fWorldPhys(nullptr), 
-   fCavernPhys(nullptr)
+   fWorldPhys(nullptr) 
 { 
   fGeometryCfgFile = geometry_cfg_file; 
   fMaterialDBFile  = material_db_file; 
@@ -138,18 +138,18 @@ void SLArDetectorConstruction::Init() {
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Parse carvern dimensions
-  if (d.HasMember("Cavern")) {
-    const rapidjson::Value& jcavern = d["Cavern"]; 
-    assert( jcavern.HasMember("dimensions") ); 
-    fCavernGeoPars.ReadFromJSON(jcavern["dimensions"].GetArray()); 
+  rapidjson::Value* jhall = nullptr;
+  if (d.HasMember("ExperimentalHall")) {
+    jhall = &d["ExperimentalHall"];
+  } else if (d.HasMember("Cavern")) {
+    jhall = &d["Cavern"];
+  } else if (d.HasMember("ExpHall")) {
+    jhall = &d["ExpHall"];
+  } else {
+    fprintf(stderr, "No cavern or experimental hall description found\n");
+    exit( EXIT_FAILURE ); 
   }
-  else {
-    fCavernGeoPars.RegisterGeoPar("inner_size_x", fWorldGeoPars.GetGeoPar("size_x")-1.0*CLHEP::m); 
-    fCavernGeoPars.RegisterGeoPar("inner_size_y", fWorldGeoPars.GetGeoPar("size_y")-1.0*CLHEP::m); 
-    fCavernGeoPars.RegisterGeoPar("inner_size_z", fWorldGeoPars.GetGeoPar("size_z")-1.0*CLHEP::m);
-    fCavernGeoPars.RegisterGeoPar("rock_thickness", 10*CLHEP::cm); 
-    fCavernGeoPars.RegisterGeoPar("shotcrete_thickness", 5*CLHEP::cm); 
-  }
+  InitExpHall(*jhall);
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
@@ -188,6 +188,11 @@ void SLArDetectorConstruction::Init() {
   }
 
   std::fclose(geo_cfg_file);
+}
+
+void SLArDetectorConstruction::InitExpHall(const rapidjson::Value& jexp) {
+  fExpHall = new SLArDetExpHall(); 
+  fExpHall->Init(jexp); 
 }
 
 void SLArDetectorConstruction::InitTPC(const rapidjson::Value& jtpc) {
@@ -466,7 +471,8 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   fWorldPhys
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
 
-  ConstructCavern(); 
+  ConstructExperimentalHall();
+  //ConstructCavern(); 
 
   // 2. Build and place the LAr target
   G4cout << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
@@ -821,12 +827,13 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
   G4double imp =1;
   istore->AddImportanceGeometryCell(1, *fWorldPhys);
   printf("\nCavern ----------------------------------------\n");
-  printf("fCavern PV ptr: %p\n", static_cast<void*>(fCavernPhys));
+  auto cavern_pv = fExpHall->GetModPV();
+  printf("fCavern PV ptr: %p\n", static_cast<void*>(cavern_pv));
   istore->AddImportanceGeometryCell(
-      1, *fCavernPhys, fCavernPhys->GetCopyNo()); 
-  size_t n_cavern_layers = fCavernPhys->GetLogicalVolume()->GetNoDaughters(); 
+      1, *cavern_pv, cavern_pv->GetCopyNo()); 
+  size_t n_cavern_layers = cavern_pv->GetLogicalVolume()->GetNoDaughters(); 
   for (int i = 0; i<n_cavern_layers; i++) {
-    auto vol = fCavernPhys->GetLogicalVolume()->GetDaughter(i);
+    auto vol = cavern_pv->GetLogicalVolume()->GetDaughter(i);
     auto cell = G4GeometryCell(*vol, vol->GetCopyNo()); 
     if (istore->IsKnown(cell) == false) {
       printf("Adding %s to istore with importance %g (rep nr. %i, %p)\n", 
@@ -1286,6 +1293,14 @@ void SLArDetectorConstruction::ConstructCryostatScorer() {
     ilayer++; 
   }
  
+}
+
+void SLArDetectorConstruction::ConstructExperimentalHall() {
+  fExpHall->BuildMaterials(fMaterialDBFile); 
+  fExpHall->BuildLayers( fWorldPhys ); 
+  fExpHall->GetModPV("exp_hall_pv", nullptr, G4ThreeVector(0, 0, 0), fWorldLog, false, 88800);
+
+  return;
 }
 
 void SLArDetectorConstruction::ConstructCavern() {

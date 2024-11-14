@@ -7,6 +7,7 @@
 #ifndef SLArDetectorConstruction_h
 #define SLArDetectorConstruction_h 
 
+#include "detector/Hall/SLArDetExpHall.hh"
 #include "detector/TPC/SLArDetTPC.hh"
 #include "detector/TPC/SLArDetCryostat.hh"
 #include "detector/TPC/SLArDetCathode.hh"
@@ -15,7 +16,7 @@
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/Anode/SLArDetReadoutTileAssembly.hh"
 #include "detector/Anode/SLArDetAnodeAssembly.hh"
-#include <physics/SLArLArProperties.hh>
+#include "physics/SLArLArProperties.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -114,6 +115,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
     SLArGeoInfo fCavernGeoPars; //!< Cavern volume geometry attributes
+    SLArDetExpHall* fExpHall; //!< Experimental Hall detector object
     SLArDetSuperCell* fSuperCell; //!< SuperCell detector object
     std::map<int, SLArDetSuperCellArray*> fSCArray;
     SLArDetReadoutTile* fReadoutTile; //!< ReadoutTile detector object
@@ -122,13 +124,16 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
     G4VPhysicalVolume* fWorldPhys; //!< World physical volume
-    G4VPhysicalVolume* fCavernPhys;//!< Cavern physical volume
+    G4VPhysicalVolume* fCavernPhys; //!< Cavern physical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     std::vector<G4VPhysicalVolume*> fExtScorerPV;
     G4String GetFirstChar(G4String line);
     
     //! Construct Cavern
     void ConstructCavern(); 
+    void ConstructExperimentalHall();
+    //! Parse the description of the experimental hall
+    void InitExpHall(const rapidjson::Value&);
     //! Parse the description of the supercell detector system
     void InitSuperCell(const rapidjson::Value&); 
     //! Parse the description of the SC PDS
