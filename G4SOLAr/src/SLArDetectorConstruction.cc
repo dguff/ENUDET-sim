@@ -165,7 +165,7 @@ void SLArDetectorConstruction::Init() {
 
   if (d.HasMember("Cryostat")) {
     fCryostat->BuildCryostatStructure(d["Cryostat"]);
-    G4cerr << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
+    G4cout << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
   }
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -412,7 +412,6 @@ void SLArDetectorConstruction::ConstructTarget() {
 }
 
 void SLArDetectorConstruction::ConstructCryostat() {
-
   fCryostat->BuildMaterials(fMaterialDBFile); 
   fCryostat->BuildCryostat(); 
 
@@ -421,7 +420,6 @@ void SLArDetectorConstruction::ConstructCryostat() {
       fWorldLog, 0) ; 
 
   fCryostat->SetVisAttributes(); 
-
 }
 
 void SLArDetectorConstruction::ConstructCathode() {
@@ -431,7 +429,8 @@ void SLArDetectorConstruction::ConstructCathode() {
     auto geoinfo = cathode.second->GetGeoInfo(); 
     cathode.second->GetModPV(
         "cathode_pv_"+std::to_string(cathode.first), 0, 
-        G4ThreeVector(geoinfo->GetGeoPar("pos_x"), 
+        G4ThreeVector(
+          geoinfo->GetGeoPar("pos_x"), 
           geoinfo->GetGeoPar("pos_y"), 
           geoinfo->GetGeoPar("pos_z")), 
         fDetector->GetModLV(), 0, cathode.first); 
@@ -471,17 +470,36 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   fWorldPhys
     = new G4PVPlacement(0,G4ThreeVector(),fWorldLog,"World",0,false,0);
 
+  // 2. Build and place the Experimental Hall
   ConstructExperimentalHall();
-  //ConstructCavern(); 
+  
+  // Compute the position of the TPCs including cryostat dimensions
+  const G4double target_y = fDetector->GetGeoPar("det_y"); 
+  const G4double cryostat_tk = fCryostat->GetGeoPar("cryostat_tk") + fCryostat->GetGeoPar("waffle_total_width");
 
-  // 2. Build and place the LAr target
+  // 3. Build and place the LAr target
   G4cout << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
+  G4ThreeVector target_center( 
+      fDetector->GetGeoPar("det_pos_x"), 
+      fDetector->GetGeoPar("det_pos_y"), 
+      fDetector->GetGeoPar("det_pos_z") );
+
+  G4ThreeVector hall_center = fExpHall->GetBoxCenter();
+  G4ThreeVector hall_halfsize = fExpHall->GetBoxHalfSize();
+
+  G4ThreeVector target_pos = hall_center + G4ThreeVector(0, cryostat_tk + 0.5*target_y - hall_halfsize.y(), 0);
+  G4cout << "target_center: " << target_center << G4endl;
+  G4cout << "target_halfsize: " << 0.5*target_y << G4endl;
+  G4cout << "hall_center: " << hall_center << G4endl;
+  G4cout << "cryostat thickness: " << cryostat_tk << G4endl; 
+  G4cout << "waffle thickness: " << fCryostat->GetGeoPar("waffle_total_width") << G4endl;
+  G4cout << "target_y: " << target_pos << G4endl;
+
   fDetector->SetModPV( new G4PVPlacement(0, 
-        G4ThreeVector(fDetector->GetGeoPar("det_pos_x"), 
-          fDetector->GetGeoPar("det_pos_y"), 
-          fDetector->GetGeoPar("det_pos_z")), 
+        target_pos,
         fDetector->GetModLV(), "target_lar_pv", fWorldLog, 0, 9) ); 
   
+  getchar();
   // 3. Build and place the Cryostat
   G4cout << "\nSLArDetectorConstruction: Building the Cryostat" << G4endl;
   fCryostat->SetWorldMaterial(matWorld); 

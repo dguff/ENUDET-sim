@@ -40,8 +40,6 @@ SLArCryostatLayer::SLArCryostatLayer(
   fMaterialName = material_name;
 }
 
-
-
 SLArDetCryostat::SLArDetCryostat() : 
   fMatWorld(nullptr), fMatWaffle(nullptr), fMatBrick(nullptr), 
   fWaffleUnit(nullptr), fWaffleEdgeUnit(nullptr), 
@@ -53,7 +51,6 @@ SLArDetCryostat::SLArDetCryostat() :
 SLArDetCryostat::~SLArDetCryostat()
 {
 }
-
 
 void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
   assert(jcryo.HasMember("Cryostat_structure")); 
@@ -136,6 +133,17 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
         l.first, l.second->fName.c_str(), l.second->fThickness, 
         l.second->fMaterialName.c_str());
   }
+
+  if (fBuildSupport) {
+    const G4double major_width = fGeoInfo->GetGeoPar("waffle_major_width"); 
+    const G4double minor_width = fGeoInfo->GetGeoPar("waffle_minor_width"); 
+    G4double n_brick_tk  = 0.; 
+    if (fGeoInfo->Contains("brick_thickness") && fAddNeutronBricks) {
+      n_brick_tk = fGeoInfo->GetGeoPar("brick_thickness"); 
+    }
+    const G4double unit_thickness = std::max(major_width, minor_width + n_brick_tk); 
+    fGeoInfo->RegisterGeoPar("waffle_total_width", unit_thickness); 
+  }
   return; 
 }
 
@@ -147,12 +155,12 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
   const G4double minorT_width = 0.20*minor_width; 
   const G4double tk = fGeoInfo->GetGeoPar("steel_thickness"); 
   const G4double trnv_width  = major_width-2*tk; 
+  const G4double unit_thickness = fGeoInfo->GetGeoPar("waffle_total_width");
   G4double n_brick_tk  = 0.; 
   if (fGeoInfo->Contains("brick_thickness") && fAddNeutronBricks) {
     n_brick_tk = fGeoInfo->GetGeoPar("brick_thickness"); 
   }
-  const G4double unit_thickness = std::max(major_width, minor_width + n_brick_tk); 
-  fGeoInfo->RegisterGeoPar("waffle_total_width", unit_thickness); 
+
 
   fWaffleUnit = new SLArBaseDetModule(); 
   fWaffleUnit->SetSolidVolume( new G4Box("waffle_unit_sv", 
