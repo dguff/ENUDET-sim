@@ -9,12 +9,14 @@
 
 #define SLARVERTEXTGENERATOR_HH
 
-#include <G4ThreeVector.hh>
-#include <G4RandomTools.hh>
 #include <cstdio>
-#include <rapidjson/document.h>
-#include <SLArGeoUtils.hh>
-#include <SLArUnit.hpp>
+#include "G4ThreeVector.hh"
+#include "G4Transform3D.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include "G4RandomTools.hh"
+#include "rapidjson/document.h"
+#include "SLArGeoUtils.hh"
+#include "SLArUnit.hpp"
 
 namespace gen {
   namespace time {
@@ -170,7 +172,9 @@ namespace gen {
       inline G4ThreeVector GetVertex() const {return fVertex;}
 
       inline void ShootVertex(G4ThreeVector& vertex) override {
-        vertex.set( fVertex.x(), fVertex.y(), fVertex.z() );
+        HepGeom::Point3D<G4double> vtx(fVertex.x(), fVertex.y(), fVertex.z());
+        vtx = fTransform * vtx;
+        vertex.set( vtx.x(), vtx.y(), vtx.z() );
         return;
       }
 
@@ -178,18 +182,31 @@ namespace gen {
         if ( config.HasMember("time") ) {
           fTimeGen.SourceConfiguration( config["time"] );
         }
+        if ( config.HasMember("volume") ) {
+          fReferenceVolumeName = config["volume"].GetString(); 
+
+          G4PhysicalVolumeStore* pvstore = G4PhysicalVolumeStore::GetInstance();
+          auto ref = pvstore->GetVolume(fReferenceVolumeName);
+          const auto to_global = geo::GetTransformToGlobal(ref);
+          fTransform = to_global;
+        }
         if ( !config.HasMember("xyz") ) {
           throw std::invalid_argument("point vtx gen missing mandatory \"xyz\" field\n");
         }
-        if (config["xyz"].IsArray() == false) {
-          throw std::invalid_argument("field \"xyz\" must be a rapidjson::Array\n");
+
+        const auto& jxyz = config["xyz"];
+        if (jxyz.HasMember("val") == false) {
+          throw std::invalid_argument("field \"val\" not found in \"xyz\" field\n");
         }
-        auto jxyz = config["xyz"].GetArray(); 
-        assert(jxyz.Size() == 3);
-        G4double vunit = unit::GetJSONunit(config); 
-        fVertex.setX( jxyz[0].GetDouble() * vunit ); 
-        fVertex.setY( jxyz[1].GetDouble() * vunit ); 
-        fVertex.setZ( jxyz[2].GetDouble() * vunit ); 
+        const auto& jxyz_val = jxyz["val"];
+        if (jxyz_val.IsArray() == false) {
+          throw std::invalid_argument("field \"value\" must be a rapidjson::Array\n");
+        }
+        G4double vunit = unit::GetJSONunit(jxyz);
+        assert(jxyz_val.Size() == 3);
+        fVertex.setX( jxyz_val.GetArray()[0].GetDouble() * vunit ); 
+        fVertex.setY( jxyz_val.GetArray()[1].GetDouble() * vunit ); 
+        fVertex.setZ( jxyz_val.GetArray()[2].GetDouble() * vunit ); 
         return;
       }
 
@@ -227,6 +244,8 @@ namespace gen {
 
     private: 
       G4ThreeVector fVertex;
+      G4String fReferenceVolumeName = {};
+      G4Transform3D fTransform = {};
 
   };
 
