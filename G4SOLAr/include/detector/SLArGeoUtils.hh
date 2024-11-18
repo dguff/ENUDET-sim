@@ -51,7 +51,6 @@ namespace geo {
   inline static const G4Transform3D GetTransformToGlobal(G4VPhysicalVolume* pv) {
     G4Transform3D globalTransform = G4Transform3D::Identity;
     while (pv->GetMotherLogical() != nullptr) {
-      printf("pv name: %s\n", pv->GetName().data());
       G4Transform3D localTransform(pv->GetObjectRotationValue(), pv->GetObjectTranslation());
       globalTransform = localTransform * globalTransform;
       auto mother = pv->GetMotherLogical();

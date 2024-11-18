@@ -4,17 +4,15 @@
  * @created     : venerdì nov 04, 2022 09:28:13 CET
  */
 
-#include <SLArAnalysisManager.hh>
-#include <SLArDetectorConstruction.hh>
-#include <SLArPrimaryGeneratorAction.hh>
-//#include "SLArExternalGeneratorAction.hh>
-//#include "SLArBoxSurfaceVertexGenerator.hh>
-//#include "SLArBulkVertexGenerator.hh>
-#include <SLArRunAction.hh>
-#include <SLArRun.hh>
+#include "SLArAnalysisManager.hh"
+#include "SLArSteppingAction.hh"
+#include "SLArDetectorConstruction.hh"
+#include "SLArPrimaryGeneratorAction.hh"
+#include "SLArRunAction.hh"
+#include "SLArRun.hh"
 
-#include <G4Run.hh>
-#include <G4RunManager.hh>
+#include "G4Run.hh"
+#include "G4RunManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -43,8 +41,6 @@ G4Run* SLArRunAction::GenerateRun() {
   return (new SLArRun(fSDName)); 
 }
 
-
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
@@ -56,14 +52,27 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   SLArAnaMgr->CreateFileStructure();
 
   const auto detector = (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  const auto stepping = (SLArSteppingAction*)G4RunManager::GetRunManager()->GetUserSteppingAction(); 
+
   SLArLArProperties& lar_properties = detector->GetLArProperties(); 
   lar_properties.ComputeProperties(); 
   lar_properties.PrintProperties(); 
-  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 
+  // set tranformation for step points output
+  const auto target_lar_pv = detector->GetLArTargetVolume()->GetModPV();
+  const G4ThreeVector t = target_lar_pv->GetObjectTranslation(); 
+  const G4RotationMatrix* r = target_lar_pv->GetObjectRotation();
+
+  const G4Transform3D transform(*r, t);
+  const G4Transform3D transform_w2d = transform.inverse();
+  stepping->SetPointTransformation(transform_w2d);
+
+  // dump cross sections
   for (const auto& xsec : SLArAnaMgr->GetXSecDumpVector()) {
     SLArAnaMgr->WriteCrossSection(xsec); 
   }
+  
+  G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
