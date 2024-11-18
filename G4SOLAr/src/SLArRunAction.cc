@@ -157,39 +157,12 @@ void SLArRunAction::EndOfRunAction(const G4Run* aRun)
     SLArAnaMgr->WriteCfg(gen.first.data(), gen_config.data()); 
   }
 
-
-
-  //if (SLArGen->GetGeneratorIndex() == kMarley) {
-    //SLArAnaMgr->WriteCfgFile("marley", SLArGen->GetMarleyConf().c_str()); 
-  //}
-  //if (SLArGen->GetGeneratorIndex() == kExternalGen) {
-    //auto gen = (SLArExternalGeneratorAction*)SLArGen->GetGenerator(); 
-
-    //if (dynamic_cast<SLArBoxSurfaceVertexGenerator*>( gen->GetVertexGenerator() )) {
-      //auto vtxGen = (SLArBoxSurfaceVertexGenerator*)gen->GetVertexGenerator();
-      //G4double surface = vtxGen->GetSurfaceGenerator();
-
-      //printf("surface box area is %g mm2\n", surface);
-      //SLArAnaMgr->WriteVariable("surface_generator", surface); 
-    //}
-    //else if ( dynamic_cast<SLArBulkVertexGenerator*>(gen->GetVertexGenerator()) ) {
-      //auto vtxGen = (SLArBulkVertexGenerator*)gen->GetVertexGenerator();
-      //G4double volume = vtxGen->GetCubicVolumeGenerator();
-      //G4double mass   = vtxGen->GetMassVolumeGenerator();
-
-      //printf("volume of the generator is %g mm2\n", volume);
-      //SLArAnaMgr->WriteVariable("volume_generator", volume); 
-      //SLArAnaMgr->WriteVariable("mass_generator", mass);
-
-    //} 
-
-    //for (const auto& scorer : fExtScorerLV) {
-      //auto scorer_solid = scorer->GetSolid(); 
-      //printf("scorer solid volume is %s\n", scorer_solid->GetName().data()); 
-      //SLArAnaMgr->WriteVariable("surface_scorer_"+scorer->GetName(), 
-          //slargeo::get_bounding_volume_surface(scorer_solid)); 
-    //}
-  //}
+  for (const auto& scorer : fExtScorerLV) {
+    auto scorer_solid = scorer->GetSolid(); 
+    printf("scorer solid volume is %s\n", scorer_solid->GetName().data()); 
+    SLArAnaMgr->WriteVariable("surface_scorer_"+scorer->GetName(), 
+        geo::get_bounding_volume_surface(scorer_solid)); 
+  }
 
   SLArAnaMgr->WriteCfg("git_hash", GIT_COMMIT_HASH); 
 

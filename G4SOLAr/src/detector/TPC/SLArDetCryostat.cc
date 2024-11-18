@@ -626,7 +626,7 @@ void SLArDetCryostat::BuildCryostat()
 
   // Create outer box 
   G4Box* boxOut = new G4Box("fBoxOut_solid", 
-      x_, y_, z_); 
+      x_ + 2*CLHEP::mm, y_ + 2*CLHEP::mm, z_ + 2*CLHEP::mm); 
 
   // Create inner box 
   G4Box* boxInn = new G4Box("fBoxInn_solid", 
@@ -832,7 +832,7 @@ void SLArDetCryostat::SetVisAttributes() {
   col_map.insert( std::make_pair("BoratedPolyethilene", G4Colour(0.267, 0.671, 0.22))); 
   col_map.insert( std::make_pair("Polyurethane", G4Colour(0.867, 0.871, 0.769))); 
   G4Colour stdCol(0.611, 0.847, 0.988);
-  fModLV->SetVisAttributes( G4VisAttributes(false) );
+  fModLV->SetVisAttributes( G4VisAttributes(G4Colour(0, 1, 1)) );
   for (auto &ll : fCryostatStructure) {
     auto lv = ll.second->fModule->GetModLV();
     printf("%s\n", lv->GetName().c_str());
