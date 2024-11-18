@@ -10,34 +10,31 @@
 #include <iterator>
 
 // rapidjson
-#include <rapidjson/document.h>
+#include "rapidjson/document.h"
 
 // SOLAr-sim unit utility
-#include <SLArUnit.hpp>
+#include "SLArUnit.hpp"
 
 // config
-#include <config/SLArCfgAnode.hh>
-#include <config/SLArCfgMegaTile.hh>
-#include <config/SLArCfgReadoutTile.hh>
-#include <physics/SLArElectronDrift.hh>
+#include "config/SLArCfgAnode.hh"
+#include "config/SLArCfgMegaTile.hh"
+#include "config/SLArCfgReadoutTile.hh"
+#include "physics/SLArElectronDrift.hh"
 
 // event
-#include <event/SLArMCEvent.hh>
-#include <event/SLArEventAnode.hh>
-#include <event/SLArEventMegatile.hh>
-#include <event/SLArEventTile.hh>
+#include "event/SLArMCEvent.hh"
+#include "event/SLArEventAnode.hh"
+#include "event/SLArEventMegatile.hh"
+#include "event/SLArEventTile.hh"
 
 // hits
-#include <TChannelAnalyzer.hh>
-#include <SLArRecoHits.hpp>
+#include "TChannelAnalyzer.hh"
+#include "SLArRecoHits.hpp"
 
 // root
-#include <TFile.h>
-#include <TTree.h>
-#include <TObjString.h>
-#include <TH2Poly.h>
-#include <TVector.h>
-#include <TRotation.h>
+#include "TFile.h"
+#include "TTree.h"
+#include "TObjString.h"
 
 
 void print_usage() {
@@ -170,6 +167,8 @@ int main (int argc, char *argv[]) {
   hit_tree->Branch("hit_tpc", &hitvars.hit_tpc);
 
   TChannelAnalyzer ch_analyzer; 
+  ch_analyzer.set_hit_threshold( threshold_eeV );
+  ch_analyzer.set_channel_rms( noise_rms_eeV ); 
   
   for (Long64_t entry = 0; entry < mc_tree->GetEntries(); entry++) {
     hitvars.reset(); 
@@ -191,7 +190,6 @@ int main (int argc, char *argv[]) {
       ch_analyzer.set_drift_velocity( drift_velocity );
       ch_analyzer.set_tpc_id( itpc ); 
       ch_analyzer.set_tpc_center_position( tpcCenterPos[itpc] ); 
-      ch_analyzer.set_channel_rms( noise_rms_eeV ); 
 
       const auto& mt_map = anode.GetConstMegaTilesMap();
       for (const auto& mt_itr : mt_map) {

@@ -17,6 +17,13 @@ class TChannelAnalyzer {
     TChannelAnalyzer() {}
     virtual ~TChannelAnalyzer() {}
 
+    inline UInt_t get_clock_unit() const {return fClockUnit;}
+    inline Float_t get_channel_pedestal_rms() const {return fChannelPedestalRMS;}
+    inline Float_t get_drift_velocity() const {return fDriftVelocity;}
+    inline Float_t get_integration_window() const {return fIntegrationWindow;}
+    inline Float_t get_hit_threshold() const {return fHitThreshold;}
+
+    inline void set_hit_threshold(const Float_t thr) {fHitThreshold = thr;}
     inline void set_integration_window(const Float_t win) {fIntegrationWindow = win;}
     inline void set_drift_velocity(const Float_t v) {fDriftVelocity = v;}
     inline void set_drift_direction(const TVector3& v) {fDriftDirection = &v;}
