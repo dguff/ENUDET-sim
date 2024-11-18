@@ -10,6 +10,5 @@
       {"name" : "inner_size_y", "val" : 4.5, "unit" : "m"},
       {"name" : "height_vault", "val" : 6.5, "unit" : "m"},
       {"name" : "inner_size_z", "val" : 6.0, "unit" : "m"}
-
     ]
 }
