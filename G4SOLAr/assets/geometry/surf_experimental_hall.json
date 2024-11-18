@@ -12,7 +12,7 @@
   "wall_layers" : [
     {"name" : "outer_rock", "material" : "cavern_rock", "thickness" : {"val" : 2.0, "unit" : "m"}},
     {"name" : "gen_rock", "material" : "cavern_rock", "thickness" : {"val" : 1.0, "unit" : "m"}},
-    {"name" : "shotcrete", "material" : "cavern_shotcrete", "thickness" : {"val" : 20.0, "unit" : "cm"}}
+    {"name" : "shotcrete", "material" : "cavern_shotcrete", "thickness" : {"val" : 15.0, "unit" : "cm"}}
   ],
   "dimensions" : [
     {"name" : "inner_size_x", "val" : 18946, "unit" : "mm"},
