@@ -70,18 +70,22 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
     //! Return TPC with given id
     SLArDetTPC* GetDetTPC(G4int tpcid);
-
     //! Build SuperCell object and place the SuperCells according to the given configuration
     void BuildAndPlaceSuperCells();
     //! Build the ReadoutTile object and the place the MegaTiles according to the given configuration
     void BuildAndPlaceAnode();
     //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
-    G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
+    //! Get the World's physical volume
+    inline G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
     //! Get the vector containing the SuperCell Physical Volumes
     inline std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV() {return fSuperCellsPV;}
     //! Get the vector containing the Physical Volumes of volumes set as ExtScorer
     inline std::vector<G4VPhysicalVolume*>&GetVecExtScorerPV() {return fExtScorerPV;}
+    //! Get the LAr target volume
+    inline SLArBaseDetModule* GetLArTargetVolume() {return fDetector;}
+    //! Get the LAr target volume 
+    inline const SLArBaseDetModule* GetLArTargetVolume() const {return fDetector;}
     //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
     //!  Return the material configuration file

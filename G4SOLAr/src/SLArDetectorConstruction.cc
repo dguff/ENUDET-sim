@@ -153,7 +153,7 @@ void SLArDetectorConstruction::Init() {
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
-  G4cerr << "SLArDetectorConstruction::Init TPC" << G4endl;
+  G4cout << "SLArDetectorConstruction::Init TPC" << G4endl;
   InitTPC(d["TPC"]); 
   InitCathode(d["Cathode"]);
   ConstructTarget(); 
@@ -495,11 +495,11 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   G4cout << "waffle thickness: " << fCryostat->GetGeoPar("waffle_total_width") << G4endl;
   G4cout << "target_y: " << target_pos << G4endl;
 
-  fDetector->SetModPV( new G4PVPlacement(0, 
+  fDetector->SetModPV( new G4PVPlacement(
+        0, 
         target_pos,
         fDetector->GetModLV(), "target_lar_pv", fWorldLog, 0, 9) ); 
   
-  getchar();
   // 3. Build and place the Cryostat
   G4cout << "\nSLArDetectorConstruction: Building the Cryostat" << G4endl;
   fCryostat->SetWorldMaterial(matWorld); 
@@ -755,7 +755,7 @@ void SLArDetectorConstruction::BuildAndPlaceAnode() {
     auto rot = anode->GetRotation();
 
     auto tpc = fTPC.find(anode->GetTPCID())->second; 
-    auto glb_pos = tpc->GetTPCcenter() + pos; 
+    auto glb_pos = fDetector->GetModPV()->GetTranslation() + tpc->GetTPCcenter() + pos; 
 
     printf("---- Placing Anode %i in TPC %i\n", anode_id, tpc->GetID());
     anode->GetModPV("anode"+std::to_string(anode_id), 
