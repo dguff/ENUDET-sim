@@ -16,7 +16,7 @@
       "vertex_gen" : {
         "type" : "bulk", 
         "config" : {
-          "volume" : "cavern_rock_gen"
+          "volume" : "gen_rock"
         }
       }
     }

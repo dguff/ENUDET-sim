@@ -9,6 +9,7 @@
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArUserTrackInformation.hh"
+#include "SLArDetectorConstruction.hh"
 #include "SLArAnalysisManager.hh"
 
 #include "detector/SuperCell/SLArSuperCellSD.hh"
@@ -47,10 +48,12 @@ SLArSteppingAction::~SLArSteppingAction()
 trj_point SLArSteppingAction::set_evtrj_point(const G4StepPoint* point, const int nel, const int nph) {
   trj_point step_point; 
 
-  const auto pos = point->GetPosition(); 
-  step_point.fX = pos.x(); 
-  step_point.fY = pos.y(); 
-  step_point.fZ = pos.z(); 
+  const auto& pp = point->GetPosition();
+  const HepGeom::Point3D<G4double> pos(pp.x(), pp.y(), pp.z());
+  const HepGeom::Point3D<G4double> pos_det_frame = fTransformWorld2Det * pos;
+  step_point.fX = pos_det_frame.x(); 
+  step_point.fY = pos_det_frame.y(); 
+  step_point.fZ = pos_det_frame.z(); 
   step_point.fKEnergy = point->GetKineticEnergy(); 
   step_point.fEdep = 0.; 
   const auto physicalVol = point->GetPhysicalVolume();

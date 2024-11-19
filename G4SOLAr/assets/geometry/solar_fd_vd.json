@@ -1,12 +1,6 @@
 {
-  "World" : {
-    "copyID" : 0, 
-    "dimensions" : [
-      {"name" : "size_x" , "val" : 20.0, "unit": "m"},    
-      {"name" : "size_y" , "val" : 20.0, "unit": "m"},   
-      {"name" : "size_z" , "val" : 75.0, "unit": "m"}
-    ]
-  },
+  #include "surf_experimental_hall.json"
+  ,
   #include "solar_fd_tpc_vd.json"
   ,
   #include "solar_fd_cryostat.json"

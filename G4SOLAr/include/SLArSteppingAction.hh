@@ -25,6 +25,10 @@ class SLArSteppingAction : public G4UserSteppingAction
     SLArSteppingAction(SLArEventAction*, SLArTrackingAction*);
     virtual ~SLArSteppingAction();
 
+    inline G4Transform3D& GetPointTransformation() {return fTransformWorld2Det;}
+    inline const G4Transform3D& GetPointTransformation() const {return fTransformWorld2Det;}
+
+    inline void SetPointTransformation(const G4Transform3D& t) {fTransformWorld2Det = t;}
     virtual void UserSteppingAction(const G4Step*);
 
   private:
@@ -32,6 +36,7 @@ class SLArSteppingAction : public G4UserSteppingAction
     G4OpBoundaryProcessStatus fExpectedNextStatus;
     SLArEventAction*          fEventAction;
     SLArTrackingAction*       fTrackinAction;
+    G4Transform3D             fTransformWorld2Det;
     G4int fEventNumber;
 };
 

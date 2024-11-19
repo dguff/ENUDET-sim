@@ -38,10 +38,12 @@ class SLArBaseDetModule
     virtual void       Init(const rapidjson::Value&) {}
     
     void               SetSolidVolume(G4VSolid* sol_vol);
-    G4VSolid*          GetModSV();
+    inline G4VSolid*   GetModSV() {return fModSV;}
+    inline const G4VSolid* GetModSV() const {return fModSV;}
 
     void               SetLogicVolume(G4LogicalVolume* log_vol);
-    G4LogicalVolume*   GetModLV();
+    inline G4LogicalVolume*   GetModLV() {return fModLV;}
+    inline const G4LogicalVolume* GetModLV() const {return fModLV;}
 
     void               SetRotation(G4RotationMatrix* rot);
     void               SetTranslation(G4ThreeVector* vec);
@@ -58,7 +60,8 @@ class SLArBaseDetModule
     void               ResetGeometry();
 
     void SetModPV(G4VPhysicalVolume* pv) {fModPV = pv;}
-    G4VPhysicalVolume* GetModPV();
+    inline G4VPhysicalVolume* GetModPV() {return fModPV;}
+    inline const G4VPhysicalVolume* GetModPV() const {return fModPV;}
     G4VPhysicalVolume* GetModPV(
         G4String                          name, 
         G4RotationMatrix*                 rot,

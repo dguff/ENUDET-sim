@@ -127,6 +127,7 @@ find_library(MARLEY_ROOT
 include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/material
                     ${G4SOLAR_INCLUDE_DIR}/detector
+                    ${G4SOLAR_INCLUDE_DIR}/detector/Hall
                     ${G4SOLAR_INCLUDE_DIR}/detector/TPC
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode
@@ -150,6 +151,7 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/material/*.cc
                     ${G4SOLAR_SRC_DIR}/physics/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/*.cc
+                    ${G4SOLAR_SRC_DIR}/detector/Hall/*.cc 
                     ${G4SOLAR_SRC_DIR}/detector/TPC/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/Anode/*.cc
@@ -161,6 +163,7 @@ file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/config/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/material/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/Hall/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/TPC/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode/*.hh
