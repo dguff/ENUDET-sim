@@ -1,6 +1,6 @@
 ######################################################################
 # @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
-# @file        : CMakeLists
+# @file        : CMakeLists.txt
 # @created     : Friday Apr 12, 2024 11:31:49 CEST
 ######################################################################
 
@@ -21,7 +21,8 @@ add_library(SLArEveDisplay
 
 target_link_libraries(SLArEveDisplay PUBLIC 
   G4SOLAr::SLArReadoutSystemConfig
-  ${ROOT_LIBRARIES} ROOT::Geom ROOT::GenVector ROOT::Gui ROOT::Eve ${Geant4_LIBRARIES})
+  ${ROOT_LIBRARIES} ROOT::Geom ROOT::GenVector ROOT::Gui ROOT::Eve 
+  ${Geant4_LIBRARIES} G4SOLAr::SLArMCEvent)
 
 ROOT_GENERATE_DICTIONARY(G__SLArEveDisplay 
   ${SOLAR_UTILS_INC_DIR}/SLArEveDisplay.hh
