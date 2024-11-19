@@ -4,6 +4,7 @@
  * @created     Thur Nov 10, 2022 18:26:54 CET
  */
 
+#include "physics/SLArElectronDrift.hh"
 #include <functional>
 #include "SLArAnalysisManager.hh"
 #include "SLArBacktrackerManager.hh"
@@ -11,7 +12,6 @@
 #include "event/SLArEventChargeHit.hh"
 #include "config/SLArCfgAnode.hh"
 
-#include "physics/SLArElectronDrift.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 #include "G4Poisson.hh"

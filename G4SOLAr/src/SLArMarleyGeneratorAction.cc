@@ -69,8 +69,8 @@ void SLArMarleyGeneratorAction::SetupMarleyGen()
   const auto& econfig = fConfig.ene_config; 
 
   rapidjson::Document mdoc; 
-  mdoc.SetObject(); 
-  mdoc.AddMember("seed", run_seed, mdoc.GetAllocator()); 
+  mdoc.SetObject();
+  mdoc.AddMember("seed", static_cast<uint64_t>(run_seed), mdoc.GetAllocator()); 
 
   rapidjson::Value jtarget; jtarget.SetObject(); 
   rapidjson::Value jnucl; jnucl.SetArray(); 
