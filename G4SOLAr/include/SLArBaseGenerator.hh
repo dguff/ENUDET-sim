@@ -45,6 +45,7 @@ namespace gen{
 #ifdef SLAR_RADSRC
       ,kRadSrc=8
 #endif // DEBUG
+      ,kCorsika=9 //--JM
       ,kUndefinedGen = 99
 
   };
@@ -62,6 +63,7 @@ namespace gen{
 #ifdef SLAR_RADSRC
     ,{"radsrc", EGenerator::kRadSrc}
 #endif
+    ,{"corsika", EGenerator::kCorsika}
   };
 
   static inline EGenerator GetGeneratorIndex(const G4String gen_type) {
