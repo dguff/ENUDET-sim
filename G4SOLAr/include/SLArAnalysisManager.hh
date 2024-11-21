@@ -121,6 +121,12 @@ class SLArAnalysisManager
     G4bool FakeAccess();
     void RegisterPhyicsBiasing(G4String particle_name, G4double biasing_factor);
     void RegisterXSecDump(const SLArXSecDumpSpec xsec_dump); 
+    inline void SetXSecEmin (const double emin) {fXSecEmin = emin;}
+    inline void SetXSecEmax (const double emax) {fXSecEmax = emax;}
+    inline void SetXSecNPoints (const int npoints) {fXSecNPoints = npoints;}
+    inline double GetXSEMin () const {return fXSecEmin;}
+    inline double GetXSEMax () const {return fXSecEmax;}
+    inline int GetXSNPoints () const {return fXSecNPoints;}
     inline void SetStoreTrajectoryFull(const bool store_trj_pts) {fTrajectoryFull = store_trj_pts;} 
     inline G4bool StoreTrajectoryFull() const {return fTrajectoryFull;}
 
@@ -147,6 +153,9 @@ class SLArAnalysisManager
     G4bool   fTrajectoryFull;
     std::map<G4String, G4double> fBiasing; 
     std::vector<SLArXSecDumpSpec> fXSecDump;
+    G4double fXSecEmin = 0.01;
+    G4double fXSecEmax = 20;
+    G4int fXSecNPoints = 1000;
 
     TFile* fRootFile;
     TTree* fEventTree;
