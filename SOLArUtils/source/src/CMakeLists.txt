@@ -4,6 +4,16 @@
 # @created     : Friday Apr 12, 2024 11:31:49 CEST
 ######################################################################
 
+add_library(SLArRecoHits
+  SHARED
+  ${SOLAR_UTILS_INC_DIR}/SLArRecoHits.hpp)
+target_include_directories(SLArRecoHits PUBLIC ${SOLAR_UTILS_INC_DIR})
+target_link_libraries(SLArRecoHits PUBLIC ${ROOT_LIBRARIES})
+
+root_generate_dictionary(G__SLArRecoHits
+  ${SOLAR_UTILS_INC_DIR}/SLArRecoHits.hpp
+  LINKDEF ${SOLAR_UTILS_INC_DIR}/SLArRecoHitsLinkDef.h)
+
 add_library(SLArHitConverter
   SHARED
   ${SOLAR_UTILS_SRC_DIR}/TChannelAnalyzer.cc
@@ -33,6 +43,7 @@ ROOT_GENERATE_DICTIONARY(G__SLArEveDisplay
 # Install instructions
 
 set(SOLAr_utils_libs
+  SLArRecoHits
   SLArHitConverter
   SLArEveDisplay
   )

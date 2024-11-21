@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <TNamed.h>
+#include "TNamed.h"
 
 struct RecoHit_t {
   Float_t x {};
@@ -35,11 +35,11 @@ struct RecoHit_t {
 };
 
 struct hitvarContainer_t {
-  std::vector<Float_t> hit_x;
-  std::vector<Float_t> hit_y;
-  std::vector<Float_t> hit_z; 
-  std::vector<Float_t> hit_q;
-  std::vector<Float_t> hit_qtrue;
+  std::vector<float> hit_x;
+  std::vector<float> hit_y;
+  std::vector<float> hit_z; 
+  std::vector<float> hit_q;
+  std::vector<float> hit_qtrue;
   std::vector<Int_t>   hit_tpc;
 
   void push_back(const RecoHit_t& hit) {
@@ -62,11 +62,11 @@ struct hitvarContainer_t {
 };
 
 struct hitvarContainerPtr_t {
-  std::vector<Float_t>* hit_x;
-  std::vector<Float_t>* hit_y;
-  std::vector<Float_t>* hit_z; 
-  std::vector<Float_t>* hit_q;
-  std::vector<Float_t>* hit_qtrue;
+  std::vector<float>* hit_x;
+  std::vector<float>* hit_y;
+  std::vector<float>* hit_z; 
+  std::vector<float>* hit_q;
+  std::vector<float>* hit_qtrue;
   std::vector<Int_t>  * hit_tpc;
 
   inline void push_back(const RecoHit_t& hit) {
@@ -88,11 +88,11 @@ struct hitvarContainerPtr_t {
   }
 
   inline hitvarContainerPtr_t() {
-    hit_x = new std::vector<Float_t>();
-    hit_y = new std::vector<Float_t>();    
-    hit_z = new std::vector<Float_t>();    
-    hit_q = new std::vector<Float_t>();
-    hit_qtrue = new std::vector<Float_t>();
+    hit_x = new std::vector<float>();
+    hit_y = new std::vector<float>();    
+    hit_z = new std::vector<float>();    
+    hit_q = new std::vector<float>();
+    hit_qtrue = new std::vector<float>();
     hit_tpc = new std::vector<Int_t>();
   }
 
@@ -106,6 +106,7 @@ struct hitvarContainerPtr_t {
   }
 
 };
+
 struct OpHit_t {
   Float_t charge = {}; 
   Float_t time = {};

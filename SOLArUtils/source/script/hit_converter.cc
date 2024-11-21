@@ -7,6 +7,7 @@
 // std
 #include <cstdio>
 #include <getopt.h>
+#include <vector>
 #include <iterator>
 
 // rapidjson
