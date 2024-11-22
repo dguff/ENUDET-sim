@@ -34,7 +34,8 @@ target_link_libraries(SLArEveDisplay PUBLIC
   SLArRecoHits
   ${ROOT_LIBRARIES} ROOT::Geom ROOT::GenVector ROOT::Gui ROOT::Eve 
   G4SOLAr::SLArReadoutSystemConfig
-  ${Geant4_LIBRARIES} G4SOLAr::SLArMCEvent)
+  ${Geant4_LIBRARIES} 
+  G4SOLAr::SLArMCEvent)
 
 root_generate_dictionary(G__SLArEveDisplay 
   ${SOLAR_UTILS_INC_DIR}/SLArEveDisplay.hh
@@ -60,6 +61,10 @@ set(utils_resources
   )
 
 foreach(lib IN LISTS SOLAr_utils_libs)
+  set_target_properties(${lib} PROPERTIES
+    BUILD_RPATH ${CMAKE_CURRENT_BINARY_DIR}
+    INSTALL_RPATH ${SOLAR_UTILS_LIB_DIR}
+  )
   install(TARGETS ${lib}
     LIBRARY DESTINATION        "${SOLAR_UTILS_LIB_DIR}" 
     RUNTIME DESTINATION        "${SOLAR_UTILS_LIB_DIR}")
