@@ -30,7 +30,7 @@
 
 // hits
 #include "TChannelAnalyzer.hh"
-#include "SLArRecoHits.hpp"
+#include "SLArRecoHits.hh"
 
 // root
 #include "TFile.h"
@@ -158,7 +158,7 @@ int main (int argc, char *argv[]) {
   TTree* hit_tree = new TTree("HitTree", "hit collection tree"); 
   UInt_t iev = 0; 
   Int_t itpc = 0;
-  hitvarContainer_t hitvars; 
+  reco::hitvarContainer hitvars; 
   hit_tree->Branch("iev", &iev); 
   hit_tree->Branch("hit_x", &hitvars.hit_x);
   hit_tree->Branch("hit_y", &hitvars.hit_y);

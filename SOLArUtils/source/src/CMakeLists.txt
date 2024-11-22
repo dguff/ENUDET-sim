@@ -6,12 +6,12 @@
 
 add_library(SLArRecoHits
   SHARED
-  ${SOLAR_UTILS_INC_DIR}/SLArRecoHits.hpp)
-target_include_directories(SLArRecoHits PUBLIC ${SOLAR_UTILS_INC_DIR})
-target_link_libraries(SLArRecoHits PUBLIC ${ROOT_LIBRARIES})
-
+  ${SOLAR_UTILS_SRC_DIR}/SLArRecoHits.cc
+  ${SOLAR_UTILS_INC_DIR}/SLArRecoHits.hh)
+target_link_libraries(SLArRecoHits PRIVATE ${ROOT_LIBRARIES})
 root_generate_dictionary(G__SLArRecoHits
-  ${SOLAR_UTILS_INC_DIR}/SLArRecoHits.hpp
+  ${SOLAR_UTILS_INC_DIR}/SLArRecoHits.hh
+  MODULE SLArRecoHits
   LINKDEF ${SOLAR_UTILS_INC_DIR}/SLArRecoHitsLinkDef.h)
 
 add_library(SLArHitConverter
@@ -20,6 +20,7 @@ add_library(SLArHitConverter
   ${SOLAR_UTILS_INC_DIR}/TChannelAnalyzer.hh)
 
 target_link_libraries(SLArHitConverter PUBLIC 
+  SLArRecoHits
   ${ROOT_LIBRARIES}
   Geant4::G4intercoms)
 
@@ -30,11 +31,12 @@ add_library(SLArEveDisplay
   )
 
 target_link_libraries(SLArEveDisplay PUBLIC 
-  G4SOLAr::SLArReadoutSystemConfig
+  SLArRecoHits
   ${ROOT_LIBRARIES} ROOT::Geom ROOT::GenVector ROOT::Gui ROOT::Eve 
+  G4SOLAr::SLArReadoutSystemConfig
   ${Geant4_LIBRARIES} G4SOLAr::SLArMCEvent)
 
-ROOT_GENERATE_DICTIONARY(G__SLArEveDisplay 
+root_generate_dictionary(G__SLArEveDisplay 
   ${SOLAR_UTILS_INC_DIR}/SLArEveDisplay.hh
   MODULE SLArEveDisplay
   LINKDEF ${SOLAR_UTILS_INC_DIR}/SLArEveDisplayLinkDef.h)
@@ -49,6 +51,9 @@ set(SOLAr_utils_libs
   )
 
 set(utils_resources 
+  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArRecoHits.cxx
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArRecoHits.rootmap 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArRecoHits_rdict.pcm
   ${CMAKE_CURRENT_BINARY_DIR}/G__SLArEveDisplay.cxx
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArEveDisplay.rootmap 
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArEveDisplay_rdict.pcm
@@ -56,7 +61,6 @@ set(utils_resources
 
 foreach(lib IN LISTS SOLAr_utils_libs)
   install(TARGETS ${lib}
-    #EXPORT                      G4SOLArTargets
     LIBRARY DESTINATION        "${SOLAR_UTILS_LIB_DIR}" 
     RUNTIME DESTINATION        "${SOLAR_UTILS_LIB_DIR}")
 endforeach()

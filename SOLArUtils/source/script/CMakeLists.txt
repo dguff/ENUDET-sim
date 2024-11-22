@@ -1,6 +1,6 @@
 ######################################################################
 # @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
-# @file        : CMakeLists
+# @file        : CMakeLists.txt
 # @created     : Monday Apr 08, 2024 14:11:35 CEST
 ######################################################################
 
@@ -9,7 +9,8 @@ message(STATUS "CMAKE_INSTALL_RPATH: ${CMAKE_INSTALL_RPATH}")
 
 add_executable(hit_converter hit_converter.cc)
 target_link_libraries(hit_converter PUBLIC SLArHitConverter)
-target_link_libraries(hit_converter PUBLIC
+target_link_libraries(hit_converter PRIVATE
+  SLArRecoHits
   G4SOLAr::SLArMCEvent
   G4SOLAr::SLArMCEventReadout
   G4SOLAr::SLArReadoutSystemConfig 
@@ -17,7 +18,8 @@ target_link_libraries(hit_converter PUBLIC
 
 add_executable(hit_viewer hit_viewer.cc)
 target_link_libraries(hit_viewer PUBLIC ${ROOT_LIBRARIES} ROOT::Geom)
-target_link_libraries(hit_viewer PUBLIC
+target_link_libraries(hit_viewer PRIVATE
+  SLArRecoHits
   G4SOLAr::SLArMCEvent
   G4SOLAr::SLArMCEventReadout
   G4SOLAr::SLArReadoutSystemConfig 
