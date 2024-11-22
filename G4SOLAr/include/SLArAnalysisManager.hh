@@ -23,7 +23,7 @@
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
 #include "event/SLArMCEvent.hh"
-#include "event/SLArGenRecords.hpp"
+#include "event/SLArGenRecords.hh"
 
 #include "SLArBacktrackerManager.hh"
 #include "SLArAnalysisManagerMsgr.hh"
