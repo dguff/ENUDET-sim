@@ -32,7 +32,7 @@ include(${Geant4_USE_FILE})
 
 find_package(G4SOLAr CONFIG REQUIRED)
 if(G4SOLAr_FOUND)
-  message(STATUS "G4SOLAr found: include at ${G4SOLAR_INCLUDE_DIR}")
+  message(STATUS "G4SOLAr found: libraries at ${G4SOLAR_LIB_DIR}")
   list(APPEND CMAKE_PREFIX_PATH ${G4SOLAR_EXT_DIR} ${G4SOLAR_BIN_DIR})
 endif()
 
@@ -74,7 +74,6 @@ if (CLHEP_EXTERNAL)
   include_directories(${CLHEP_EXTERNAL})
 endif()
 
-link_directories(${ROOT_LIBRARY_DIR})
 #----------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------

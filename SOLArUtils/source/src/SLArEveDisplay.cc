@@ -4,37 +4,37 @@
  * @created     : Thursday Apr 11, 2024 16:58:14 CEST
  */
 
-#include <TObject.h>
-#include <TKey.h>
-#include <TClass.h>
-#include <SLArEveDisplay.hh>
-#include <SLArUnit.hpp>
-#include <event/SLArMCPrimaryInfo.hh>
-#include <event/SLArEventTrajectory.hh>
+#include "TObject.h"
+#include "TKey.h"
+#include "TClass.h"
+#include "SLArEveDisplay.hh"
+#include "SLArUnit.hpp"
+#include "event/SLArMCPrimaryInfo.hh"
+#include "event/SLArEventTrajectory.hh"
 
-#include <Math/EulerAngles.h>
+#include "Math/EulerAngles.h"
 
-#include <TParticle.h>
-#include <TParticlePDG.h>
-#include <TDatabasePDG.h>
-#include <TGeoManager.h>
-#include <TEveTrackPropagator.h>
-#include <TEvePathMark.h>
-#include <TEveVector.h>
-#include <TEveFrameBox.h>
-#include <TEveRGBAPalette.h>
-#include <TRootBrowser.h>
-#include <TEveBrowser.h>
+#include "TParticle.h"
+#include "TParticlePDG.h"
+#include "TDatabasePDG.h"
+#include "TGeoManager.h"
+#include "TEveTrackPropagator.h"
+#include "TEvePathMark.h"
+#include "TEveVector.h"
+#include "TEveFrameBox.h"
+#include "TEveRGBAPalette.h"
+#include "TRootBrowser.h"
+#include "TEveBrowser.h"
 
-#include <TGTab.h>
-#include <TGButton.h>
-#include <TGNumberEntry.h>
-#include <TGLabel.h>
+#include "TGTab.h"
+#include "TGButton.h"
+#include "TGNumberEntry.h"
+#include "TGLabel.h"
 
-#include <TString.h>
-#include <TSystem.h>
+#include "TString.h"
+#include "TSystem.h"
 
-#include <TStyle.h>
+#include "TStyle.h"
 
 ClassImp(display::SLArEveDisplay)
 

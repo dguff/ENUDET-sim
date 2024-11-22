@@ -47,6 +47,11 @@ set(G4SOLAr_cfg_resources
   )
 
 foreach(lib IN LISTS G4SOLAr_cfg_libs)
+  set_target_properties(${lib} PROPERTIES 
+    BUILD_RPATH ${CMAKE_CURRENT_BINARY_DIR}
+    INSTALL_RPATH ${G4SOLAR_LIB_DIR}
+  )
+
   install(TARGETS ${lib}
     EXPORT                      G4SOLArTargets
     LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}" 

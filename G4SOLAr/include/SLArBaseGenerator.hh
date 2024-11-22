@@ -8,20 +8,20 @@
 
 #define SLARBASEGENERATOR_HH
 
-#include <G4String.hh>
-#include <G4IonTable.hh>
-#include <G4ParticleTable.hh>
-#include <G4SystemOfUnits.hh>
-#include <G4VUserPrimaryGeneratorAction.hh>
-#include <SLArVertextGenerator.hh>
-#include <event/SLArGenRecords.hpp>
-#include <rapidjson/document.h>
-#include <TFile.h>
-#include <TH1D.h>
-#include <TH1F.h>
-#include <TH2D.h>
-#include <TH2F.h>
-#include <TGraph.h>
+#include "G4String.hh"
+#include "G4IonTable.hh"
+#include "G4ParticleTable.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
+#include "SLArVertextGenerator.hh"
+#include "event/SLArGenRecords.hh"
+#include "rapidjson/document.h"
+#include "TFile.h"
+#include "TH1D.h"
+#include "TH1F.h"
+#include "TH2D.h"
+#include "TH2F.h"
+#include "TGraph.h"
 
 namespace gen{
 

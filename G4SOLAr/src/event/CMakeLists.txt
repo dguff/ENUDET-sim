@@ -7,16 +7,17 @@
 # SLArMCPrimaryInfo dictionary 
 add_library(SLArMCPrimaryInfo
   SHARED
-  ${G4SOLAR_SRC_DIR}/event/SLArMCPrimaryInfo.cc
-  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfo.hh
   ${G4SOLAR_SRC_DIR}/event/SLArEventTrajectory.cc
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTrajectory.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArMCPrimaryInfo.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfo.hh
   )
-target_include_directories(SLArMCPrimaryInfo 
-  PUBLIC 
-  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
+#target_include_directories(SLArMCPrimaryInfo 
+  #PUBLIC 
+  #"$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>"
+  #"$<INSTALL_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
 target_link_libraries(SLArMCPrimaryInfo PUBLIC ${ROOT_LIBRARIES})
-ROOT_GENERATE_DICTIONARY(G__SLArMCPrimaryInfo
+root_generate_dictionary(G__SLArMCPrimaryInfo
   ${G4SOLAR_INCLUDE_DIR}/event/SLArMCPrimaryInfo.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventTrajectory.hh
   MODULE SLArMCPrimaryInfo
@@ -55,9 +56,10 @@ add_library(SLArMCEventReadout
   ${G4SOLAR_SRC_DIR}/event/SLArEventSuperCellArray.cc
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCellArray.hh
   )
-target_include_directories(SLArMCEventReadout 
-  PUBLIC 
-  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
+#target_include_directories(SLArMCEventReadout 
+  #PUBLIC 
+  #"$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>"
+  #"$<INSTALL_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
 target_link_libraries(
   SLArMCEventReadout 
   PUBLIC 
@@ -84,11 +86,11 @@ add_library(SLArMCEvent
   SHARED
   ${G4SOLAR_SRC_DIR}/event/SLArMCEvent.cc
   ${G4SOLAR_INCLUDE_DIR}/event/SLArMCEvent.hh
-  ${G4SOLAR_INCLUDE_DIR}/event/SLArGenRecords.hpp
   )
-target_include_directories(SLArMCEvent 
-  PUBLIC 
-  "$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
+#target_include_directories(SLArMCEvent 
+  #PUBLIC 
+  #"$<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>"
+  #"$<INSTALL_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>")
 target_link_libraries(SLArMCEvent 
                       PUBLIC
                       ${ROOT_LIBRARIES} 
@@ -96,19 +98,33 @@ target_link_libraries(SLArMCEvent
                       SLArMCEventReadout)
 ROOT_GENERATE_DICTIONARY(G__SLArMCEvent
   ${G4SOLAR_INCLUDE_DIR}/event/SLArMCEvent.hh
-  ${G4SOLAR_INCLUDE_DIR}/event/SLArGenRecords.hpp
   MODULE SLArMCEvent
   LINKDEF
   ${G4SOLAR_INCLUDE_DIR}/event/SLArMCEventLinkDef.h
   )
 
+add_library(SLArGenRecords
+  SHARED
+  ${G4SOLAR_SRC_DIR}/event/SLArGenRecords.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArGenRecords.hh
+  ) 
+target_link_libraries(SLArGenRecords PUBLIC ${ROOT_LIBRARIES})
+root_generate_dictionary(G__SLArGenRecords
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArGenRecords.hh
+  MODULE SLArGenRecords
+  LINKDEF
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArGenRecordsLinkDef.h
+  )
+
+
 #----------------------------------------------------------------------------
 # Install instructions
 
 set(G4SOLAr_event_libs
-  SLArMCEvent
   SLArMCPrimaryInfo
   SLArMCEventReadout
+  SLArMCEvent
+  SLArGenRecords
   )
 
 set(G4SOLAr_event_resources 
@@ -123,9 +139,17 @@ set(G4SOLAr_event_resources
   ${CMAKE_CURRENT_BINARY_DIR}/G__SLArMCEventReadout.cxx 
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadout.rootmap 
   ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadout_rdict.pcm
+  #
+  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArGenRecords.cxx 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArGenRecords.rootmap 
+  ${CMAKE_CURRENT_BINARY_DIR}/libSLArGenRecords_rdict.pcm
   )
 
 foreach(lib IN LISTS G4SOLAr_event_libs)
+  set_target_properties(${lib} PROPERTIES 
+    BUILD_RPATH ${CMAKE_CURRENT_BINARY_DIR}
+    INSTALL_RPATH ${G4SOLAR_LIB_DIR}
+  )
   install(TARGETS ${lib}
     EXPORT                      G4SOLArTargets
     LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}" 

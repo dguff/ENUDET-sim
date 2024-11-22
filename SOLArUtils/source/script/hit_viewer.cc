@@ -7,22 +7,22 @@
 #include <iostream>
 #include <getopt.h>
 #include <iterator>
-#include <TFile.h>
-#include <TTree.h>
-#include <TObjString.h>
-#include <TEvePointSet.h>
-#include <TApplication.h>
-#include <TTimer.h>
-#include <TCanvas.h>
-#include <TStyle.h>
+#include "TFile.h"
+#include "TTree.h"
+#include "TObjString.h"
+#include "TEvePointSet.h"
+#include "TApplication.h"
+#include "TTimer.h"
+#include "TCanvas.h"
+#include "TStyle.h"
 
-#include <rapidjson/document.h>
-#include <rapidjson/filereadstream.h>
+#include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
 
-#include <event/SLArMCEvent.hh>
-#include <SLArUnit.hpp>
+#include "event/SLArMCEvent.hh"
+#include "SLArUnit.hpp"
 
-#include <SLArEveDisplay.hh>
+#include "SLArEveDisplay.hh"
 
 void print_usage() {
   printf("SoLAr hit_viewer: Display simulated events into hits collection\n"); 

@@ -426,24 +426,22 @@ int SLArAnalysisManager::WriteCrossSection(const SLArXSecDumpSpec xsec_dump) {
 
   auto hpStore = G4HadronicProcessStore::Instance(); 
 
-  const G4double energy_min = 0.01*CLHEP::MeV;
-  const G4double energy_max = 50.0*CLHEP::MeV;
-  const G4int n_points = 500; 
-  const G4double logMin = log10(energy_min); 
-  const G4double logMax = log10(energy_max);
-  const G4double logdE = (logMax - logMin) / (n_points-1);
-  const G4double dE = (energy_max-energy_min) / (n_points -1);
-  G4double energy[n_points];
-  G4double xsec[n_points]; 
+  
+  const G4double logMin = log10(fXSecEmin); 
+  const G4double logMax = log10(fXSecEmax);
+  const G4double logdE = (logMax - logMin) / static_cast<G4double> (fXSecNPoints-1);
+  const G4double dE = (fXSecEmax-fXSecEmin) / static_cast<G4double> (fXSecNPoints -1);
+  G4double energy[fXSecNPoints];
+  G4double xsec[fXSecNPoints]; 
 
   
 
-  for (int n=0; n<n_points; n++) {
+  for (int n=0; n<fXSecNPoints; n++) {
     if (xsec_dump.log_span) {
       energy[n] = pow(10, logMin + n*logdE); 
     }
     else {
-      energy[n] = energy_min + n*dE;
+      energy[n] = fXSecEmin + n*dE;
     }
 
     if (G4StrUtil::contains(xsec_dump.process_name, "Inelastic")){
@@ -464,7 +462,7 @@ int SLArAnalysisManager::WriteCrossSection(const SLArXSecDumpSpec xsec_dump) {
     }
   }
 
-  TGraph* gxsec = new TGraph(n_points, energy, xsec); 
+  TGraph* gxsec = new TGraph(fXSecNPoints, energy, xsec); 
   gxsec->SetNameTitle(
       Form("g_xsec_%s_%s_%s", 
         xsec_dump.particle_name.data(), 
