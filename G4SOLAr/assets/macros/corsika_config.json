@@ -3,7 +3,14 @@
     "type" : "corsika",
     "label" : "corsika_test",
     "config" : {
-      "corsika_db_dir" : "/Users/jmcelwee/Documents/NDTF/cosmics/database/"
+	"corsika_db_dir" : "/Users/jmcelwee/Documents/NDTF/cosmics/database/",
+	"corsika_det_xmin" : -4,
+	"corsika_det_xmax" : 4,
+	"corsika_det_ymin" : -4,
+	"corsika_det_ymax" : 4,
+	"corsika_gen_Emin" : 50,
+	"corsika_gen_Emax" : 100000,
+	"corsika_gen_dT"   : 0.001
     }
   }
 }

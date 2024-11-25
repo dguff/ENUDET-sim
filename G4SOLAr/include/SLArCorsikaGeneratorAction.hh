@@ -40,6 +40,10 @@ namespace gen{
     	// Read configuration file
     	struct CorsikaConfig_t {
       		G4String corsika_db_dir {};
+            G4double corsika_det_x[2] {-4., 4.};
+            G4double corsika_det_y[2] {-4., 4.};
+            G4double    corsika_E[2] {50, 10000000};
+            G4double corsika_dT = 2.;
     	};
 
 		// ----- Constructors -----

@@ -50,7 +50,28 @@ namespace gen {
   void SLArCorsikaGeneratorAction::SourceConfiguration(const rapidjson::Value &config)
   {
     assert( config.HasMember("corsika_db_dir") );
-    fConfig.corsika_db_dir = config["corsika_db_dir"].GetString();    
+    fConfig.corsika_db_dir = config["corsika_db_dir"].GetString();
+
+    // --- Detector measurements ---
+    if ( config.HasMember("corsika_det_xmin") )
+      fConfig.corsika_det_x[0] = config["corsika_det_xmin"].GetDouble();
+    if ( config.HasMember("corsika_det_xmax") )
+      fConfig.corsika_det_x[1] = config["corsika_det_xmax"].GetDouble();
+
+    if ( config.HasMember("corsika_det_ymin") )
+      fConfig.corsika_det_y[0] = config["corsika_det_ymin"].GetDouble();
+    if ( config.HasMember("corsika_det_ymax") )
+      fConfig.corsika_det_y[1] = config["corsika_det_ymax"].GetDouble();
+
+    // --- Generator information ---
+    if ( config.HasMember("corsika_gen_Emin") )
+      fConfig.corsika_E[0] = config["corsika_gen_Emin"].GetInt();
+    if ( config.HasMember("corsika_gen_Emax") )
+      fConfig.corsika_E[1] = config["corsika_gen_Emax"].GetInt();
+
+    if ( config.HasMember("corsika_gen_dT") )
+      fConfig.corsika_dT = config["corsika_gen_dT"].GetDouble();
+
   }
   // - - - - - - - - - - - - - - - - -
 
@@ -82,6 +103,14 @@ namespace gen {
     d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator());
     d.AddMember("corsika_db_dir", rapidjson::StringRef(fConfig.corsika_db_dir.data()), d.GetAllocator());
     
+    d.AddMember("corsika_det_xmin", fConfig.corsika_det_x[0], d.GetAllocator());
+    d.AddMember("corsika_det_xmax", fConfig.corsika_det_x[1], d.GetAllocator());
+    d.AddMember("corsika_det_ymin", fConfig.corsika_det_y[0], d.GetAllocator());
+    d.AddMember("corsika_det_ymax", fConfig.corsika_det_y[1], d.GetAllocator());
+    d.AddMember("corsika_gen_Emin", fConfig.corsika_E[0], d.GetAllocator());
+    d.AddMember("corsika_gen_Emax", fConfig.corsika_E[1], d.GetAllocator());
+    d.AddMember("corsika_gen_dT",   fConfig.corsika_dT, d.GetAllocator());
+
     d.Accept(writer);
     config_str = buffer.GetString();
     return config_str;
@@ -97,25 +126,22 @@ namespace gen {
   */
   void SLArCorsikaGeneratorAction::GeneratePrimaries(G4Event *ev)
   {
-    double xVals[2] = {-4.,4.};
-    double yVals[2] = {-4.,4.};
-    double EVals[2] = {50,100000};
-    double spillT = 0.001;
+
     // Read the database using the reader class 
     DBReader *corsDB = new DBReader((fConfig.corsika_db_dir+"/cosmic_db_H_50_10000000.root").c_str());
    
     //Setup a detector level to read from 
-    Detector *pdMuon = new Detector(xVals, yVals, EVals);
+    Detector *pdMuon = new Detector(fConfig.corsika_det_x, fConfig.corsika_det_y, fConfig.corsika_E);
     pdMuon->ValidateRange();
     
     // Collect primaries from the detector. Should probably put this in the function
-    std::vector<int> primary_gen = pdMuon->GetPrimaries(corsDB, 1.8E4, spillT);
+    std::vector<int> primary_gen = pdMuon->GetPrimaries(corsDB, 1.8E4, fConfig.corsika_dT);
     // Sort the vector lowest to highest in order to speed up searching (we can skip many
     // of the early events this way...
     sort(primary_gen.begin(), primary_gen.end());
   
     // Set the spill time for all EHandler objects
-    EHandler::SetSpillT(spillT);
+    EHandler::SetSpillT(fConfig.corsika_dT);
     // Create a handler for the shower
     EShower showerHandler(corsDB, pdMuon);
     //    showerHandler.CreateTree();
