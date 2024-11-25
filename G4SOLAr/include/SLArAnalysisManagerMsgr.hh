@@ -51,6 +51,9 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAString*         fCmdRegisterBacktracker;
     G4UIcmdWithAnInteger*       fCmdSetZeroSuppressionThrs;
     G4UIcmdWithADoubleAndUnit*  fCmdElectronLifetime; 
+    G4UIcmdWithADoubleAndUnit*  fCmdXSecEMin;
+    G4UIcmdWithADoubleAndUnit*  fCmdXSecEMax;
+    G4UIcmdWithAnInteger*       fCmdXSecNPoints;
 #ifdef SLAR_GDML
     G4UIcmdWithAString*         fCmdGDMLFileName  ; 
     G4UIcmdWithAString*         fCmdGDMLExport    ;

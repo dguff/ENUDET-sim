@@ -1,6 +1,6 @@
 ######################################################################
 # @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
-# @file        : CMakeLists
+# @file        : CMakeLists.txt
 # @created     : Monday Apr 08, 2024 14:11:35 CEST
 ######################################################################
 
@@ -13,16 +13,19 @@ target_link_libraries(hit_converter PUBLIC
   G4SOLAr::SLArMCEvent
   G4SOLAr::SLArMCEventReadout
   G4SOLAr::SLArReadoutSystemConfig 
+  SLArRecoHits
   )
 
 add_executable(hit_viewer hit_viewer.cc)
-target_link_libraries(hit_viewer PUBLIC ${ROOT_LIBRARIES} ROOT::Geom)
-target_link_libraries(hit_viewer PUBLIC
+target_link_libraries(hit_viewer 
+  PUBLIC SLArEveDisplay
+  PRIVATE
+  ${ROOT_LIBRARIES} ROOT::Geom
+  G4SOLAr::SLArMCPrimaryInfo
   G4SOLAr::SLArMCEvent
   G4SOLAr::SLArMCEventReadout
   G4SOLAr::SLArReadoutSystemConfig 
   )
-target_link_libraries(hit_viewer PUBLIC SLArEveDisplay)
 
 
 install(TARGETS hit_converter hit_viewer
