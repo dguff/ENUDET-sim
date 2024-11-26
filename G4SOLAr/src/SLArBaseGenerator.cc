@@ -214,7 +214,7 @@ G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) 
     // Select nadir angle
     const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
     const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
-    const double theta = 107.7*TMath::DegToRad(); 
+    const double theta = 102.5*TMath::DegToRad(); 
     const double cos_theta = cos( theta ); 
     const double sin_theta = sin( theta ); 
     const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
