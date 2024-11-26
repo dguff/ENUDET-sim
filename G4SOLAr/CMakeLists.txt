@@ -142,19 +142,6 @@ include_directories(
                     #${G4SOLAR_INCLUDE_DIR}/config
                     #${G4SOLAR_INCLUDE_DIR}/event
                     #${G4SOLAR_INCLUDE_DIR}/physics
-=======
-include_directories(${G4SOLAR_INCLUDE_DIR}
-                    ${G4SOLAR_INCLUDE_DIR}/material
-                    ${G4SOLAR_INCLUDE_DIR}/detector
-                    ${G4SOLAR_INCLUDE_DIR}/detector/Hall
-                    ${G4SOLAR_INCLUDE_DIR}/detector/TPC
-                    ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell
-                    ${G4SOLAR_INCLUDE_DIR}/detector/Anode
-                    ${G4SOLAR_INCLUDE_DIR}/config
-                    ${G4SOLAR_INCLUDE_DIR}/event
-                    ${G4SOLAR_INCLUDE_DIR}/physics
-                    ${G4SOLAR_INCLUDE_DIR}/physics/cascade
->>>>>>> main
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
                     ${RapidJSON_INCLUDE_DIR}/..
@@ -166,51 +153,6 @@ if (CLHEP_EXTERNAL)
   include_directories(${CLHEP_EXTERNAL})
 endif()
 
-<<<<<<< HEAD
-=======
-file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
-                    ${G4SOLAR_SRC_DIR}/event/*.cc
-                    ${G4SOLAR_SRC_DIR}/config/*.cc
-                    ${G4SOLAR_SRC_DIR}/material/*.cc
-                    ${G4SOLAR_SRC_DIR}/physics/*.cc
-                    ${G4SOLAR_SRC_DIR}/physics/cascade/*.cc
-                    ${G4SOLAR_SRC_DIR}/detector/*.cc
-                    ${G4SOLAR_SRC_DIR}/detector/Hall/*.cc 
-                    ${G4SOLAR_SRC_DIR}/detector/TPC/*.cc
-                    ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
-                    ${G4SOLAR_SRC_DIR}/detector/Anode/*.cc
-)
-
-file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/event/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/physics/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/physics/cascade/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/config/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/material/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/detector/Hall/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/detector/TPC/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
-                    ${G4SOLAR_INCLUDE_DIR}/detector/Anode/*.hh
-                    )
-
-if (SLAR_CRY_INTERFACE)
-  include_directories(${CRY_INCLUDE_DIRS})
-  file(GLOB cry_sources ${G4SOLAR_SRC_DIR}/cry/*.cc)
-  file(GLOB cry_headers ${G4SOLAR_INCLUDE_DIR}/cry/*.hh)
-  list(APPEND sources ${cry_sources})
-  list(APPEND headers ${cry_headers})
-endif()
-
-if (SLAR_RADSRC_INTERFACE)
-  include_directories(${RADSRC_INCLUDE_DIRS})
-  file(GLOB radsrc_sources ${G4SOLAR_SRC_DIR}/radsrc/*.cc)
-  file(GLOB radsrc_headers ${G4SOLAR_INCLUDE_DIR}/radsrc/*.hh)
-  list(APPEND sources ${radsrc_sources})
-  list(APPEND headers ${radsrc_headers})
-endif()
-
->>>>>>> main
 add_definitions(${ROOT_CXX_FLAGS})
 
 #----------------------------------------------------------------------------
