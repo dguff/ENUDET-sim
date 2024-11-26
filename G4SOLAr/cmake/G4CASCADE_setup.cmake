@@ -49,3 +49,5 @@ endforeach()
 
 file(COPY "${G4CASCADE_SOURCE_DIR}/CapGamData" DESTINATION ${G4CASCADE_DATA_DIR})
 
+configure_file(${CMAKE_CURRENT_LIST_DIR}/G4CASCADE_CMakeLists.txt.in ${G4CASCADE_SRC_DEST}/CMakeLists.txt @ONLY)
+
