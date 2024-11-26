@@ -138,8 +138,6 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
     G4VPhysicalVolume* vol = navigator->LocateGlobalPointAndSetup(localVertex);
     localMaterial = vol->GetLogicalVolume()->GetMaterial()->GetName();
-    printf("coords: [%.0f, %.0f, %.0f] mm. vol: %s - material: %s\n", 
-        localVertex.x(), localVertex.y(), localVertex.z(), vol->GetName().data(), localMaterial.data());
   } while (!fSolid->Inside(localVertex) && ++itry < maxtries && strcmp(fMaterial, localMaterial) != 0) ;
 
   G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;

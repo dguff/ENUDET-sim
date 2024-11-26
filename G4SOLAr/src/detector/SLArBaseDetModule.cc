@@ -44,21 +44,11 @@ void SLArBaseDetModule::SetSolidVolume(G4VSolid* sol_vol)
   fModSV = sol_vol;
 }
 
-G4VSolid* SLArBaseDetModule::GetModSV()
-{
-  return fModSV;
-}
-
 void SLArBaseDetModule::SetLogicVolume(G4LogicalVolume* log_vol)
 {
   fModLV = log_vol;
 }
   
-G4LogicalVolume* SLArBaseDetModule::GetModLV() 
-{
-  return fModLV;
-}
-
 G4VPhysicalVolume* SLArBaseDetModule::GetModPV(
         G4String                          name,
         G4RotationMatrix*                 rot,
@@ -80,11 +70,6 @@ G4VPhysicalVolume* SLArBaseDetModule::GetModPV(
 
   fModPV = new G4PVPlacement(fRot,fVec, 
       fModLV, fName, mlv, pMany, pCopyNo, surf_check);
-  return fModPV;
-}
-
-G4VPhysicalVolume* SLArBaseDetModule::GetModPV()
-{
   return fModPV;
 }
 

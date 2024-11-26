@@ -9,7 +9,10 @@
       "direction" : {"mode":"isotropic"}, 
       "vertex_gen" : {
         "type" : "point", 
-        "config" : {"xyz" : [-50, -30, -60], "unit" : "cm"}
+        "config" : {
+          "volume" : "TPC10",
+          "xyz" : {"val" : [15, -30, -60], "unit" : "cm"}
+        }
       }
     }
   }

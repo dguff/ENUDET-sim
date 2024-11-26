@@ -35,6 +35,9 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr), 
   fCmdElectronLifetime(nullptr),
+  fCmdXSecEMin(nullptr),
+  fCmdXSecEMax(nullptr),
+  fCmdXSecNPoints(nullptr),
 #ifdef SLAR_GDML
   fCmdGDMLFileName(nullptr), fCmdGDMLExport(nullptr),
 #endif
@@ -117,6 +120,20 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdAddExtScorer->SetGuidance("Add external scorer volume (only for EXT mode)");
   fCmdAddExtScorer->SetParameterName("scorer_pv:alias", false);
   fCmdAddExtScorer->SetGuidance("Specfiy physical volume to be used as ext scorer [pv_name]:[alias]");
+
+  fCmdXSecEMin = new G4UIcmdWithADoubleAndUnit(UIManagerPath+"setXSEmin", this);
+  fCmdXSecEMin->SetGuidance("Set Cross Section Output Minimum Energy");
+  fCmdXSecEMin->SetParameterName("Emin", false);
+  fCmdXSecEMin->SetDefaultUnit("MeV");
+
+  fCmdXSecEMax = new G4UIcmdWithADoubleAndUnit(UIManagerPath+"setXSEmax", this);
+  fCmdXSecEMax->SetGuidance("Set Cross Section Output Maximum Energy");
+  fCmdXSecEMax->SetParameterName("Emax", false);
+  fCmdXSecEMax->SetDefaultUnit("MeV");
+
+  fCmdXSecNPoints = new G4UIcmdWithAnInteger(UIManagerPath+"setXSNPoints", this);
+  fCmdXSecNPoints->SetGuidance("Set Cross Section Output Number of points");
+  fCmdXSecNPoints->SetParameterName("NPoints", false);
   
 #ifdef SLAR_GDML
   fCmdGDMLFileName = 
@@ -149,6 +166,10 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
   if (fCmdElectronLifetime)    delete fCmdElectronLifetime   ; 
   if (fCmdAddExtScorer       ) delete fCmdAddExtScorer       ; 
+  if (fCmdXSecEMin           ) delete fCmdXSecEMin           ;
+  if (fCmdXSecEMax           ) delete fCmdXSecEMax           ;
+  if (fCmdXSecNPoints        ) delete fCmdXSecNPoints        ;
+  
 #ifdef SLAR_DGML
   if (fCmdGDMLFileName  ) delete fCmdGDMLFileName  ;
   if (fCmdGDMLExport    ) delete fCmdGDMLExport    ;
@@ -272,6 +293,15 @@ void SLArAnalysisManagerMsgr::SetNewValue
     for (auto& anode_itr : SLArAnaMgr->GetEvent().GetEventAnode()) {
       anode_itr.second.SetZeroSuppressionThreshold( thrs ); 
     }
+  }
+  else if (cmd == fCmdXSecEMin) {
+    SLArAnaMgr->SetXSecEmin(fCmdXSecEMin->GetNewDoubleValue(newVal));
+  }
+  else if (cmd == fCmdXSecEMax) {
+    SLArAnaMgr->SetXSecEmax(fCmdXSecEMax->GetNewDoubleValue(newVal));
+  }
+  else if (cmd == fCmdXSecNPoints) {
+    SLArAnaMgr->SetXSecNPoints(fCmdXSecNPoints->GetNewIntValue(newVal));
   }
 #ifdef SLAR_GDML
   else if (cmd == fCmdGDMLFileName) {

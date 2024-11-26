@@ -7,37 +7,35 @@
 // std
 #include <cstdio>
 #include <getopt.h>
+#include <vector>
 #include <iterator>
 
 // rapidjson
-#include <rapidjson/document.h>
+#include "rapidjson/document.h"
 
 // SOLAr-sim unit utility
-#include <SLArUnit.hpp>
+#include "SLArUnit.hpp"
 
 // config
-#include <config/SLArCfgAnode.hh>
-#include <config/SLArCfgMegaTile.hh>
-#include <config/SLArCfgReadoutTile.hh>
-#include <physics/SLArElectronDrift.hh>
+#include "config/SLArCfgAnode.hh"
+#include "config/SLArCfgMegaTile.hh"
+#include "config/SLArCfgReadoutTile.hh"
+#include "physics/SLArElectronDrift.hh"
 
 // event
-#include <event/SLArMCEvent.hh>
-#include <event/SLArEventAnode.hh>
-#include <event/SLArEventMegatile.hh>
-#include <event/SLArEventTile.hh>
+#include "event/SLArMCEvent.hh"
+#include "event/SLArEventAnode.hh"
+#include "event/SLArEventMegatile.hh"
+#include "event/SLArEventTile.hh"
 
 // hits
-#include <TChannelAnalyzer.hh>
-#include <SLArRecoHits.hpp>
+#include "TChannelAnalyzer.hh"
+#include "SLArRecoHits.hh"
 
 // root
-#include <TFile.h>
-#include <TTree.h>
-#include <TObjString.h>
-#include <TH2Poly.h>
-#include <TVector.h>
-#include <TRotation.h>
+#include "TFile.h"
+#include "TTree.h"
+#include "TObjString.h"
 
 
 void print_usage() {
@@ -153,9 +151,6 @@ int main (int argc, char *argv[]) {
     }
   }
 
-
-
-
   Float_t drift_velocity = 1.582e-3; // mm/ns
 
   // Setup output file
@@ -163,7 +158,7 @@ int main (int argc, char *argv[]) {
   TTree* hit_tree = new TTree("HitTree", "hit collection tree"); 
   UInt_t iev = 0; 
   Int_t itpc = 0;
-  hitvarContainers_t hitvars; 
+  reco::hitvarContainer hitvars; 
   hit_tree->Branch("iev", &iev); 
   hit_tree->Branch("hit_x", &hitvars.hit_x);
   hit_tree->Branch("hit_y", &hitvars.hit_y);
@@ -173,6 +168,8 @@ int main (int argc, char *argv[]) {
   hit_tree->Branch("hit_tpc", &hitvars.hit_tpc);
 
   TChannelAnalyzer ch_analyzer; 
+  ch_analyzer.set_hit_threshold( threshold_eeV );
+  ch_analyzer.set_channel_rms( noise_rms_eeV ); 
   
   for (Long64_t entry = 0; entry < mc_tree->GetEntries(); entry++) {
     hitvars.reset(); 
@@ -181,6 +178,8 @@ int main (int argc, char *argv[]) {
     iev = mc_ev->GetEvNumber(); 
 
     const auto& anodes_map = mc_ev->GetEventAnode(); 
+    const auto& pds_map = mc_ev->GetEventSuperCellArray(); 
+
     for (const auto& anode_itr : anodes_map) {
       itpc = anode_itr.first;
       const SLArEventAnode& anode = anode_itr.second;
@@ -192,33 +191,46 @@ int main (int argc, char *argv[]) {
       ch_analyzer.set_drift_velocity( drift_velocity );
       ch_analyzer.set_tpc_id( itpc ); 
       ch_analyzer.set_tpc_center_position( tpcCenterPos[itpc] ); 
-      ch_analyzer.set_channel_rms( noise_rms_eeV ); 
 
       const auto& mt_map = anode.GetConstMegaTilesMap();
       for (const auto& mt_itr : mt_map) {
         const auto& mt = mt_itr.second;
         //std::printf("[%i] mt hits: %i\n", mt_itr.first, mt.GetNChargeHits()); 
-        if (mt.GetNChargeHits() == 0) continue;
-
-        const auto& mt_cfg = anode_cfg->GetBaseElement(mt_itr.first);
-        
-        ch_analyzer.set_megatile_config( &mt_cfg ); 
-
-        const auto& t_map = mt.GetConstTileMap(); 
-        for (const auto &t_itr : t_map) {
-          const auto& t = t_itr.second;
-          if (t.GetPixelHits() == 0) continue;
-          //printf("\t[%i]: tile hits: %g\n", t_itr.first, t.GetNPixelHits()); 
-          const auto& t_cfg = mt_cfg.GetBaseElement(t_itr.first); 
-          ch_analyzer.set_tile_config( &t_cfg ); 
-          const auto& pixels = t.GetConstPixelEvents();
-          for (const auto& pixel_itr : pixels) {
-            ch_analyzer.process_channel(pixel_itr.first, pixel_itr.second, hitvars ); 
-          } // end of loop over pixels
+        if (mt.GetNChargeHits() > 0) {
+          const auto& mt_cfg = anode_cfg->GetBaseElement(mt_itr.first);
+          ch_analyzer.set_megatile_config( &mt_cfg ); 
+          const auto& t_map = mt.GetConstTileMap(); 
+          for (const auto &t_itr : t_map) {
+            const auto& t = t_itr.second;
+            if (t.GetPixelHits() == 0) continue;
+            //printf("\t[%i]: tile hits: %g\n", t_itr.first, t.GetNPixelHits()); 
+            const auto& t_cfg = mt_cfg.GetBaseElement(t_itr.first); 
+            ch_analyzer.set_tile_config( &t_cfg ); 
+            const auto& pixels = t.GetConstPixelEvents();
+            for (const auto& pixel_itr : pixels) {
+              ch_analyzer.process_channel(pixel_itr.first, pixel_itr.second, hitvars ); 
+            } // end of loop over pixels
+          }
         } // end of loop over tiles
       } // end of loop over megatiles
     } // end of loop over anodes
+
+    for (const auto& pds_wall_itr : pds_map) {
+      const int& pds_wall_id = pds_wall_itr.first; 
+      const SLArEventSuperCellArray& pds_wall_ev = pds_wall_itr.second;
+
+      for (const auto& xa_itr : pds_wall_ev.GetConstSuperCellMap()) {
+        const int& xa_id = xa_itr.first;
+        const SLArEventSuperCell& xa_ev = xa_itr.first;
+
+
+      }
+
+    }
+
+
     hit_tree->Fill(); 
+
   } // end of loop over tree entries
 
   hit_tree->Write(); 

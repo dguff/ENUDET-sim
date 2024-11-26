@@ -52,7 +52,6 @@ SLArDetCryostat::~SLArDetCryostat()
 {
 }
 
-
 void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
   assert(jcryo.HasMember("Cryostat_structure")); 
   assert(jcryo["Cryostat_structure"].IsArray()); 
@@ -134,6 +133,17 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
         l.first, l.second->fName.c_str(), l.second->fThickness, 
         l.second->fMaterialName.c_str());
   }
+
+  if (fBuildSupport) {
+    const G4double major_width = fGeoInfo->GetGeoPar("waffle_major_width"); 
+    const G4double minor_width = fGeoInfo->GetGeoPar("waffle_minor_width"); 
+    G4double n_brick_tk  = 0.; 
+    if (fGeoInfo->Contains("brick_thickness") && fAddNeutronBricks) {
+      n_brick_tk = fGeoInfo->GetGeoPar("brick_thickness"); 
+    }
+    const G4double unit_thickness = std::max(major_width, minor_width + n_brick_tk); 
+    fGeoInfo->RegisterGeoPar("waffle_total_width", unit_thickness); 
+  }
   return; 
 }
 
@@ -145,12 +155,12 @@ void SLArDetCryostat::BuildSupportStructureUnit() {
   const G4double minorT_width = 0.20*minor_width; 
   const G4double tk = fGeoInfo->GetGeoPar("steel_thickness"); 
   const G4double trnv_width  = major_width-2*tk; 
+  const G4double unit_thickness = fGeoInfo->GetGeoPar("waffle_total_width");
   G4double n_brick_tk  = 0.; 
   if (fGeoInfo->Contains("brick_thickness") && fAddNeutronBricks) {
     n_brick_tk = fGeoInfo->GetGeoPar("brick_thickness"); 
   }
-  const G4double unit_thickness = std::max(major_width, minor_width + n_brick_tk); 
-  fGeoInfo->RegisterGeoPar("waffle_total_width", unit_thickness); 
+
 
   fWaffleUnit = new SLArBaseDetModule(); 
   fWaffleUnit->SetSolidVolume( new G4Box("waffle_unit_sv", 
@@ -616,7 +626,7 @@ void SLArDetCryostat::BuildCryostat()
 
   // Create outer box 
   G4Box* boxOut = new G4Box("fBoxOut_solid", 
-      x_ + 1*CLHEP::cm, y_ + 1*CLHEP::cm, z_ + 1*CLHEP::cm); 
+      x_ + 2*CLHEP::mm, y_ + 2*CLHEP::mm, z_ + 2*CLHEP::mm); 
 
   // Create inner box 
   G4Box* boxInn = new G4Box("fBoxInn_solid", 
@@ -822,7 +832,7 @@ void SLArDetCryostat::SetVisAttributes() {
   col_map.insert( std::make_pair("BoratedPolyethilene", G4Colour(0.267, 0.671, 0.22))); 
   col_map.insert( std::make_pair("Polyurethane", G4Colour(0.867, 0.871, 0.769))); 
   G4Colour stdCol(0.611, 0.847, 0.988);
-  fModLV->SetVisAttributes( G4VisAttributes(false) );
+  fModLV->SetVisAttributes( G4VisAttributes(G4Colour(0, 1, 1)) );
   for (auto &ll : fCryostatStructure) {
     auto lv = ll.second->fModule->GetModLV();
     printf("%s\n", lv->GetName().c_str());

@@ -8,15 +8,22 @@
 
 #define TCHANNELANALYZER_HH
 
-#include <event/SLArEventChargePixel.hh>
-#include <config/SLArCfgAnode.hh>
-#include <SLArRecoHits.hpp>
+#include "event/SLArEventChargePixel.hh"
+#include "config/SLArCfgAnode.hh"
+#include "SLArRecoHits.hh"
 
 class TChannelAnalyzer {
   public: 
     TChannelAnalyzer() {}
     virtual ~TChannelAnalyzer() {}
 
+    inline UInt_t get_clock_unit() const {return fClockUnit;}
+    inline Float_t get_channel_pedestal_rms() const {return fChannelPedestalRMS;}
+    inline Float_t get_drift_velocity() const {return fDriftVelocity;}
+    inline Float_t get_integration_window() const {return fIntegrationWindow;}
+    inline Float_t get_hit_threshold() const {return fHitThreshold;}
+
+    inline void set_hit_threshold(const Float_t thr) {fHitThreshold = thr;}
     inline void set_integration_window(const Float_t win) {fIntegrationWindow = win;}
     inline void set_drift_velocity(const Float_t v) {fDriftVelocity = v;}
     inline void set_drift_direction(const TVector3& v) {fDriftDirection = &v;}
@@ -30,7 +37,7 @@ class TChannelAnalyzer {
     inline void set_tile_config(const SLArCfgReadoutTile* tile_cfg) {fCfgTile = tile_cfg;}
     inline void set_tpc_id(const Int_t itpc) {fTPCID = itpc;} 
 
-    int process_channel(const Int_t& pix_bin, const SLArEventChargePixel& pix_ev, hitvarContainers_t& hitvars); 
+    int process_channel(const Int_t& pix_bin, const SLArEventChargePixel& pix_ev, reco::hitvarContainer& hitvars); 
 
   private: 
     Float_t fIntegrationWindow = {}; 
@@ -46,7 +53,7 @@ class TChannelAnalyzer {
     const TVector3* fDriftDirection = {};
     const TVector3* fTPCCenterPosition = {};
 
-    int record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, hitvarContainers_t& hitvars);
+    int record_hit(const Int_t& pix_bin, const UInt_t& q, const UInt_t& trigger_t, reco::hitvarContainer& hitvars);
     TVector3 get_bin_center(TH2PolyBin* bin, const TVector3& axis_x, const TVector3& axis_y);
 };
 

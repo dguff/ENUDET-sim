@@ -16,7 +16,7 @@
         "vertex_gen" : {
           "type" : "point", 
           "config" : {
-            "xyz" : [0, 15, 35], "unit" : "cm",
+            "xyz" : {"val" : [0, 15, 35], "unit" : "cm"},
             "time" : {"mode" : "fixed", "event_time" : {"val" : 4.0, "unit" : "ns"}}
           }
         }
@@ -33,7 +33,7 @@
         "direction" : {"mode" : "isotropic"},
         "vertex_gen" : {
           "type" : "point", 
-          "config" : {"xyz" : [-50, -30, -60], "unit" : "cm"}
+          "config" : {"xyz" : {"val" : [-50, -30, -60], "unit" : "cm"} }
         }
       }
     }, 

@@ -46,9 +46,7 @@ SLArCfgAnode::SLArPixIdx SLArCfgAnode::GetPixelBinIndex(const double& x0, const 
   int ibin = fAnodeLevelsMap.at(0)->FindBin(x0, x1); 
 
   if (ibin < 0) return pidx;
-  //SLArCfgMegaTile& megatile = GetBaseElementByBin(ibin);
   SLArCfgMegaTile& megatile = GetBaseElement(ibin-1);
-  //if (megatile) {
   TVector3 mt_pos = TVector3(megatile.GetPhysX(), megatile.GetPhysY(), megatile.GetPhysZ()); 
   //printf("megatile_pos: [%g, %g, %g] mm\n", 
   //mt_pos[0], mt_pos[1], mt_pos[2]); 

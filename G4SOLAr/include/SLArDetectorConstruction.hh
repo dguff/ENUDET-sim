@@ -7,6 +7,7 @@
 #ifndef SLArDetectorConstruction_h
 #define SLArDetectorConstruction_h 
 
+#include "detector/Hall/SLArDetExpHall.hh"
 #include "detector/TPC/SLArDetTPC.hh"
 #include "detector/TPC/SLArDetCryostat.hh"
 #include "detector/TPC/SLArDetCathode.hh"
@@ -15,7 +16,7 @@
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/Anode/SLArDetReadoutTileAssembly.hh"
 #include "detector/Anode/SLArDetAnodeAssembly.hh"
-#include <physics/SLArLArProperties.hh>
+#include "physics/SLArLArProperties.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 
@@ -69,18 +70,22 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
     //! Return TPC with given id
     SLArDetTPC* GetDetTPC(G4int tpcid);
-
     //! Build SuperCell object and place the SuperCells according to the given configuration
     void BuildAndPlaceSuperCells();
     //! Build the ReadoutTile object and the place the MegaTiles according to the given configuration
     void BuildAndPlaceAnode();
     //! Get the World's logical volume
     G4LogicalVolume*                GetLogicWorld();
-    G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
+    //! Get the World's physical volume
+    inline G4VPhysicalVolume*              GetPhysicalWorld() {return fWorldPhys;} 
     //! Get the vector containing the SuperCell Physical Volumes
     inline std::vector<G4VPhysicalVolume*>&GetVecSuperCellPV() {return fSuperCellsPV;}
     //! Get the vector containing the Physical Volumes of volumes set as ExtScorer
     inline std::vector<G4VPhysicalVolume*>&GetVecExtScorerPV() {return fExtScorerPV;}
+    //! Get the LAr target volume
+    inline SLArBaseDetModule* GetLArTargetVolume() {return fDetector;}
+    //! Get the LAr target volume 
+    inline const SLArBaseDetModule* GetLArTargetVolume() const {return fDetector;}
     //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
     //!  Return the material configuration file
@@ -114,6 +119,7 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
     SLArGeoInfo fCavernGeoPars; //!< Cavern volume geometry attributes
+    SLArDetExpHall* fExpHall; //!< Experimental Hall detector object
     SLArDetSuperCell* fSuperCell; //!< SuperCell detector object
     std::map<int, SLArDetSuperCellArray*> fSCArray;
     SLArDetReadoutTile* fReadoutTile; //!< ReadoutTile detector object
@@ -122,13 +128,14 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     G4LogicalVolume* fWorldLog; //!< World logical volume
     G4VPhysicalVolume* fWorldPhys; //!< World physical volume
-    G4VPhysicalVolume* fCavernPhys;//!< Cavern physical volume
     std::vector<G4VPhysicalVolume*> fSuperCellsPV;
     std::vector<G4VPhysicalVolume*> fExtScorerPV;
     G4String GetFirstChar(G4String line);
     
-    //! Construct Cavern
-    void ConstructCavern(); 
+    //! Construct Experimental Hall
+    void ConstructExperimentalHall();
+    //! Parse the description of the experimental hall
+    void InitExpHall(const rapidjson::Value&);
     //! Parse the description of the supercell detector system
     void InitSuperCell(const rapidjson::Value&); 
     //! Parse the description of the SC PDS

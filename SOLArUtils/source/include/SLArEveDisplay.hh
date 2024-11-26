@@ -8,32 +8,39 @@
 
 #define SLAREVEDISPLAY_HH
 
-#include <RtypesCore.h>
 #include <cstddef>
 #include <iostream>
-#include <TFile.h>
-#include <TTree.h>
+#include "TFile.h"
+#include "TTree.h"
 
-#include <TGLabel.h>
-#include <TGNumberEntry.h>
-#include <TEveManager.h>
-#include <TEveBoxSet.h>
-#include <TEveManager.h>
-#include <TEveEventManager.h>
-#include <TEveViewer.h>
-#include <TEveFrameBox.h>
-#include <TEveTrack.h>
-#include <Math/Vector3D.h>
-#include <TTimer.h>
+#include "TGLabel.h"
+#include "TGNumberEntry.h"
+#include "TEveManager.h"
+#include "TEveBoxSet.h"
+#include "TEveManager.h"
+#include "TEveEventManager.h"
+#include "TEveViewer.h"
+#include "TEveFrameBox.h"
+#include "TEveTrack.h"
+#include "Math/Vector3D.h"
+#include "TTimer.h"
 
-#include <memory>
-#include <rapidjson/document.h>
+#include "memory"
+#include "rapidjson/document.h"
 
-#include <event/SLArMCEvent.hh>
-#include <SLArRecoHits.hpp>
+#include "event/SLArMCEvent.hh"
+#include "SLArRecoHits.hh"
+
+#include "config/SLArCfgAnode.hh"
+#include "config/SLArCfgSuperCellArray.hh"
+#include "config/SLArCfgBaseSystem.hh"
 
 namespace display {
 
+  /**
+   * @class GeoTPC_t
+   * @brief Basic geometry attributes of TPC volume
+   */
   struct GeoTPC_t {
     std::unique_ptr<TEveFrameBox> fVolume;
     ROOT::Math::XYZVectorD fPosition = {};
@@ -97,12 +104,14 @@ namespace display {
       ~SLArEveDisplay();
 
       int LoadHitFile(const TString file_path, const TString tree_key); 
-      int LoadTrackFile(const TString file_path, const TString tree_key);
+      int LoadMCTruthFile(const TString file_path, const TString tree_key);
 
       void Configure(const rapidjson::Value& config); 
       int  MakeGUI(); 
       int  ReadHits(); 
+      int  ReadMCTruth();
       int  ReadTracks();
+      int  ReadOpHits();
       void ResetHits();  
       int  ReDraw(); 
       void NextEvent();
@@ -125,14 +134,18 @@ namespace display {
       TTree* fHitTree = {}; 
       TFile* fMCTruthFile = {};
       TTree* fMCTruthTree = {};
-      hitvarContainersPtr_t fHitVars = {};
+      reco::hitvarContainerPtr fHitVars = {};
       SLArMCEvent* fMCEvent = {};
+      std::map<int, std::unique_ptr<SLArCfgAnode>> fCfgAnodes = {}; 
+      std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>> fCfgPDS = {}; 
       std::unique_ptr<TTimer> fTimer = {};
       std::unique_ptr<TEveManager> fEveManager = {};
       std::vector<std::unique_ptr<TEveBoxSet>> fHitSet = {};
       std::vector<std::unique_ptr<TEveTrackList>> fTrackLists = {}; 
+      std::map<int, std::unique_ptr<TEveBoxSet>> fPhotonDetectors = {}; 
       TEveTrackPropagator* fPropagator = {};
-      std::unique_ptr<TEveRGBAPalette> fPalette = {};
+      std::unique_ptr<TEveRGBAPalette> fPaletteQHits = {};
+      std::unique_ptr<TEveRGBAPalette> fPaletteOpHits = {};
       std::vector<GeoTPC_t> fTPCs;
 
       Long64_t  fCurEvent = {};

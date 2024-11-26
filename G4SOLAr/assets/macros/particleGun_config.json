@@ -8,7 +8,9 @@
       "direction" : {"mode" : "fixed", "axis" : [0, 1, 0]},
       "vertex_gen" : {
         "type" : "point", 
-        "config" : {"xyz" : [0, 15, 35], "unit" : "cm"}
+        "config" : {
+          "xyz" : {"val" : [0, 15, 35], "unit" : "cm"}
+        }
       }
     }
   }

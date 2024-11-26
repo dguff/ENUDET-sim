@@ -133,6 +133,7 @@ include( ${PROJECT_SOURCE_DIR}/cmake/G4CASCADE_setup.cmake )
 include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/material
                     ${G4SOLAR_INCLUDE_DIR}/detector
+                    ${G4SOLAR_INCLUDE_DIR}/detector/Hall
                     ${G4SOLAR_INCLUDE_DIR}/detector/TPC
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode
@@ -158,6 +159,7 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/physics/*.cc
                     ${G4SOLAR_SRC_DIR}/physics/cascade/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/*.cc
+                    ${G4SOLAR_SRC_DIR}/detector/Hall/*.cc 
                     ${G4SOLAR_SRC_DIR}/detector/TPC/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/Anode/*.cc
@@ -170,6 +172,7 @@ file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/config/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/material/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/Hall/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/TPC/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode/*.hh
@@ -260,18 +263,19 @@ execute_process(
 #
 add_executable(solar_sim solar_sim.cc ${sources} ${headers})
 
-target_link_libraries(solar_sim ${Geant4_LIBRARIES})
-target_link_libraries(solar_sim ${ROOT_LIBRARIES})
-target_link_libraries(solar_sim SLArMCEvent)
-target_link_libraries(solar_sim SLArScintillation)
-target_link_libraries(solar_sim SLArReadoutSystemConfig)
-target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
-target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
+target_link_libraries(solar_sim PRIVATE ${Geant4_LIBRARIES})
+target_link_libraries(solar_sim PRIVATE ${ROOT_LIBRARIES})
+target_link_libraries(solar_sim PRIVATE SLArMCEvent)
+target_link_libraries(solar_sim PRIVATE SLArGenRecords)
+target_link_libraries(solar_sim PRIVATE SLArScintillation)
+target_link_libraries(solar_sim PRIVATE SLArReadoutSystemConfig)
+target_link_libraries(solar_sim PRIVATE BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
+target_link_libraries(solar_sim PRIVATE ${MARLEY} ${MARLEY_ROOT})
 if (SLAR_CRY_INTERFACE)
-  target_link_libraries(solar_sim ${CRY_LIBRARIES})
+  target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
 endif()
 if (SLAR_RADSRC_INTERFACE) 
-  target_link_libraries(solar_sim ${RADSRC_LIBRARIES})
+  target_link_libraries(solar_sim PRIVATE ${RADSRC_LIBRARIES})
 endif()
 
 target_compile_definitions(solar_sim 
