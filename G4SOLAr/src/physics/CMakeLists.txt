@@ -1,5 +1,5 @@
-set(SLAR_PHYSICS_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/physics)
-set(SLAR_PHYSICS_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/physics)
+set(SLAR_PHYSICS_INCLUDE_DIR ${G4SOLAR_INCLUDE_DIR}/physics)
+set(SLAR_PHYSICS_SOURCE_DIR ${G4SOLAR_SRC_DIR}/physics)
 
 set(SLAR_PHYSICS_HEADERS 
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArStepMax.hh"
@@ -23,6 +23,7 @@ set(SLAR_PHYSICS_SOURCES
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArElectronDrift.cc"
 )
 
-add_subdirectory(ion_and_scint)
+add_subdirectory( LiquidArgon )
 
-
+set(solarsim_headers ${solarsim_headers} ${SLAR_PHYSICS_HEADERS} PARENT_SCOPE)
+set(solarsim_sources ${solarsim_sources} ${SLAR_PHYSICS_SOURCES} PARENT_SCOPE)

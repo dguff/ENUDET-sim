@@ -33,7 +33,7 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "detector/SuperCell/SLArSuperCellHit.hh"
+#include "SensitiveDetectors/SLArSuperCellHit.hh"
 
 class G4Step;
 class G4HCofThisEvent;

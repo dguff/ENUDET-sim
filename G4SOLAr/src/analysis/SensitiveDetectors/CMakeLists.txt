@@ -1,3 +1,6 @@
+set(SLAR_SD_INCLUDE_DIR "${SLAR_ANALYSIS_INCLUDE_DIR}/SensitiveDetectors")
+set(SLAR_SD_SOURCE_DIR "${SLAR_ANALYSIS_SOURCE_DIR}/SensitiveDetectors")
+
 set(SLAR_SD_HEADERS 
   "${SLAR_SD_INCLUDE_DIR}/SLArExtHit.hh"
   "${SLAR_SD_INCLUDE_DIR}/SLArExtScorerSD.hh"

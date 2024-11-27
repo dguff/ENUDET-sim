@@ -1,0 +1,39 @@
+set(SLAR_LIQUIDARGON_INCLUDE_DIR "${G4SOLAR_INCLUDE_DIR}/physics/LiquidArgon")
+set(SLAR_LIQUIDARGON_SOURCE_DIR "${G4SOLAR_SRC_DIR}/physics/LiquidArgon")
+
+set(SLAR_LIQUIDARGON_HEADERS
+  "${SLAR_LIQUIDARGON_INCLUDE_DIR}/SLArLArProperties.hh"
+  "${SLAR_LIQUIDARGON_INCLUDE_DIR}/SLArIonAndScintModel.h"
+  "${SLAR_LIQUIDARGON_INCLUDE_DIR}/SLArIonAndScintSeparate.h"
+  "${SLAR_LIQUIDARGON_INCLUDE_DIR}/SLArIonAndScintLArQL.h"
+)
+
+set(SLAR_LIQUIDARGON_SOURCES
+  "${SLAR_LIQUIDARGON_SOURCE_DIR}/SLArLArProperties.cc"
+  "${SLAR_LIQUIDARGON_SOURCE_DIR}/SLArIonAndScintModel.cc"
+  "${SLAR_LIQUIDARGON_SOURCE_DIR}/SLArIonAndScintSeparate.cc"
+  "${SLAR_LIQUIDARGON_SOURCE_DIR}/SLArIonAndScintLArQL.cc"
+)
+
+set(SLAR_PHYSICS_HEADERS ${SLAR_PHYSICS_HEADERS} ${SLAR_LIQUIDARGON_HEADERS} PARENT_SCOPE)
+set(SLAR_PHYSICS_SOURCES ${SLAR_PHYSICS_SOURCES} ${SLAR_LIQUIDARGON_SOURCES} PARENT_SCOPE)
+
+add_library(SLArIonAndScint
+  SHARED
+  ${SLAR_LIQUIDARGON_SOURCES}
+  ${SLAR_LIQUIDARGON_HEADERS}
+  )
+
+target_link_libraries(SLArIonAndScint PRIVATE ROOT::Core ${Geant4_LIBRARIES})
+target_include_directories(SLArIonAndScint 
+  PUBLIC 
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/physics>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/physics>
+)
+
+#----------------------------------------------------------------------------
+# Install instructions
+install(TARGETS SLArIonAndScint
+  EXPORT                      G4SOLArTargets
+  LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}"
+  RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")

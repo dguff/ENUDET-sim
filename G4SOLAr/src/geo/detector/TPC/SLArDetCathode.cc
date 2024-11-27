@@ -5,7 +5,6 @@
  */
 
 
-#include "SLArDetectorConstruction.hh"
 #include "detector/TPC/SLArDetCathode.hh"
 
 #include "SLArAnalysisManager.hh"

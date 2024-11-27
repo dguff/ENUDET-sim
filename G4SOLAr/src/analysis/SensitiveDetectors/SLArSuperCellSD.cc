@@ -28,8 +28,8 @@
 /// \file SLArSuperCellSD.cc
 /// \brief Implementation of the SLArSuperCell class
 
-#include "detector/SuperCell/SLArSuperCellSD.hh"
-#include "detector/SuperCell/SLArSuperCellHit.hh"
+#include "SensitiveDetectors/SLArSuperCellSD.hh"
+#include "SensitiveDetectors/SLArSuperCellHit.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"

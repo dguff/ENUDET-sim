@@ -4,7 +4,7 @@
  * @created     Wed Mar 01, 2023 11:41:24 CET
  */
 
-#include "physics/SLArIonAndScintModel.h"
+#include "LiquidArgon/SLArIonAndScintModel.h"
 #include "G4MaterialPropertiesTable.hh"
 #include "G4SystemOfUnits.hh"
 

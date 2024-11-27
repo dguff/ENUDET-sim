@@ -1,14 +1,14 @@
-set(SLAR_ACTION_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include/action")
-set(SLAR_ACTION_SRC_DIR "${PROJECT_SOURCE_DIR}/src/action")
+set(SLAR_ACTION_INCLUDE_DIR "${G4SOLAR_INCLUDE_DIR}/action")
+set(SLAR_ACTION_SRC_DIR "${G4SOLAR_SRC_DIR}/action")
 
 set(SLAR_ACTION_HEADERS
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArSteppingVerbose.hh"
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArSteppingAction.hh"
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArTrackingAction.hh" 
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArStackingAction.hh" 
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArEventAction.hh" 
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArRunAction.hh" 
-  "${SLAR_ACTION_INCLUDE_DIR}/action/SLArActionInitialization.hh" 
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArSteppingVerbose.hh"
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArSteppingAction.hh"
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArTrackingAction.hh" 
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArStackingAction.hh" 
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArEventAction.hh" 
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArRunAction.hh" 
+  "${SLAR_ACTION_INCLUDE_DIR}/SLArActionInitialization.hh" 
 )
 
 set(SLAR_ACTION_SRC
@@ -21,4 +21,5 @@ set(SLAR_ACTION_SRC
   "${SLAR_ACTION_SRC_DIR}/SLArActionInitialization.cc"
 )
 
-
+set(solarsim_headers ${solarsim_headers} ${SLAR_ACTION_HEADERS} PARENT_SCOPE)
+set(solarsim_sources ${solarsim_sources} ${SLAR_ACTION_SRC} PARENT_SCOPE)

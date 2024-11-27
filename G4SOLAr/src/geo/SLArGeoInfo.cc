@@ -4,8 +4,8 @@
  * @created     : giovedì ago 01, 2019 10:32:45 CEST
  */
 
-#include <detector/SLArGeoInfo.hh>
-#include <SLArUnit.hpp>
+#include "SLArGeoInfo.hh"
+#include "SLArUnit.hpp"
 #include <utility>
 #include <regex>
 

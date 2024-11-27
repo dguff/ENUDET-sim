@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
-project(G4SOLAr)
+project(SOLAr-sim LANGUAGES CXX)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}
   CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -13,7 +13,6 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   message(STATUS "DEBUG: Adding '-g' option for gdb debugging")
@@ -26,7 +25,7 @@ option(SLAR_EXTERNAL "Build code with special external background features" OFF)
 option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
 option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
 option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
-#option(SLAR_USE_G4CASCADE "Use G4CASCADE for hadronic interactions" OFF)
+option(SLAR_USE_G4CASCADE "Use G4CASCADE for hadronic interactions" ON)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -74,8 +73,9 @@ set(G4SOLAR_SRC_DIR     "${PROJECT_SOURCE_DIR}/src"    )
 if (NOT G4SOLAR_EXT_DIR)
   set(G4SOLAR_EXT_DIR   "${PROJECT_SOURCE_DIR}/extern/install" )
 endif()
-set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib"  )
-set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}"      )
+set(G4SOLAR_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib")
+set(G4SOLAR_BIN_DIR     "${CMAKE_INSTALL_PREFIX}/bin")
+set(G4SOLAR_INC_DEST    "${CMAKE_INSTALL_PREFIX}/include")
 set(G4SOLAR_ANALSYS_DIR "${PROJECT_SOURCE_DIR}/../SOLArAnalysis")
 set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
 
@@ -125,12 +125,13 @@ find_library(MARLEY_ROOT
   )
 
 # 4. G4CASCADE
-include( ${PROJECT_SOURCE_DIR}/cmake/G4CASCADE_setup.cmake )
+if (SLAR_USE_G4CASCADE)
+  include( ${PROJECT_SOURCE_DIR}/cmake/G4CASCADE_setup.cmake )
+endif()
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
-<<<<<<< HEAD
 include_directories(
   #${G4SOLAR_INCLUDE_DIR}
                     #${G4SOLAR_INCLUDE_DIR}/material
@@ -165,11 +166,117 @@ configure_file(${G4SOLAR_INCLUDE_DIR}/rootlogon.C.in ${G4SOLAR_ANALSYS_DIR}/root
 
 #----------------------------------------------------------------------------
 # Generate SLArEvent and SLArConfig libraries and dictionaries
+set(solarsim_sources "")
+set(solarsim_headers "")
+
 add_subdirectory(${G4SOLAR_SRC_DIR}/config)
 add_subdirectory(${G4SOLAR_SRC_DIR}/event)
+add_subdirectory(${G4SOLAR_SRC_DIR}/action)
 add_subdirectory(${G4SOLAR_SRC_DIR}/geo)
+add_subdirectory(${G4SOLAR_SRC_DIR}/gen)
 add_subdirectory(${G4SOLAR_SRC_DIR}/analysis)
 add_subdirectory(${G4SOLAR_SRC_DIR}/physics)
+
+# configure package config
+install(EXPORT G4SOLArTargets
+  DESTINATION "${G4SOLAR_INSTALL_CMAKE_DIR}"
+  NAMESPACE G4SOLAr::
+)
+
+# extract git branch and commit hash
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+  COMMAND git rev-parse HEAD
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+#----------------------------------------------------------------------------
+# Add the executable, and link it to the Geant4 libraries
+#
+add_executable(solar_sim solar_sim.cc ${solarsim_sources} ${solarsim_headers})
+
+# Link the libraries
+target_link_libraries(solar_sim PRIVATE 
+  ${Geant4_LIBRARIES} 
+  ${ROOT_LIBRARIES}
+  SLArMCEvent
+  SLArGenRecords
+  SLArReadoutSystemConfig
+  BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4
+  ${MARLEY} ${MARLEY_ROOT}
+)
+if (SLAR_CRY_INTERFACE)
+  target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
+endif()
+if (SLAR_RADSRC_INTERFACE) 
+  target_link_libraries(solar_sim PRIVATE ${RADSRC_LIBRARIES})
+endif()
+
+# include directories
+target_include_directories(solar_sim PUBLIC
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/action>
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/analysis>
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/config>
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/geo>
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/gen>
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/physics>
+
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/action>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/analysis>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/event>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/config>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/geo>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/gen>
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/physics>
+)
+
+# Add definitions
+target_compile_definitions(solar_sim 
+  PUBLIC 
+  $<$<CONFIG:Debug>:SLAR_DEBUG>
+  $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
+  $<$<STREQUAL:${SLAR_EXTERNAL},ON>:SLAR_EXTERNAL>
+  $<$<STREQUAL:${SLAR_CRY_INTERFACE},ON>:SLAR_CRY>
+  $<$<STREQUAL:${SLAR_RADSRC_INTERFACE},ON>:SLAR_RADSRC>
+  SLAR_EXTERNAL_PARTICLE="${SLAR_EXTERNAL_PARTICLE}"
+  PRIVATE
+  "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
+  )
+
+list(APPEND G4SOLAR_RPATH
+  "${G4SOLAR_LIB_DIR}"
+  "${BXDECAY0_DIR}/lib"
+  "${BXDECAY0_DIR}/lib64"
+  "${MARLEY_DIR}/build")
+
+set_target_properties(solar_sim PROPERTIES
+  INSTALL_RPATH "${G4SOLAR_RPATH}"
+  BUILD_WITH_INSTALL_RPATH 1
+  )
+
+install(TARGETS solar_sim
+  RUNTIME DESTINATION ${G4SOLAR_BIN_DIR}
+  )
+
+#----------------------------------------------------------------------------
+# Install the headers
+install(DIRECTORY ${G4SOLAR_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+
+#----------------------------------------------------------------------------
+# Copy all assets (geometry, materials, cfg) to the install directory.
+# This is so that we can run the executable directly because it
+# relies on these scripts being in the current working directory.
+
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${G4SOLAR_BIN_DIR})
 
 #----------------------------------------------------------------------------
 # configure package config
@@ -196,80 +303,5 @@ execute_process(
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
   DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
-
-# configure package config
-install(EXPORT G4SOLArTargets
-  #FILE   ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
-  DESTINATION "${G4SOLAR_INSTALL_CMAKE_DIR}"
-  NAMESPACE G4SOLAr::
-)
-
-
-# extract git branch and commit hash
-execute_process(
-    COMMAND git rev-parse --abbrev-ref HEAD
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_BRANCH
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-execute_process(
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT_HASH
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-
-#----------------------------------------------------------------------------
-# Add the executable, and link it to the Geant4 libraries
-#
-add_executable(solar_sim solar_sim.cc ${sources} ${headers})
-
-target_link_libraries(solar_sim PRIVATE ${Geant4_LIBRARIES})
-target_link_libraries(solar_sim PRIVATE ${ROOT_LIBRARIES})
-target_link_libraries(solar_sim PRIVATE SLArMCEvent)
-target_link_libraries(solar_sim PRIVATE SLArGenRecords)
-target_link_libraries(solar_sim PRIVATE SLArReadoutSystemConfig)
-target_link_libraries(solar_sim PRIVATE BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
-target_link_libraries(solar_sim PRIVATE ${MARLEY} ${MARLEY_ROOT})
-if (SLAR_CRY_INTERFACE)
-  target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
-endif()
-if (SLAR_RADSRC_INTERFACE) 
-  target_link_libraries(solar_sim PRIVATE ${RADSRC_LIBRARIES})
-endif()
-
-target_compile_definitions(solar_sim 
-  PUBLIC 
-  $<$<CONFIG:Debug>:SLAR_DEBUG>
-  $<$<STREQUAL:${Geant4_gdml_FOUND},ON>:SLAR_GDML>
-  $<$<STREQUAL:${SLAR_EXTERNAL},ON>:SLAR_EXTERNAL>
-  $<$<STREQUAL:${SLAR_CRY_INTERFACE},ON>:SLAR_CRY>
-  $<$<STREQUAL:${SLAR_RADSRC_INTERFACE},ON>:SLAR_RADSRC>
-  SLAR_EXTERNAL_PARTICLE="${SLAR_EXTERNAL_PARTICLE}"
-  PRIVATE
-  "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
-  )
-
-list(APPEND G4SOLAR_RPATH
-  "${G4SOLAR_LIB_DIR}"
-  "${BXDECAY0_DIR}/lib"
-  "${BXDECAY0_DIR}/lib64"
-  "${MARLEY_DIR}/build")
-
-set_target_properties(solar_sim PROPERTIES
-  INSTALL_RPATH "${G4SOLAR_RPATH}"
-  BUILD_WITH_INSTALL_RPATH 1
-  )
-
-install(TARGETS solar_sim
-  LIBRARY DESTINATION ${G4SOLAR_BIN_DIR}
-  RUNTIME DESTINATION ${G4SOLAR_BIN_DIR}
-  )
-#----------------------------------------------------------------------------
-# Copy all assets (geometry, materials, cfg) to the install directory.
-# This is so that we can run the executable directly because it
-# relies on these scripts being in the current working directory.
-
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${G4SOLAR_BIN_DIR})
 
 

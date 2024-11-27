@@ -5,15 +5,15 @@
  * @brief       Implementation of the SLArSteppingAction class
  */
 
-#include "SLArScintillation.h"
+#include "SLArScintillation.hh"
 #include "SLArSteppingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArUserTrackInformation.hh"
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 #include "SLArAnalysisManager.hh"
 
-#include "detector/SuperCell/SLArSuperCellSD.hh"
-#include "detector/Anode/SLArReadoutTileSD.hh"
+#include "SensitiveDetectors/SLArSuperCellSD.hh"
+#include "SensitiveDetectors/SLArReadoutTileSD.hh"
 
 #include "G4VPhysicalVolume.hh"
 #include "G4Step.hh"

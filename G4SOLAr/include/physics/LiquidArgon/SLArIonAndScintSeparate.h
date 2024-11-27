@@ -8,7 +8,7 @@
 
 #define SLARIONANDSCINTSEPARATE_H
 
-#include "physics/SLArIonAndScintModel.h"
+#include "LiquidArgon/SLArIonAndScintModel.h"
 
 class SLArIonAndScintSeparate : public SLArIonAndScintModel {
 

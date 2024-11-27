@@ -8,11 +8,8 @@
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/SLArPlaneParameterisation.hpp"
 
-#include "G4VSolid.hh"
 #include "G4Box.hh"
 #include "G4LogicalVolume.hh"
-#include "G4PVPlacement.hh"
-#include "G4PVReplica.hh"
 #include "G4PVParameterised.hh"
 #include "G4VPhysicalVolume.hh"
 

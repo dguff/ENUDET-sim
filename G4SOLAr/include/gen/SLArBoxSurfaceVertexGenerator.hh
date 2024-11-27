@@ -10,12 +10,12 @@
 
 #include <random>
 
-#include <G4LogicalVolume.hh>
-#include <G4VSolid.hh>
-#include <G4ThreeVector.hh>
-#include <G4RotationMatrix.hh>
-#include <detector/SLArGeoUtils.hh>
-#include <SLArVertextGenerator.hh>
+#include "G4LogicalVolume.hh"
+#include "G4VSolid.hh"
+#include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
+#include "SLArGeoUtils.hh"
+#include "SLArVertextGenerator.hh"
 
 namespace gen {
 class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator

@@ -4,8 +4,8 @@
  * @created     : Thursday May 16, 2024 12:40:07 CEST
  */
 
-#include <G4SystemOfUnits.hh>
-#include <physics/SLArLArProperties.hh>
+#include "G4SystemOfUnits.hh"
+#include "LiquidArgon/SLArLArProperties.hh"
 
 SLArLArProperties::SLArLArProperties() :
   fElectricField(0.5), fLArTemperature(87.7), fMuElectron(1.), 

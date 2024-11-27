@@ -10,9 +10,9 @@
 
 #include "SLArUserTrackInformation.hh"
 #include "SLArEventTrajectory.hh"
-#include <SLArRunAction.hh>
+#include "SLArRunAction.hh"
 #include <cstdio>
-#include "detector/TPC/SLArExtScorerSD.hh"
+#include "SensitiveDetectors/SLArExtScorerSD.hh"
 
 SLArExtScorerSD::SLArExtScorerSD(G4String name) 
   : G4VSensitiveDetector(name), fHitsCollection(nullptr), fHCID(-10)

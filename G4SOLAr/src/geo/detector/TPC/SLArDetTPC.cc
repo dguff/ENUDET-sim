@@ -5,9 +5,9 @@
  */
 
 
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 #include "detector/TPC/SLArDetTPC.hh"
-#include "SLArPlaneParameterisation.hpp"
+#include "detector/SLArPlaneParameterisation.hpp"
 
 #include "SLArAnalysisManager.hh"
 

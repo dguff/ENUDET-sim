@@ -9,7 +9,8 @@
 #define SLArABSMODULE_HH
 
 #include "material/SLArMaterial.hh"
-#include "detector/SLArGeoInfo.hh"
+#include "SLArGeoInfo.hh"
+#include "SLArGeoUtils.hh"
 
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"

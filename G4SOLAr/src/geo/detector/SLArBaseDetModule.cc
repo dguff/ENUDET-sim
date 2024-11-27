@@ -5,7 +5,7 @@
  */
 
 #include "detector/SLArBaseDetModule.hh"
-#include "detector/SLArGeoInfo.hh"
+#include "SLArGeoInfo.hh"
 
 #include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"

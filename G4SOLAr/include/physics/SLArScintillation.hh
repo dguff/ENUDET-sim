@@ -50,14 +50,13 @@
 #ifndef SLArScintillation_h
 #define SLarScintillation_h 1
 
+#include <fstream>
 #include "globals.hh"
 #include "G4EmSaturation.hh"
 #include "G4OpticalPhoton.hh"
 #include "G4VRestDiscreteProcess.hh"
 #include "G4GenericMessenger.hh"
-#include <fstream>
-#include "SLArIonAndScintModel.h"
-#include "SLArIonAndScintLArQL.h"
+#include "LiquidArgon/SLArIonAndScintModel.h"
 
 class G4PhysicsTable;
 class G4Step;

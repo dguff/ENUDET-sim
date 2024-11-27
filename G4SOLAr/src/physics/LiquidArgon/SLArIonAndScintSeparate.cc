@@ -7,7 +7,7 @@
 #include <math.h>
 #include "G4MaterialPropertiesTable.hh"
 
-#include "physics/SLArIonAndScintSeparate.h"
+#include "LiquidArgon/SLArIonAndScintSeparate.h"
 
 SLArIonAndScintSeparate::SLArIonAndScintSeparate() : 
   SLArIonAndScintModel(), 

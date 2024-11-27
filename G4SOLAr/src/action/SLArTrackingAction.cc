@@ -10,7 +10,7 @@
 #include "SLArTrackingAction.hh"
 #include "SLArUserPhotonTrackInformation.hh"
 #include "SLArUserTrackInformation.hh"
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 
 #include "G4TrackingManager.hh"
 #include "G4Track.hh"

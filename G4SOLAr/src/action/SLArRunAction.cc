@@ -6,7 +6,7 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArSteppingAction.hh"
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArRun.hh"

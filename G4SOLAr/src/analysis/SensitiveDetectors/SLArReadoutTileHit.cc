@@ -4,7 +4,7 @@
  * @created     : mercoledì ago 10, 2022 08:58:05 CEST
  */
 
-#include "detector/Anode/SLArReadoutTileHit.hh"
+#include "SensitiveDetectors/SLArReadoutTileHit.hh"
 
 #include "G4VVisManager.hh"
 #include "G4VisAttributes.hh"

@@ -7,14 +7,11 @@
 
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/SLArPlaneParameterisation.hpp"
-#include "detector/SLArGeoUtils.hh"
+#include "SLArGeoUtils.hh"
 #include "config/SLArCfgReadoutTile.hh"
 
 #include "G4VSolid.hh"
 #include "G4Box.hh"
-#include "G4Tubs.hh"
-#include "G4Sphere.hh"
-#include "G4Cons.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4UnionSolid.hh"
 #include "G4LogicalVolume.hh"

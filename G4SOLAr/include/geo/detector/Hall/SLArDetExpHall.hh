@@ -12,7 +12,6 @@
 #include "G4Box.hh"
 
 #include "detector/SLArBaseDetModule.hh"
-#include "detector/SLArGeoUtils.hh"
 
 class SLArDetExpHall : public SLArBaseDetModule {
   public: 

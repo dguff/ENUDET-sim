@@ -45,7 +45,7 @@
 #include "G4OpRayleigh.hh"
 #include "G4OpAbsorption.hh"
 #include "G4OpBoundaryProcess.hh"
-#include "SLArScintillation.h"
+#include "SLArScintillation.hh"
 
 #include "G4VPhysicsConstructor.hh"
 

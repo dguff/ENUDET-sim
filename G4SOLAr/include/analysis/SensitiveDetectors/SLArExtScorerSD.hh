@@ -9,7 +9,7 @@
 #define SLAREXTSCORERSD_HH
 
 #include "G4VSensitiveDetector.hh"
-#include "detector/TPC/SLArExtHit.hh"
+#include "SensitiveDetectors/SLArExtHit.hh"
 
 class G4Step;  
 class G4HCofThisEvent;

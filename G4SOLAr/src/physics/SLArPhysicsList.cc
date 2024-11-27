@@ -29,11 +29,11 @@
 ///
 /// Reimplemented from wls G4 example
 
-#include "SLArPhysicsList.hh"
-#include "SLArPhysicsListMessenger.hh"
+#include "physics/SLArPhysicsList.hh"
+#include "physics/SLArPhysicsListMessenger.hh"
 
-#include "SLArExtraPhysics.hh"
-#include "SLArOpticalPhysics.hh"
+#include "physics/SLArExtraPhysics.hh"
+#include "physics/SLArOpticalPhysics.hh"
 
 #include "G4LossTableManager.hh"
 
@@ -48,7 +48,7 @@
 #include "G4Electron.hh"
 #include "G4Positron.hh"
 
-#include "SLArStepMax.hh"
+#include "physics/SLArStepMax.hh"
 
 #include "G4ProcessTable.hh"
 

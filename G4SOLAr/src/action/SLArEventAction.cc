@@ -8,13 +8,13 @@
 #include "SLArBacktrackerManager.hh"
 #include "SLArEventAction.hh"
 #include "SLArRunAction.hh"
-#include "SLArReadoutTileHit.hh"
-#include "SLArSuperCellHit.hh"
-#include "SLArDetectorConstruction.hh"
-#include "detector/TPC/SLArLArHit.hh"
-#include "physics/SLArElectronDrift.hh"
-#include "detector/TPC/SLArExtScorerSD.hh"
-#include "detector/TPC/SLArExtHit.hh"
+#include "detector/SLArDetectorConstruction.hh"
+#include "SensitiveDetectors/SLArReadoutTileHit.hh"
+#include "SensitiveDetectors/SLArSuperCellHit.hh"
+#include "SensitiveDetectors/SLArLArHit.hh"
+#include "SensitiveDetectors/SLArExtScorerSD.hh"
+#include "SensitiveDetectors/SLArExtHit.hh"
+#include "SLArElectronDrift.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -22,8 +22,8 @@
 #include "G4HCofThisEvent.hh"
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
-#include <G4PhysicalVolumeStore.hh>
-#include <G4UnitsTable.hh>
+#include "G4PhysicalVolumeStore.hh"
+#include "G4UnitsTable.hh"
 
 #include "G4ios.hh"
 #include <cstdio>

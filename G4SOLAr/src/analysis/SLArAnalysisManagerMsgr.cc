@@ -4,22 +4,22 @@
  * @created     : Tue Mar 03, 2020 17:15:44 CET
  */
 #include <sstream>
-#include <SLArAnalysisManager.hh>
-#include <SLArAnalysisManagerMsgr.hh>
-#include <SLArDetectorConstruction.hh>
-#include <SLArRunAction.hh>
+#include "SLArAnalysisManager.hh"
+#include "SLArAnalysisManagerMsgr.hh"
+#include "detector/SLArDetectorConstruction.hh"
+#include "SLArRunAction.hh"
 
-#include <G4RunManager.hh>
+#include "G4RunManager.hh"
 
-//#include <G4UImessenger.hh>
-#include <G4UIcmdWithABool.hh>
-#include <G4UIcmdWithAString.hh>
-#include <G4UIcmdWithAnInteger.hh>
-#include <G4PhysicalVolumeStore.hh>
-#include <G4UIcmdWithADoubleAndUnit.hh>
-//#include <G4UIcmdWithADouble.hh>
-//#include <G4UIcmdWith3Vector.hh>
-//#include <G4UIcmdWith3VectorAndUnit.hh>
+//#include "G4UImessenger.hh"
+#include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+//#include "G4UIcmdWithADouble.hh"
+//#include "G4UIcmdWith3Vector.hh"
+//#include "G4UIcmdWith3VectorAndUnit.hh"
 
 #ifdef SLAR_GDML
 #include "G4GDMLParser.hh"

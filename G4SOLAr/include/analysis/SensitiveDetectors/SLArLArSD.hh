@@ -10,7 +10,7 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "detector/TPC/SLArLArHit.hh"
+#include "SensitiveDetectors/SLArLArHit.hh"
 
 class G4Step;  
 class G4HCofThisEvent;

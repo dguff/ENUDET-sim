@@ -23,5 +23,7 @@ set(SLAR_ANALYSIS_SOURCES
   "${SLAR_ANALYSIS_SOURCE_DIR}/SLArAnalysisManagerMsgr.cc"
 )
 
-add_subdirectory( sd )
+add_subdirectory( SensitiveDetectors )
 
+set(solarsim_headers ${solarsim_headers} ${SLAR_ANALYSIS_HEADERS} PARENT_SCOPE)
+set(solarsim_sources ${solarsim_sources} ${SLAR_ANALYSIS_SOURCES} PARENT_SCOPE)

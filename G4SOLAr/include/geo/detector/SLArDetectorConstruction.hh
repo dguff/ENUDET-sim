@@ -16,7 +16,7 @@
 #include "detector/Anode/SLArDetReadoutTile.hh"
 #include "detector/Anode/SLArDetReadoutTileAssembly.hh"
 #include "detector/Anode/SLArDetAnodeAssembly.hh"
-#include "physics/SLArLArProperties.hh"
+#include "physics/LiquidArgon/SLArLArProperties.hh"
 
 #include "SLArAnalysisManagerMsgr.hh"
 

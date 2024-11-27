@@ -5,8 +5,8 @@
  */
 
 
-#include "detector/Anode/SLArReadoutTileSD.hh"
-#include "detector/Anode/SLArReadoutTileHit.hh"
+#include "SensitiveDetectors/SLArReadoutTileSD.hh"
+#include "SensitiveDetectors/SLArReadoutTileHit.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"

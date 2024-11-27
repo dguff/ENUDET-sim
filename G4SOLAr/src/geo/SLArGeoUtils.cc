@@ -7,8 +7,8 @@
 #include <utility>
 #include <regex>
 
-#include <detector/SLArGeoUtils.hh>
-#include <G4Box.hh>
+#include "SLArGeoUtils.hh"
+#include "G4Box.hh"
 
 
 namespace geo {

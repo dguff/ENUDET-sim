@@ -6,10 +6,9 @@
 
 #include <regex>
 
-#include <SLArBoxSurfaceVertexGenerator.hh>
-#include <G4PhysicalVolumeStore.hh>
-#include <G4RandomTools.hh>
-#include <G4Box.hh>
+#include "SLArBoxSurfaceVertexGenerator.hh"
+#include "G4PhysicalVolumeStore.hh"
+#include "G4Box.hh"
 
 namespace gen {
 SLArBoxSurfaceVertexGenerator::SLArBoxSurfaceVertexGenerator()

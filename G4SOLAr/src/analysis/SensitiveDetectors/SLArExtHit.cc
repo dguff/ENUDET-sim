@@ -4,7 +4,7 @@
  * @created     : Friday Feb 09, 2024 17:03:08 CET
  */
 
-#include "detector/TPC/SLArExtHit.hh"
+#include "SensitiveDetectors/SLArExtHit.hh"
 
 #include "G4AttDef.hh"
 #include "G4VVisManager.hh"

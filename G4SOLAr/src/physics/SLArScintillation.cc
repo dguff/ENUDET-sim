@@ -85,12 +85,12 @@
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 #include "G4PhysicsModelCatalog.hh"
-#include <G4RunManager.hh>
-#include <SLArLArProperties.hh>
-#include <SLArDetectorConstruction.hh>
-#include "physics/SLArScintillation.h"
-#include "physics/SLArIonAndScintLArQL.h"
-#include "physics/SLArIonAndScintSeparate.h"
+#include "G4RunManager.hh"
+#include "SLArScintillation.hh"
+#include "detector/SLArDetectorConstruction.hh"
+#include "LiquidArgon/SLArLArProperties.hh"
+#include "LiquidArgon/SLArIonAndScintLArQL.h"
+#include "LiquidArgon/SLArIonAndScintSeparate.h"
 
 
 #include <unistd.h>     //required for usleep()

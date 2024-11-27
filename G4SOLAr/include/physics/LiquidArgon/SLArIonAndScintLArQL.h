@@ -11,7 +11,7 @@
 
 #include <math.h>       /* exp */
 #include <vector>
-#include "physics/SLArIonAndScintModel.h"
+#include "LiquidArgon/SLArIonAndScintModel.h"
 #include "G4SystemOfUnits.hh"
 
 

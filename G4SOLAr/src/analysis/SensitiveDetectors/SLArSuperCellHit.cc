@@ -28,7 +28,7 @@
 /// \file SLArSuperCellHit.cc
 /// \brief Implementation of the SLArSuperCellHit class
 
-#include "detector/SuperCell/SLArSuperCellHit.hh"
+#include "SensitiveDetectors/SLArSuperCellHit.hh"
 
 #include "G4VVisManager.hh"
 #include "G4VisAttributes.hh"

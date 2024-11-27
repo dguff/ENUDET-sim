@@ -1,4 +1,4 @@
-#include "SLArIonAndScintLArQL.h"
+#include "LiquidArgon/SLArIonAndScintLArQL.h"
 #include "G4MaterialPropertiesTable.hh"
 #include <iostream>
 

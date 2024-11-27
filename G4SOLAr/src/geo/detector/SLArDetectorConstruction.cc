@@ -10,19 +10,18 @@
 #include "SLArAnalysisManager.hh"
 #include "physics/SLArCrossSectionBiasing.hh"
 
-#include "SLArRunAction.hh"
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 
 #include "detector/SLArBaseDetModule.hh"
 #include "detector/TPC/SLArDetTPC.hh"
-#include "detector/TPC/SLArLArSD.hh"
-#include "detector/TPC/SLArExtScorerSD.hh"
+#include "SensitiveDetectors/SLArLArSD.hh"
+#include "SensitiveDetectors/SLArExtScorerSD.hh"
 
 #include "detector/Anode/SLArDetReadoutTile.hh"
-#include "detector/Anode/SLArReadoutTileSD.hh"
+#include "SensitiveDetectors/SLArReadoutTileSD.hh"
 
 #include "detector/SuperCell/SLArDetSuperCellArray.hh"
-#include "detector/SuperCell/SLArSuperCellSD.hh"
+#include "SensitiveDetectors/SLArSuperCellSD.hh"
 
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgBaseSystem.hh"

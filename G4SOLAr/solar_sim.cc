@@ -21,7 +21,7 @@
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 #include "SLArActionInitialization.hh"
 #include "SLArRunAction.hh"
 

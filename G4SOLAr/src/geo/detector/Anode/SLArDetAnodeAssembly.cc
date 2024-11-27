@@ -4,17 +4,16 @@
  * @created     Tue Mar 21, 2023 12:00:33 CET
  */
 
-#include <detector/Anode/SLArDetAnodeAssembly.hh>
-#include <detector/Anode/SLArDetReadoutTileAssembly.hh>
-#include <detector/SLArPlaneParameterisation.hpp>
-#include <detector/SLArGeoUtils.hh>
+#include "detector/Anode/SLArDetAnodeAssembly.hh"
+#include "detector/Anode/SLArDetReadoutTileAssembly.hh"
+#include "detector/SLArPlaneParameterisation.hpp"
 
-#include <config/SLArCfgAnode.hh>
+#include "config/SLArCfgAnode.hh"
 
-#include <G4VisAttributes.hh>
-#include <G4PVParameterised.hh>
-#include <G4Box.hh>
-#include <G4RotationMatrix.hh>
+#include "G4VisAttributes.hh"
+#include "G4PVParameterised.hh"
+#include "G4Box.hh"
+#include "G4RotationMatrix.hh"
 
 SLArDetAnodeAssembly::SLArDetAnodeAssembly() : 
   SLArBaseDetModule(), 
