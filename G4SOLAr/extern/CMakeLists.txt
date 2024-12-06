@@ -58,15 +58,15 @@ ExternalProject_Add("marley"
   INSTALL_COMMAND cmake -E echo "MARLEY: Skipping install step"
   )
 
-ExternalProject_add("ENUBETCosmics"
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/ENUBETCosmics
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/ENUBETCosmics-build
-  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/ENUBETCosmics
+ExternalProject_add("ecosmics"
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/ecosmics
+  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/ecosmics-build
+  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/ecosmics
   UPDATE_DISCONNECTED 0
-  GIT_REPOSITORY "https://github.com/dguff/ENUBETCosmics.git"
-  GIT_TAG "feature/cmake-compile"
-  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/ENUBETCosmics
-  BUILD_COMMAND cmake --build . -j 4
+  GIT_REPOSITORY "https://github.com/JMMcElwee/ENUBETCosmics"
+  GIT_TAG "main"
+  CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}/ecosmics
+  BUILD_COMMAND cmake --build . -j 6
   INSTALL_COMMAND cmake --install .
   )
 
