@@ -122,6 +122,12 @@ find_library(MARLEY_ROOT
   )
 
 set(ECOSMIC_SRC "$ENV{ECOSMIC_SRC}")
+find_library(ECOSMIC_LIB
+  NAMES ECosmic
+  PATHS "${ECOSMIC_SRC}/lib"
+  REQUIRED
+  NO_DEFAULT_PATH
+)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -271,7 +277,7 @@ target_link_libraries(solar_sim SLArScintillation)
 target_link_libraries(solar_sim SLArReadoutSystemConfig)
 target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
-target_link_libraries(solar_sim ${ECOSMIC_SRC}/lib/libECosmic.so)
+target_link_libraries(solar_sim ${ECOSMIC_LIB})
 if (SLAR_CRY_INTERFACE)
   target_link_libraries(solar_sim ${CRY_LIBRARIES})
 endif()

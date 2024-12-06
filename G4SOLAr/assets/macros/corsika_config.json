@@ -10,7 +10,7 @@
 	"corsika_det_ymax" : 4,
 	"corsika_gen_Emin" : 50,
 	"corsika_gen_Emax" : 100000,
-	"corsika_gen_dT"   : 0.001
+	"corsika_gen_dT"   : 0.01
     }
   }
 }

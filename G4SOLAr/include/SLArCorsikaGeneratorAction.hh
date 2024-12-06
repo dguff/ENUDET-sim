@@ -28,7 +28,6 @@
 #include "detector.hh"
 #include "EParticle.hh"
 #include "EShower.hh"
-#include "EHandler.hh"
 
 
 namespace gen{

@@ -103,10 +103,13 @@ namespace gen {
     d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator());
     d.AddMember("corsika_db_dir", rapidjson::StringRef(fConfig.corsika_db_dir.data()), d.GetAllocator());
     
+    // Detector specific
     d.AddMember("corsika_det_xmin", fConfig.corsika_det_x[0], d.GetAllocator());
     d.AddMember("corsika_det_xmax", fConfig.corsika_det_x[1], d.GetAllocator());
     d.AddMember("corsika_det_ymin", fConfig.corsika_det_y[0], d.GetAllocator());
     d.AddMember("corsika_det_ymax", fConfig.corsika_det_y[1], d.GetAllocator());
+
+    // Generator specific
     d.AddMember("corsika_gen_Emin", fConfig.corsika_E[0], d.GetAllocator());
     d.AddMember("corsika_gen_Emax", fConfig.corsika_E[1], d.GetAllocator());
     d.AddMember("corsika_gen_dT",   fConfig.corsika_dT, d.GetAllocator());
@@ -135,25 +138,29 @@ namespace gen {
     pdMuon->ValidateRange();
     
     // Collect primaries from the detector. Should probably put this in the function
-    std::vector<int> primary_gen = pdMuon->GetPrimaries(corsDB, 1.8E4, fConfig.corsika_dT);
+    //    std::vector<int> primary_gen = pdMuon->GetPrimaries(corsDB, 1.8E4, fConfig.corsika_dT);
     // Sort the vector lowest to highest in order to speed up searching (we can skip many
     // of the early events this way...
-    sort(primary_gen.begin(), primary_gen.end());
+    //    sort(primary_gen.begin(), primary_gen.end());
   
     // Set the spill time for all EHandler objects
-    EHandler::SetSpillT(fConfig.corsika_dT);
+    EShower::SetSpillT(fConfig.corsika_dT);
+    
     // Create a handler for the shower
     EShower showerHandler(corsDB, pdMuon);
-    //    showerHandler.CreateTree();
+    showerHandler.NShowers();
+    
+    
     // Create a handler for the particle 
     EParticle particleHandler(corsDB, pdMuon);
-    //    particleHandler.CreateTree();
-    // Loop through the showers selected and process them 
-    for (int shower : primary_gen) {
+
+    
+    for ( int shower : showerHandler.GetShowers() ) {
       showerHandler.Process(shower);
       particleHandler.Process(shower, &showerHandler);
  
     }
+    
     const std::vector<EParticle::Particle> &particles = particleHandler.GetParticles();
   
     G4ThreeVector vtx(0., 0., 0.);
@@ -163,10 +170,10 @@ namespace gen {
       
       G4PrimaryParticle *incident_part = new G4PrimaryParticle(part.m_pdg,
                      part.m_mom[0]*1E3,
+                     -part.m_mom[2]*1E3,
                      part.m_mom[1]*1E3,
-                     part.m_mom[2]*1E3,
                      part.m_eK*1E3);
-      vtx.set(part.m_vtx[0], part.m_vtx[1], 4.);
+      vtx.set(part.m_vtx[0]*1E3, 2000, part.m_vtx[1]*1E3);
       auto vertex = new G4PrimaryVertex(vtx, 0.);
       vertex->SetPrimary(incident_part);
       primary_vertices.push_back(vertex);
@@ -174,9 +181,12 @@ namespace gen {
       particle_idx++;
     }
       
-    std::cout << "Number of particles: " << particle_idx << std::endl;
+    std::cout << "Number of particles: " << particle_idx << std::endl; 
+    int partCount = 0; // Purely for output purposes
     for (const auto& vertex : primary_vertices) 
+    { 
       ev->AddPrimaryVertex(vertex);
+    }
   }
   // - - - - - - - - - - - - - - - - -
 
