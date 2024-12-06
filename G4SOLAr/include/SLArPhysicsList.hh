@@ -92,7 +92,6 @@ class SLArPhysicsList: public G4VModularPhysicsList
     G4bool fCerenkovOn;
 
     G4VMPLData::G4PhysConstVectorData* fPhysicsVector;
-
 };
 
 #endif
