@@ -6,19 +6,20 @@
 
 #include <cstdio>
 #include <memory>
-#include <G4Event.hh>
-#include <G4EventManager.hh>
-#include <G4RunManager.hh>
+#include "G4Event.hh"
+#include "G4EventManager.hh"
+#include "G4RunManager.hh"
 
-#include <SLArBaseGenerator.hh>
-#include <SLArBulkVertexGenerator.hh>
-#include <SLArBoxSurfaceVertexGenerator.hh>
-#include <SLArAnalysisManager.hh>
-#include <SLArRunAction.hh>
-#include <SLArRandomExtra.hh>
-#include <SLArUnit.hpp>
+#include "SLArBaseGenerator.hh"
+#include "SLArBulkVertexGenerator.hh"
+#include "SLArBoxSurfaceVertexGenerator.hh"
+#include "SLArGPSVertexGenerator.hh"
+#include "SLArAnalysisManager.hh"
+#include "SLArRunAction.hh"
+#include "SLArRandomExtra.hh"
+#include "SLArUnit.hpp"
 
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/prettywriter.h"
 
 
 namespace gen {
@@ -51,8 +52,8 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
   }
   
   G4String type = config["type"].GetString(); 
-  G4cerr << "Building " << type.data() << " vertex generator" << G4endl;
   EVertexGenerator kGen = getVtxGenIndex( type ); 
+  printf("[gen] Building %s vertex generator (type %i)\n", type.data(), kGen);
 
   switch (kGen) {
     case (EVertexGenerator::kPoint) : 
@@ -67,6 +68,19 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
         break;
       }
     
+    case (EVertexGenerator::kGPSPos) : 
+      {
+        printf("Building GPS vertex generator\n");
+        fVtxGen = std::make_unique<SLArGPSVertexGenerator>();
+        try { fVtxGen->Config( config["config"] ); }
+        catch (const std::exception& e) {
+          std::cerr << "ERROR configuring SLArGPSPosVertexGenerator()" << std::endl;
+          std::cerr << e.what() << std::endl;
+          exit( EXIT_FAILURE );
+        }
+        break;
+      }
+
     case (EVertexGenerator::kBulk) : 
       {
         fVtxGen = std::make_unique<SLArBulkVertexGenerator>(); 
@@ -105,6 +119,7 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
 
   printf("[gen] %s vtx gen for generator %s: %p\n", 
       fVtxGen->GetType().data(), fLabel.data(), static_cast<void*>(fVtxGen.get())); 
+  fVtxGen->Print();
   
   return;
 }
