@@ -1,17 +1,41 @@
 {
-  "generator" : {
-    "type" : "particlegun", 
-    "label" : "pgun_test", 
-    "config" : {
-      "particle" : "e-", 
-      "energy" : { "mode": "mono", "value" : {"val": 3.5, "unit": "MeV"} },
-      "direction" : {"mode" : "fixed", "axis" : [0, 1, 0]},
-      "vertex_gen" : {
-        "type" : "point", 
-        "config" : {
-          "xyz" : {"val" : [0, 15, 35], "unit" : "cm"}
+  "generator" : [
+    {
+      "type" : "particlegun", 
+      "label" : "pgun_test", 
+      "config" : {
+        "particle" : "e-", 
+        "energy" : { "mode": "mono", "value" : {"val": 3.5, "unit": "MeV"} },
+        "direction" : {"mode" : "fixed", "axis" : [0, 1, 0]},
+        "vertex_gen" : {
+          "type" : "point", 
+          "config" : {
+            "xyz" : {"val" : [0, 15, 35], "unit" : "cm"},
+            "volume" : "TPC10"
+          }
+        }
+      }
+    }, 
+    {
+      "type" : "particlegun", 
+      "label" : "pgun_test_2", 
+      "config" : {
+        "particle" : "geantino", 
+        "energy" : { "mode": "mono", "value" : {"val": 3.5, "unit": "MeV"} },
+        "direction" : {"mode" : "fixed", "axis" : [0, 1, 0]},
+        "vertex_gen" : {
+          "type" : "gps_pos", 
+          "config" : {
+            "type" : "Plane",
+            "shape" : "Circle",
+            "radius" : {"val" : 10, "unit" : "cm"},
+            "centre" : {"val" : [0, 0, 0], "unit" : "cm"},
+            "volume" : "TPC11", 
+            "rot1" : [1.0, 0.0, 0.0],
+            "rot2" : [0.0, 0.0, 2.0]
+          }
         }
       }
     }
-  }
+  ]
 }

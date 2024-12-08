@@ -114,12 +114,18 @@ namespace gen {
     };
   }
 
-  enum EVertexGenerator {kUndefinedVtxGen = -1, kPoint = 0, kBulk = 1, kBoxVolSurface = 2};
+  enum EVertexGenerator {
+    kUndefinedVtxGen = -1, 
+    kPoint = 0, 
+    kBulk = 1, 
+    kBoxVolSurface = 2, 
+    kGPSPos = 3};
 
   static const std::map<G4String, EVertexGenerator> vtxGenMap = {
     {"point", EVertexGenerator::kPoint}, 
     {"bulk", EVertexGenerator::kBulk}, 
-    {"boxsurface", EVertexGenerator::kBoxVolSurface}
+    {"boxsurface", EVertexGenerator::kBoxVolSurface}, 
+    {"gps_pos", EVertexGenerator::kGPSPos}
   };
 
   static inline EVertexGenerator getVtxGenIndex(G4String str) {
@@ -133,7 +139,7 @@ namespace gen {
   static inline void printVtxGeneratorType() {
     printf("Available vertex generators:\n");
     for (const auto& vgen : vtxGenMap) {
-      printf("\t- %s\n", vgen.first.data());
+      printf("\t-[%i] %s\n", getVtxGenIndex(vgen.first), vgen.first.data());
     }
     return;
   }
@@ -155,6 +161,18 @@ namespace gen {
       inline const time::SLArTimeGenerator& GetTimeGenerator() const {return fTimeGen;}
 
       time::SLArTimeGenerator fTimeGen = {}; 
+
+      protected:
+      inline void FillConfigVector(const G4ThreeVector& vec, 
+          rapidjson::Value& jsonArray, 
+          rapidjson::Document::AllocatorType& allocator) const
+      {
+        jsonArray.SetArray();
+        jsonArray.PushBack(vec.x(), allocator);
+        jsonArray.PushBack(vec.y(), allocator);
+        jsonArray.PushBack(vec.z(), allocator);
+        return;
+      }
   };
 
   class SLArPointVertexGenerator : public SLArVertexGenerator {
@@ -214,6 +232,9 @@ namespace gen {
         printf("SLArPointVertexGenerator configuration dump:\n"); 
         printf("vertex set to %g, %g, %g mm\n\n", 
             fVertex.x(), fVertex.y(), fVertex.z()); 
+        if (fReferenceVolumeName.size() > 0) {
+          printf("Reference volume: %s\n", fReferenceVolumeName.data());
+        }
         return;
       }
 
@@ -233,6 +254,12 @@ namespace gen {
         vtx_coord.PushBack( fVertex.y(), vtx_info.GetAllocator() ); 
         vtx_coord.PushBack( fVertex.z(), vtx_info.GetAllocator() ); 
         vtx_info.AddMember("vertex", vtx_coord, vtx_info.GetAllocator()); 
+
+        if (fReferenceVolumeName.empty() == false) {
+          rapidjson::Value jvol; 
+          jvol.SetString(fReferenceVolumeName.data(), vtx_info.GetAllocator());
+          vtx_info.AddMember("volume", jvol, vtx_info.GetAllocator());
+        }
 
         auto dtime = fTimeGen.ExportConfig();
         rapidjson::Value jtime; jtime.SetObject();
