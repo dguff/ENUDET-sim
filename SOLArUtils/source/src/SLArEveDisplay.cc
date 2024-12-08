@@ -8,7 +8,7 @@
 #include "TKey.h"
 #include "TClass.h"
 #include "SLArEveDisplay.hh"
-#include "SLArUnit.hpp"
+#include "geo/SLArUnit.hpp"
 #include "event/SLArMCPrimaryInfo.hh"
 #include "event/SLArEventTrajectory.hh"
 

@@ -33,9 +33,9 @@ add_library(SLArEveDisplay
 target_link_libraries(SLArEveDisplay PUBLIC 
   SLArRecoHits
   ${ROOT_LIBRARIES} ROOT::Geom ROOT::GenVector ROOT::Gui ROOT::Eve 
-  G4SOLAr::SLArReadoutSystemConfig
+  SOLARSIM::SLArReadoutSystemConfig
   ${Geant4_LIBRARIES} 
-  G4SOLAr::SLArMCEvent)
+  SOLARSIM::SLArMCEvent)
 
 root_generate_dictionary(G__SLArEveDisplay 
   ${SOLAR_UTILS_INC_DIR}/SLArEveDisplay.hh

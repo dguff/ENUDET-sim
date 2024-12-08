@@ -22,8 +22,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable( G4CASCADE )
 
 set(G4CASCADE_SOURCE_DIR "${FETCHCONTENT_BASE_DIR}/g4cascade-src")
-set(G4CASCADE_INCLUDE_DEST "${G4SOLAR_INCLUDE_DIR}/physics/cascade")
-set(G4CASCADE_SRC_DEST "${G4SOLAR_SRC_DIR}/physics/cascade")
+set(G4CASCADE_INCLUDE_DEST "${SOLARSIM_INCLUDE_DIR}/physics/cascade")
+set(G4CASCADE_SRC_DEST "${SOLARSIM_SRC_DIR}/physics/cascade")
 set(G4CASCADE_DATA_DIR "${PROJECT_SOURCE_DIR}/../g4_extra_data/CapGamData")
 get_filename_component(G4CASCADE_DATA_DIR "${G4CASCADE_DATA_DIR}" ABSOLUTE)
 

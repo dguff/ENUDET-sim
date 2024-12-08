@@ -14,7 +14,7 @@
 #include "rapidjson/document.h"
 
 // SOLAr-sim unit utility
-#include "SLArUnit.hpp"
+#include "geo/SLArUnit.hpp"
 
 // config
 #include "config/SLArCfgAnode.hh"

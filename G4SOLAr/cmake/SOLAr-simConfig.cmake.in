@@ -1,0 +1,22 @@
+######################################################################
+# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+# @file        : SOLAr-simConfig.cmake
+# @created     : Mon Jul 04, 2022 16:49:07 CEST
+######################################################################
+
+@PACKAGE_INIT@
+
+set_and_check(SOLARSIM_INCLUDE_DIR "@PACKAGE_SOLARSIM_INC_DEST@")
+set_and_check(SOLARSIM_LIB_DIR "@PACKAGE_SOLARSIM_LIB_DIR@")
+set_and_check(SOLARSIM_BIN_DIR "@PACKAGE_SOLARSIM_BIN_DIR@")
+set_and_check(SOLARSIM_EXT_DIR "@PACKAGE_SOLARSIM_EXT_DIR@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+include("@PACKAGE_SOLARSIM_INSTALL_CMAKE_DIR@/@PROJECT_NAME@Targets.cmake")
+
+# These are IMPORTED targets created by G4SOLArTargets.cmake
+set(SOLARSIM_LIBRARIES SLArMCEvent SLArMCPrimaryInfo)
+
+check_required_components(@PROJECT_NAME@)
+
+

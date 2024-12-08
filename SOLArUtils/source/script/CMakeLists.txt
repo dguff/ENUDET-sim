@@ -10,9 +10,9 @@ message(STATUS "CMAKE_INSTALL_RPATH: ${CMAKE_INSTALL_RPATH}")
 add_executable(hit_converter hit_converter.cc)
 target_link_libraries(hit_converter PUBLIC SLArHitConverter)
 target_link_libraries(hit_converter PUBLIC
-  G4SOLAr::SLArMCEvent
-  G4SOLAr::SLArMCEventReadout
-  G4SOLAr::SLArReadoutSystemConfig 
+  SOLARSIM::SLArMCEvent
+  SOLARSIM::SLArMCEventReadout
+  SOLARSIM::SLArReadoutSystemConfig 
   SLArRecoHits
   )
 
@@ -21,10 +21,10 @@ target_link_libraries(hit_viewer
   PUBLIC SLArEveDisplay
   PRIVATE
   ${ROOT_LIBRARIES} ROOT::Geom
-  G4SOLAr::SLArMCPrimaryInfo
-  G4SOLAr::SLArMCEvent
-  G4SOLAr::SLArMCEventReadout
-  G4SOLAr::SLArReadoutSystemConfig 
+  SOLARSIM::SLArMCPrimaryInfo
+  SOLARSIM::SLArMCEvent
+  SOLARSIM::SLArMCEventReadout
+  SOLARSIM::SLArReadoutSystemConfig 
   )
 
 

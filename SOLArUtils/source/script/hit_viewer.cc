@@ -20,7 +20,7 @@
 #include "rapidjson/filereadstream.h"
 
 #include "event/SLArMCEvent.hh"
-#include "SLArUnit.hpp"
+#include "geo/SLArUnit.hpp"
 
 #include "SLArEveDisplay.hh"
 

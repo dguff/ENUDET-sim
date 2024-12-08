@@ -3,8 +3,8 @@
 # @file        : CMakeLists
 # @created     : venerdì mag 06, 2022 23:01:03 CEST
 ######################################################################
-set(SLAR_EVT_INCLUDE_DIR "${G4SOLAR_INCLUDE_DIR}/event")
-set(SLAR_EVT_SOURCE_DIR "${G4SOLAR_SRC_DIR}/event")
+set(SLAR_EVT_INCLUDE_DIR "${SOLARSIM_INCLUDE_DIR}/event")
+set(SLAR_EVT_SOURCE_DIR "${SOLARSIM_SRC_DIR}/event")
 
 set(SLAR_EVT_PRIMARY_HEADERS
   "${SLAR_EVT_INCLUDE_DIR}/SLArEventTrajectory.hh"
@@ -23,8 +23,8 @@ add_library(SLArMCPrimaryInfo SHARED
   ${SLAR_EVT_PRIMARY_SOURCES} ${SLAR_EVT_PRIMARY_HEADERS} )
 target_include_directories(SLArMCPrimaryInfo 
   PUBLIC 
-  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}>)
+  $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}>)
 target_link_libraries(SLArMCPrimaryInfo PUBLIC ${ROOT_LIBRARIES})
 root_generate_dictionary(G__SLArMCPrimaryInfo
   ${SLAR_EVT_PRIMARY_HEADERS}
@@ -65,8 +65,8 @@ set(SLAR_EVT_HITS_SOURCES
 add_library(SLArMCEventReadout SHARED
   ${SLAR_EVT_HITS_SOURCES} ${SLAR_EVT_HITS_HEADERS} )
 target_include_directories(SLArMCEventReadout PUBLIC 
-  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}>)
+  $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}>)
 target_link_libraries(SLArMCEventReadout PUBLIC 
   SLArReadoutSystemConfig ${ROOT_LIBRARIES})
 ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
@@ -84,8 +84,8 @@ add_library(SLArMCEvent SHARED
   ${SLAR_MCEVENT_SOURCES} ${SLAR_MCEVENT_HEADERS} )
 target_include_directories(SLArMCEvent 
   PUBLIC 
-  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}>)
+  $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}>)
 target_link_libraries(SLArMCEvent PUBLIC
   ${ROOT_LIBRARIES} 
   SLArMCPrimaryInfo
@@ -107,8 +107,8 @@ add_library(SLArGenRecords SHARED
 target_link_libraries(SLArGenRecords PUBLIC ${ROOT_LIBRARIES})
 target_include_directories(SLArGenRecords 
   PUBLIC 
-  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}>)
+  $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}>)
 root_generate_dictionary(G__SLArGenRecords
   ${SLAR_GENRECORDS_HEADERS}
   MODULE SLArGenRecords
@@ -160,12 +160,12 @@ set(G4SOLAr_event_resources
 foreach(lib IN LISTS G4SOLAr_event_libs)
   set_target_properties(${lib} PROPERTIES 
     BUILD_RPATH ${CMAKE_CURRENT_BINARY_DIR}
-    INSTALL_RPATH ${G4SOLAR_LIB_DIR}
+    INSTALL_RPATH ${SOLARSIM_LIB_DIR}
   )
   install(TARGETS ${lib}
-    EXPORT                      G4SOLArTargets
-    LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}" 
-    RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")
+    EXPORT                     "${PROJECT_NAME}Targets"
+    LIBRARY DESTINATION        "${SOLARSIM_LIB_DIR}" 
+    RUNTIME DESTINATION        "${SOLARSIM_LIB_DIR}")
 endforeach()
 
-install(FILES ${G4SOLAr_event_resources} DESTINATION "${G4SOLAR_LIB_DIR}")
+install(FILES ${G4SOLAr_event_resources} DESTINATION "${SOLARSIM_LIB_DIR}")

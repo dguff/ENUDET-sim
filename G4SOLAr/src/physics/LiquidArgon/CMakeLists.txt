@@ -1,5 +1,5 @@
-set(SLAR_LIQUIDARGON_INCLUDE_DIR "${G4SOLAR_INCLUDE_DIR}/physics/LiquidArgon")
-set(SLAR_LIQUIDARGON_SOURCE_DIR "${G4SOLAR_SRC_DIR}/physics/LiquidArgon")
+set(SLAR_LIQUIDARGON_INCLUDE_DIR "${SOLARSIM_INCLUDE_DIR}/physics/LiquidArgon")
+set(SLAR_LIQUIDARGON_SOURCE_DIR "${SOLARSIM_SRC_DIR}/physics/LiquidArgon")
 
 set(SLAR_LIQUIDARGON_HEADERS
   "${SLAR_LIQUIDARGON_INCLUDE_DIR}/SLArLArProperties.hh"
@@ -27,13 +27,13 @@ add_library(SLArIonAndScint
 target_link_libraries(SLArIonAndScint PRIVATE ROOT::Core ${Geant4_LIBRARIES})
 target_include_directories(SLArIonAndScint 
   PUBLIC 
-  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/physics>
-  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/physics>
+  $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}/physics>
+  $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}/physics>
 )
 
 #----------------------------------------------------------------------------
 # Install instructions
 install(TARGETS SLArIonAndScint
   EXPORT                      G4SOLArTargets
-  LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}"
-  RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")
+  LIBRARY DESTINATION        "${SOLARSIM_LIB_DIR}"
+  RUNTIME DESTINATION        "${SOLARSIM_LIB_DIR}")

@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
-project(SOLArUtils)
+project(SOLArUtils LANGUAGES CXX VERSION 0.1.0)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}
   CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -30,10 +30,13 @@ include(${ROOT_USE_FILE})
 find_package(Geant4 REQUIRED)
 include(${Geant4_USE_FILE})
 
-find_package(G4SOLAr CONFIG REQUIRED)
-if(G4SOLAr_FOUND)
-  message(STATUS "G4SOLAr found: libraries at ${G4SOLAR_LIB_DIR}")
-  list(APPEND CMAKE_PREFIX_PATH ${G4SOLAR_EXT_DIR} ${G4SOLAR_BIN_DIR})
+message(STATUS "CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
+
+find_package(SOLAr-sim CONFIG REQUIRED)
+if(SOLAr-sim_FOUND)
+  message(STATUS "SOLAr-sim found: libraries at ${SOLARSIM_LIB_DIR}")
+  list(APPEND CMAKE_PREFIX_PATH ${SOLARSIM_BIN_DIR})
+  list(APPEND CMAKE_PREFIX_PATH ${SOLARSIM_EXT_DIR})
 endif()
 
 find_package(RapidJSON REQUIRED)
@@ -44,7 +47,7 @@ endif()
 #----------------------------------------------------------------------------
 # Define path variables
 
-list(APPEND CMAKE_LIBRARY_PATH ${G4SOLAR_LIB_DIR})
+list(APPEND CMAKE_LIBRARY_PATH ${SOLARSIM_LIB_DIR})
 set(SOLAR_UTILS_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
 set(SOLAR_UTILS_BIN_DIR "${CMAKE_INSTALL_PREFIX}")
 set(SOLAR_UTILS_INC_DIR "${PROJECT_SOURCE_DIR}/include")
@@ -65,7 +68,7 @@ ExternalProject_Add("progressbar"
 
 include_directories(
   ${SOLAR_UTILS_INC_DIR}
-  ${G4SOLAR_INCLUDE_DIR}
+  ${SOLARSIM_INCLUDE_DIR}
   ${Geant4_INCLUDE_DIR}
   ${ROOT_INCLUDE_DIRS}
   "${RapidJSON_INCLUDE_DIR}/.."
