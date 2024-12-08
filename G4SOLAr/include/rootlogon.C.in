@@ -9,13 +9,13 @@
 
 void rootlogon()
 {
-  gSystem->AddIncludePath("@G4SOLAR_INCLUDE_DIR@"); 
-  gSystem->AddDynamicPath("@G4SOLAR_LIB_DIR@");
+  gSystem->AddIncludePath("@SOLARSIM_INCLUDE_DIR@"); 
+  gSystem->AddDynamicPath("@SOLARSIM_LIB_DIR@");
 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArGenRecords@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArReadoutSystemConfig@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEventReadout@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCPrimaryInfo@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEvent@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArGenRecords@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
 }
 

@@ -4,7 +4,7 @@
  * @created     : Wednesday Dec 04, 2024 10:58:43 CET
  */
 
-#include "SLArGPSVertexGenerator.hh"
+#include "gen/SLArGPSVertexGenerator.hh"
 #include "SLArGeoUtils.hh"
 
 namespace gen
