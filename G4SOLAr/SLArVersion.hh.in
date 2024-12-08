@@ -1,0 +1,20 @@
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArVersion.hh
+ * @created     : Sunday Dec 08, 2024 17:55:43 CET
+ */
+
+#ifndef SLARVERSION_HH_IN
+
+#define SLARVERSION_HH_IN
+
+#pragma once
+
+#define PROJECT_NAME "@PROJECT_NAME@"
+#define SOLARSIM_VERSION "@PROJECT_VERSION@"
+#define SOLARSIM_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define SOLARSIM_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define SOLARSIM_VERSION_PATCH @PROJECT_VERSION_PATCH@
+
+#endif /* end of include guard SLARVERSION_HH_IN */
+

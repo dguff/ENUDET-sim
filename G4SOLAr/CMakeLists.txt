@@ -1,7 +1,9 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
-project(SOLAr-sim LANGUAGES CXX)
+project(SOLAr-sim LANGUAGES CXX VERSION 0.2.0)
+
+message(STATUS "Building SOLAr-sim version ${PROJECT_VERSION}")
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}
   CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -157,7 +159,8 @@ endif()
 add_definitions(${ROOT_CXX_FLAGS})
 
 #----------------------------------------------------------------------------
-# Configure local paths
+# Configure version and local paths
+configure_file(SLArVersion.hh.in ${G4SOLAR_INCLUDE_DIR}/SLArVersion.hh @ONLY)
 configure_file(SLArUserPath.hh.in ${G4SOLAR_INCLUDE_DIR}/SLArUserPath.hh @ONLY)
 
 #----------------------------------------------------------------------------
@@ -222,6 +225,7 @@ endif()
 
 # include directories
 target_include_directories(solar_sim PUBLIC
+  $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}>
   $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/action>
   $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/analysis>
   $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/event>
@@ -230,6 +234,7 @@ target_include_directories(solar_sim PUBLIC
   $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/gen>
   $<BUILD_INTERFACE:${G4SOLAR_INCLUDE_DIR}/physics>
 
+  $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}>
   $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/action>
   $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/analysis>
   $<INSTALL_INTERFACE:${G4SOLAR_INC_DEST}/event>
@@ -287,6 +292,11 @@ configure_package_config_file(
   INSTALL_DESTINATION "${G4SOLAR_INSTALL_CMAKE_DIR}"
   PATH_VARS G4SOLAR_LIB_DIR G4SOLAR_BIN_DIR G4SOLAR_INCLUDE_DIR G4SOLAR_EXT_DIR G4SOLAR_INSTALL_CMAKE_DIR
   )
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
+  )
 
 # extract git branch and commit hash
 execute_process(
@@ -302,6 +312,10 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfig.cmake
-  DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR})
+  DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR}
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/G4SOLArConfigVersion.cmake"
+  DESTINATION ${G4SOLAR_INSTALL_CMAKE_DIR}
+  )
 
 

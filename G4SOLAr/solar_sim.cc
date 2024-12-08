@@ -17,6 +17,7 @@
 
 #include "G4UImanager.hh"
 
+#include "SLArVersion.hh"
 #include "SLArUserPath.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
@@ -119,6 +120,11 @@ int main(int argc,char** argv)
   };
 
   int c, option_index; 
+
+  printf("************************************************************\n");
+  printf("* solar_sim version %s\n", SOLARSIM_VERSION);
+  printf("* The SoLAr Collaboration\n");
+  printf("************************************************************\n");
 
   while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
     switch(c) {
