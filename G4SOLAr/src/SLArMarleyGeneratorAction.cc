@@ -281,16 +281,39 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 }
 
 void SLArMarleyGeneratorAction::Configure() {
-  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-        fConfig.dir_config.nadir_hist.filename, 
-        fConfig.dir_config.nadir_hist.objname);
 
-    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-    printf("SLArMarleyGenerator::Configure() Sourcing nadir angle distribution\n"); 
-    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
+  if (fConfig.oscillogram_info.is_empty() == false) {
+    fOscillogram = std::unique_ptr<TH2F>(
+        GetFromRootfile<TH2F>( 
+          fConfig.oscillogram_info.filename,
+          fConfig.oscillogram_info.objname)
+        );
   }
-  
+
+  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
+    if (fConfig.dir_config.nadir_hist.is_empty()) {
+      if (fConfig.oscillogram_info.is_empty()) {
+        fprintf(stderr, "SLArMarleyGenerator::Configure() ERROR: nadir histogram not set\n");
+        exit(EXIT_FAILURE);
+      }
+      else {
+        fprintf(stdout, "SLArMarleyGenerator::Configure() Setting oscillogram projection as nadir histogram\n"); 
+        fNadirDistribution = std::unique_ptr<TH1D>( 
+            std::move(fOscillogram->ProjectionY("nadir_hist", 1, fOscillogram->GetNbinsX()) )
+            );      
+      }
+    }
+    else {
+      TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
+          fConfig.dir_config.nadir_hist.filename, 
+          fConfig.dir_config.nadir_hist.objname);
+
+      fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
+      printf("SLArMarleyGenerator::Configure() Sourcing nadir angle distribution\n"); 
+      printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
+    }
+  }
+
   if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
     TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
         fConfig.ene_config.spectrum_hist.filename , 
@@ -299,14 +322,6 @@ void SLArMarleyGeneratorAction::Configure() {
     fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
     printf("SLArMarleyGenerator::Configure() Sourcing external energy spectrum\n"); 
     printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
-  }
-
-  if (fConfig.oscillogram_info.is_empty() == false) {
-    fOscillogram = std::unique_ptr<TH2F>(
-        GetFromRootfile<TH2F>( 
-          fConfig.oscillogram_info.filename,
-          fConfig.oscillogram_info.objname)
-        );
   }
 
   SetupMarleyGen(); 

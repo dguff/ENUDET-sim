@@ -307,11 +307,13 @@ void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config
   } 
   else if (dir_mode == "sun") {
     local.mode = EDirectionMode::kSunDir;
-    if (dir_config.HasMember("nadir_histogram") == false) {
-      fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
-      exit(EXIT_FAILURE); 
+    //if (dir_config.HasMember("nadir_histogram") == false) {
+    //fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
+    //exit(EXIT_FAILURE); 
+    //}
+    if (dir_config.HasMember("nadir_histogram")) {
+      local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
     }
-    local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
   }
 }
 
@@ -344,10 +346,12 @@ const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
 
-    const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
-    rapidjson::Value nadir_hist_info; 
-    nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
-    doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
+    if (dconfig.nadir_hist.filename.empty() == false) {
+      const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
+      rapidjson::Value nadir_hist_info; 
+      nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
+      doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
+    }
   }
 
   return doc;
