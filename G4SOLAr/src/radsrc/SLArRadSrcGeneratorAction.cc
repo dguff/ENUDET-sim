@@ -111,7 +111,7 @@ void SLArRadSrcGeneratorAction::RadSrcConfig_t::to_input() {
 
   for (const auto& p : isotopes) {
     char line[50]; 
-    sprintf(line, "%s %g\n", p.first.data(), p.second);
+    snprintf(line, sizeof(line), "%s %g\n", p.first.data(), p.second);
     radsrc_mess_input.append(line);
   }
   radsrc_mess_input.append("\n"); 

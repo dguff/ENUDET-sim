@@ -243,7 +243,7 @@ void SLArPrimaryGeneratorAction::AddGenerator(const rapidjson::Value& jgen) {
       {
         gen::printGeneratorType(); 
         char err_msg[200]; 
-        sprintf(err_msg, "Unable to find %s primary gen among available options.\n", 
+        snprintf(err_msg, sizeof(err_msg), "Unable to find %s primary gen among available options.\n", 
             type.data()); 
         throw std::invalid_argument(err_msg); 
       }

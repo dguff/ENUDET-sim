@@ -77,7 +77,7 @@ TAssemblyModule& SLArCfgBaseSystem<TAssemblyModule>::GetBaseElement(const char* 
   }
   
   char err_msg[100]; 
-  sprintf(err_msg, 
+  snprintf(err_msg, sizeof(err_msg), 
       "SLArCfgBaseSystem::GetBaseElement() ERROR: Element '%s' not found in register\n\n", 
       name);
   throw std::runtime_error(err_msg); 
@@ -160,7 +160,8 @@ TAssemblyModule& SLArCfgBaseSystem<TAssemblyModule>::FindBaseElementInMap(int ib
   }
 
   char err_msg[100]; 
-  sprintf(err_msg, "SLArCfgBaseSystem::FindBaseElementInMap() ERROR: Element with bin index %i not found in register\n\n", ibin);
+  snprintf(err_msg, sizeof(err_msg),
+	  "SLArCfgBaseSystem::FindBaseElementInMap() ERROR: Element with bin index %i not found in register\n\n", ibin);
   throw std::runtime_error(err_msg); 
 }
 

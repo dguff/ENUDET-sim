@@ -205,6 +205,7 @@ TH2Poly* SLArCfgAnode::ConstructPixHistMap(const int depth,
   }
 
   char err_msg[100]; 
-  sprintf(err_msg, "SLArCfgAnode::ConstructPixHistMap(): ERROR while building anode map with depth level %i\n", depth);
+  snprintf(err_msg, sizeof(err_msg),
+	  "SLArCfgAnode::ConstructPixHistMap(): ERROR while building anode map with depth level %i\n", depth);
   throw std::runtime_error(err_msg); 
 }
