@@ -146,7 +146,7 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 void SLArCRYGeneratorAction::CRYConfig_t::activate_particle(const G4String particle_name) {
   if (activeParticles.find( particle_name ) == activeParticles.end()) {
     char err_msg[100]; 
-    sprintf(err_msg, "WARNING: %s is not among cry available primaries\n", 
+    snprintf(err_msg, sizeof(err_msg), "WARNING: %s is not among cry available primaries\n", 
         particle_name.data());
     std::cerr << err_msg << std::endl;
     return;
@@ -162,7 +162,7 @@ void SLArCRYGeneratorAction::CRYConfig_t::to_input() {
     G4String particle = p.first; 
     particle[0] = std::toupper(particle[0]); 
     char line[50]; 
-    sprintf(line, "return%s %i ", particle.data(), p.second);
+    snprintf(line, sizeof(line), "return%s %i ", particle.data(), p.second);
     cry_mess_input.append(line);
   }
   cry_mess_input.append(" "); 

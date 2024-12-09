@@ -93,7 +93,7 @@ namespace gen {
           d.SetObject(); 
           std::string mode_str = GetTimeGeneratorModeString(fConfig.mode).data();
           char buffer[50]; 
-          int len = sprintf(buffer, "%s", mode_str.data());
+          int len = snprintf(buffer, sizeof(buffer), "%s", mode_str.data());
           rapidjson::Value jmode;
           jmode.SetString(buffer, len, d.GetAllocator());
           d.AddMember("mode", jmode, d.GetAllocator());
@@ -244,7 +244,7 @@ namespace gen {
 
         G4String gen_type = GetType();
         char buffer[50];
-        int len = sprintf(buffer, "%s", gen_type.data());
+        int len = snprintf(buffer, sizeof(buffer), "%s", gen_type.data());
         rapidjson::Value str_gen_type;
         str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
 
