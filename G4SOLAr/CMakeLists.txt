@@ -122,7 +122,7 @@ find_library(MARLEY_ROOT
   )
 
 if (NOT ECosmic_DIR)
-  set(ECosmic_DIR "${G4SOLAR_EXT_DIR}/ENUBETCosmics")
+  set(ECosmic_DIR "${G4SOLAR_EXT_DIR}/ecosmics")
 endif()
 find_package(ECosmic REQUIRED PATHS ${ECosmic_DIR} NO_DEFAULT_PATH)
 if (ECosmic_FOUND)
