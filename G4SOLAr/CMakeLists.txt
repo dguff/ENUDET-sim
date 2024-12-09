@@ -121,6 +121,14 @@ find_library(MARLEY_ROOT
   NO_DEFAULT_PATH
   )
 
+if (NOT ECosmic_DIR)
+  set(ECosmic_DIR "${G4SOLAR_EXT_DIR}/ecosmics")
+endif()
+find_package(ECosmic REQUIRED PATHS ${ECosmic_DIR} NO_DEFAULT_PATH)
+if (ECosmic_FOUND)
+  message(STATUS "ECosmic found: include at ${ECosmic_INCLUDE_DIR}")
+endif()
+
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 #
@@ -136,6 +144,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/physics
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
+                    ${ECosmic_INCLUDE_DIR}
                     ${RapidJSON_INCLUDE_DIR}/..
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
