@@ -76,6 +76,8 @@ namespace {
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 int main(int argc,char** argv)
 {
+  // export G4CASCADE data path
+  setenv("CAPGAM_DATA_DIR", G4CASCADE_DATA_DIR, 1);
 
   G4String macro;
   G4String session;

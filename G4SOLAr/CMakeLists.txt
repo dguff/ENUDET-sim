@@ -26,6 +26,7 @@ option(SLAR_EXTERNAL "Build code with special external background features" OFF)
 option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" OFF)
 option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
 option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
+#option(SLAR_USE_G4CASCADE "Use G4CASCADE for hadronic interactions" OFF)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -82,7 +83,7 @@ set(G4SOLAR_INSTALL_CMAKE_DIR "${G4SOLAR_LIB_DIR}/cmake/${PROJECT_NAME}")
 # Find external dependencies of G4SOLAr.
 # If not already installed cd into the G4SOLAR/extern directory and execute the
 # cmakelists in there
-#
+
 # 1. RapidJSON
 message(STATUS "G4SOLAR_EXT_DIR set to ${G4SOLAR_EXT_DIR}")
 include(ExternalProject)
@@ -91,6 +92,7 @@ if(NOT RAPIDJSON_DIR)
 endif()
 find_package(RapidJSON REQUIRED PATHS ${RAPIDJSON_DIR} NO_DEFAULT_PATH)
 
+# 2. BxDecay0
 if(NOT BXDECAY0_DIR)
   set(BXDECAY0_DIR "${G4SOLAR_EXT_DIR}/bxdecay0")
 endif()
@@ -104,6 +106,7 @@ if (RapidJSON_FOUND)
   message(STATUS "RapidJSON found: include at ${RapidJSON_INCLUDE_DIR}")
 endif()
 
+# 3. MARLEY
 if(NOT MARLEY_DIR)
   set(MARLEY_DIR "${G4SOLAR_EXT_DIR}/marley")
 endif()
@@ -121,6 +124,11 @@ find_library(MARLEY_ROOT
   NO_DEFAULT_PATH
   )
 
+
+# 4. G4CASCADE
+include( ${PROJECT_SOURCE_DIR}/cmake/G4CASCADE_setup.cmake )
+
+# 5. ENUBETCosmics
 if (NOT ECosmic_DIR)
   set(ECosmic_DIR "${G4SOLAR_EXT_DIR}/ecosmics")
 endif()
@@ -128,6 +136,7 @@ find_package(ECosmic REQUIRED PATHS ${ECosmic_DIR} NO_DEFAULT_PATH)
 if (ECosmic_FOUND)
   message(STATUS "ECosmic found: include at ${ECosmic_INCLUDE_DIR}")
 endif()
+
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -142,6 +151,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/config
                     ${G4SOLAR_INCLUDE_DIR}/event
                     ${G4SOLAR_INCLUDE_DIR}/physics
+                    ${G4SOLAR_INCLUDE_DIR}/physics/cascade
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
                     ${ECosmic_INCLUDE_DIR}
@@ -159,6 +169,7 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/config/*.cc
                     ${G4SOLAR_SRC_DIR}/material/*.cc
                     ${G4SOLAR_SRC_DIR}/physics/*.cc
+                    ${G4SOLAR_SRC_DIR}/physics/cascade/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/Hall/*.cc 
                     ${G4SOLAR_SRC_DIR}/detector/TPC/*.cc
@@ -169,6 +180,7 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
 file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/event/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/physics/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/physics/cascade/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/config/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/material/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
@@ -182,12 +194,16 @@ if (SLAR_CRY_INTERFACE)
   include_directories(${CRY_INCLUDE_DIRS})
   file(GLOB cry_sources ${G4SOLAR_SRC_DIR}/cry/*.cc)
   file(GLOB cry_headers ${G4SOLAR_INCLUDE_DIR}/cry/*.hh)
+  list(APPEND sources ${cry_sources})
+  list(APPEND headers ${cry_headers})
 endif()
 
 if (SLAR_RADSRC_INTERFACE)
   include_directories(${RADSRC_INCLUDE_DIRS})
   file(GLOB radsrc_sources ${G4SOLAR_SRC_DIR}/radsrc/*.cc)
   file(GLOB radsrc_headers ${G4SOLAR_INCLUDE_DIR}/radsrc/*.hh)
+  list(APPEND sources ${radsrc_sources})
+  list(APPEND headers ${radsrc_headers})
 endif()
 
 add_definitions(${ROOT_CXX_FLAGS})
@@ -257,31 +273,21 @@ execute_process(
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
+add_executable(solar_sim solar_sim.cc ${sources} ${headers})
 
+target_link_libraries(solar_sim PRIVATE ${Geant4_LIBRARIES})
+target_link_libraries(solar_sim PRIVATE ${ROOT_LIBRARIES})
+target_link_libraries(solar_sim PRIVATE SLArMCEvent)
+target_link_libraries(solar_sim PRIVATE SLArGenRecords)
+target_link_libraries(solar_sim PRIVATE SLArScintillation)
+target_link_libraries(solar_sim PRIVATE SLArReadoutSystemConfig)
+target_link_libraries(solar_sim PRIVATE BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
+target_link_libraries(solar_sim PRIVATE ${MARLEY} ${MARLEY_ROOT})
 if (SLAR_CRY_INTERFACE)
-  if (SLAR_RADSRC_INTERFACE) 
-    add_executable(solar_sim solar_sim.cc 
-      ${sources} ${cry_sources} ${radsrc_sources} 
-      ${headers} ${cry_headers} ${radsrc_headers})
-  else()
-    add_executable(solar_sim solar_sim.cc ${sources} ${cry_sources} ${headers} ${cry_headers})
-  endif()
-else()
-  add_executable(solar_sim solar_sim.cc ${sources} ${headers})
-endif()
-
-target_link_libraries(solar_sim ${Geant4_LIBRARIES})
-target_link_libraries(solar_sim ${ROOT_LIBRARIES})
-target_link_libraries(solar_sim SLArMCEvent)
-target_link_libraries(solar_sim SLArScintillation)
-target_link_libraries(solar_sim SLArReadoutSystemConfig)
-target_link_libraries(solar_sim BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
-target_link_libraries(solar_sim ${MARLEY} ${MARLEY_ROOT})
-if (SLAR_CRY_INTERFACE)
-  target_link_libraries(solar_sim ${CRY_LIBRARIES})
+  target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
 endif()
 if (SLAR_RADSRC_INTERFACE) 
-  target_link_libraries(solar_sim ${RADSRC_LIBRARIES})
+  target_link_libraries(solar_sim PRIVATE ${RADSRC_LIBRARIES})
 endif()
 
 target_compile_definitions(solar_sim 
