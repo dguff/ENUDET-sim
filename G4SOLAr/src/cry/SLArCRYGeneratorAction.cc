@@ -265,8 +265,8 @@ void SLArCRYGeneratorAction::SourceConfiguration(const rapidjson::Value& config)
     fConfig.cry_gen_y = unit::ParseJsonVal( config["generator_y"] ); 
   }
 
-  if (config.HasMember("volume_crossing")) {
-    fConfig.volume_crossing = config["volume_crossing"].GetString(); 
+  if (config.HasMember("force_volume_crossing")) {
+    fConfig.volume_crossing = config["force_volume_crossing"].GetString(); 
   }
 
   if (config.HasMember("vertex_gen")) {
@@ -310,7 +310,7 @@ G4String SLArCRYGeneratorAction::WriteConfig() const {
   d.AddMember("date", rapidjson::StringRef( fConfig.date.data()), d.GetAllocator()); 
   d.AddMember("altitude", fConfig.altitude, d.GetAllocator()); 
   d.AddMember("vertex_generator_y", fConfig.cry_gen_y, d.GetAllocator()); 
-  d.AddMember("volume_crossing", rapidjson::StringRef(fConfig.volume_crossing.data()), d.GetAllocator());
+  d.AddMember("force_volume_crossing", rapidjson::StringRef(fConfig.volume_crossing.data()), d.GetAllocator());
 
   d.Accept(writer);
   config_str = buffer.GetString();
