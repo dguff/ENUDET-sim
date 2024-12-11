@@ -38,9 +38,6 @@ namespace geo {
   }
 
   bool track_crosses_volume(const G4ThreeVector& vtx, const G4ThreeVector& momentum_dir, const G4String& pv_name) {
-    printf("geo::track_crosses_volume: checking if vertex (%.2f, %.2f, %.2f) with momentum (%.2f, %.2f, %.2f) crosses volume %s\n",
-        vtx.x(), vtx.y(), vtx.z(), momentum_dir.x(), momentum_dir.y(), momentum_dir.z(), pv_name.data());
-
     G4PhysicalVolumeStore* pvs = G4PhysicalVolumeStore::GetInstance();
 
     const G4VPhysicalVolume* world = pvs->GetVolume("World");
@@ -59,14 +56,9 @@ namespace geo {
     HepGeom::Vector3D<G4double> dir(momentum_dir.x(), momentum_dir.y(), momentum_dir.z());
     auto pv_transform = GetTransformToGlobal(pv);
     auto pt_transform = pv_transform.inverse();
-    printf("pt_transform translation: %.2f, %.2f, %.2f\n", 
-        pt_transform.getTranslation().x(), pt_transform.getTranslation().y(), pt_transform.getTranslation().z());
 
     while (world_solid->Inside(pos) == kInside && inside == false) {
-      printf("pos: %.2f, %.2f, %.2f\n", pos.x(), pos.y(), pos.z());
       const HepGeom::Point3D<G4double> xpos = pt_transform * pos;
-      printf("xpos: %.2f, %.2f, %.2f\n", xpos.x(), xpos.y(), xpos.z());
-
       if (solid->Inside(xpos) == kInside) {
         inside = true;
         printf("geo::track_crosses_volume: vertex inside volume!\n");
@@ -74,9 +66,6 @@ namespace geo {
       }
       pos += step_len*dir;
     }
-
-    getchar();
-
     return inside;
   }
 }
