@@ -61,7 +61,6 @@ namespace geo {
       const HepGeom::Point3D<G4double> xpos = pt_transform * pos;
       if (solid->Inside(xpos) == kInside) {
         inside = true;
-        printf("geo::track_crosses_volume: vertex inside volume!\n");
         break;
       }
       pos += step_len*dir;
