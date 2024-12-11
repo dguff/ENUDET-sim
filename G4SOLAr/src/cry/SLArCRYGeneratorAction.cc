@@ -4,19 +4,19 @@
  * @created     : Wednesday Mar 13, 2024 17:49:49 CET
  */
 
-#include <cry/SLArCRYGeneratorAction.hh>
-#include <G4RandomTools.hh>
-#include <G4EventManager.hh>
-#include <G4Event.hh>
-#include <G4ParticleTable.hh>
-#include <G4Geantino.hh>
-#include <G4RandomTools.hh>
+#include "cry/SLArCRYGeneratorAction.hh"
+#include "detector/SLArGeoUtils.hh"
+#include "G4RandomTools.hh"
+#include "G4EventManager.hh"
+#include "G4Event.hh"
+#include "G4ParticleTable.hh"
+#include "G4RandomTools.hh"
 
-#include <cstdio>
-#include <fstream>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include "cstdio"
+#include "fstream"
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 
 //----------------------------------------------------------------------------//
 namespace gen {
@@ -102,10 +102,10 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
                 RunMustBeAborted, *str);
   }
   G4String particleName;
-  vect->clear();
-  gen->genEvent(vect);
 
   auto particleTable = G4ParticleTable::GetParticleTable();
+  G4ThreeVector vertex(0, 0, 0);
+  G4ThreeVector direction(0, 0, 0);
 
   G4EventManager* evManager = G4EventManager::GetEventManager(); 
   int verbose = evManager->GetVerboseLevel(); 
@@ -115,32 +115,54 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       << G4endl;
   }
 
-  for ( unsigned j=0; j<vect->size(); j++) {
-    particleName=CRYUtils::partName((*vect)[j]->id());
+  bool target_hit = false;
+  bool track_hit = false;
 
-    if (verbose) {
-    G4cout << "  "          << particleName << " "
-         << "charge="      << (*vect)[j]->charge() << " "
-         << std::setprecision(4)
-         << "energy (MeV)=" << (*vect)[j]->ke()*CLHEP::MeV << " "
-         << "pos (m)"
-         << G4ThreeVector((*vect)[j]->x(), fConfig.cry_gen_y, (*vect)[j]->y())
-         << " " << "direction cosines "
-         << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v())
-         << " " << G4endl;
+  while (target_hit == false) {
+    vect->clear();
+    gen->genEvent(vect);
+    for ( unsigned j=0; j<vect->size(); j++) {
+      particleName=CRYUtils::partName((*vect)[j]->id());
+
+      if (verbose) {
+        G4cout << "  "          << particleName << " "
+          << "charge="      << (*vect)[j]->charge() << " "
+          << std::setprecision(4)
+          << "energy (MeV)=" << (*vect)[j]->ke()*CLHEP::MeV << " "
+          << "pos (m)"
+          << G4ThreeVector((*vect)[j]->x(), fConfig.cry_gen_y, (*vect)[j]->y())
+          << " " << "direction cosines "
+          << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v())
+          << " " << G4endl;
+      }
+
+      fVtxGen->ShootVertex(vertex);
+      direction.set((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v());
+
+      if (fConfig.volume_crossing.empty() == false) {
+        track_hit = geo::track_crosses_volume(vertex, direction, fConfig.volume_crossing);
+      }
+      else {
+        track_hit = true;
+      }
+      
+      if (track_hit == false) {
+        delete (*vect)[j];
+        continue;
+      }
+      else {
+        target_hit = true;
+        particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
+        particleGun->SetParticleEnergy((*vect)[j]->ke()*CLHEP::MeV);
+        particleGun->SetParticlePosition( vertex );
+        particleGun->SetParticleMomentumDirection( direction );
+        particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
+        particleGun->GeneratePrimaryVertex(anEvent);
+        delete (*vect)[j];
+      }
     }
-
-    particleGun->SetParticleDefinition(particleTable->FindParticle((*vect)[j]->PDGid()));
-    particleGun->SetParticleEnergy((*vect)[j]->ke()*CLHEP::MeV);
-    particleGun->SetParticlePosition(
-        G4ThreeVector((*vect)[j]->x()*CLHEP::m, fConfig.cry_gen_y, (*vect)[j]->y()*CLHEP::m));
-    particleGun->SetParticleMomentumDirection(
-        G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v()));
-    particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
-    particleGun->SetParticleTime(0.0*CLHEP::s);
-    particleGun->GeneratePrimaryVertex(anEvent);
-    delete (*vect)[j];
   }
+  return;
 }
 
 void SLArCRYGeneratorAction::CRYConfig_t::activate_particle(const G4String particle_name) {
@@ -243,6 +265,10 @@ void SLArCRYGeneratorAction::SourceConfiguration(const rapidjson::Value& config)
     fConfig.cry_gen_y = unit::ParseJsonVal( config["generator_y"] ); 
   }
 
+  if (config.HasMember("force_volume_crossing")) {
+    fConfig.volume_crossing = config["force_volume_crossing"].GetString(); 
+  }
+
   if (config.HasMember("vertex_gen")) {
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
@@ -284,6 +310,7 @@ G4String SLArCRYGeneratorAction::WriteConfig() const {
   d.AddMember("date", rapidjson::StringRef( fConfig.date.data()), d.GetAllocator()); 
   d.AddMember("altitude", fConfig.altitude, d.GetAllocator()); 
   d.AddMember("vertex_generator_y", fConfig.cry_gen_y, d.GetAllocator()); 
+  d.AddMember("force_volume_crossing", rapidjson::StringRef(fConfig.volume_crossing.data()), d.GetAllocator());
 
   d.Accept(writer);
   config_str = buffer.GetString();

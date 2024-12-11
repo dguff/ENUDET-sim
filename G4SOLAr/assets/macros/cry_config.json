@@ -8,10 +8,21 @@
       "date" : "07-06-2023", 
       "latitude" : 46.95, 
       "altitude" : 0, 
-      "box_length" : {"val" : 5.0, "unit" : "m"}, 
       "n_particles_min" : 1, 
-      "n_particles_max" : 10, 
-      "generator_y" : {"val" : 2.0, "unit" : "m"}
+      "n_particles_max" : 2, 
+      "force_volume_crossing" : "target_lar_pv",
+      "vertex_gen" : {
+        "type" : "gps_pos",
+        "config" : {
+          "type" : "Plane", 
+          "shape" : "Circle",
+          "radius" : {"val" : 3, "unit" : "m"},
+          "center" : {"val" : [0, 30, 0], "unit" : "cm"},
+          "volume" : "target_lar_pv",
+          "rot1" : [1.0, 0.0, 0.0],
+          "rot2" : [0.0, 0.0, 1.0]
+        }
+      }
     }
   }
 }
