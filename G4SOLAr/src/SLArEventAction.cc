@@ -549,9 +549,9 @@ int SLArEventAction::FindAncestorID(int trkid) {
     }
 
     pid = fParentIDMap[trkid];
-#ifdef SLAR_DEBUG
-    printf("local parent id: %i\n", pid);
-#endif
+//#ifdef SLAR_DEBUG
+    //printf("local parent id: %i\n", pid);
+//#endif
 
     for (const auto& p : primaries) {
       if (pid == p.GetTrackID()) {
