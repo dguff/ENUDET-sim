@@ -127,7 +127,8 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
   auto navigator = G4TransportationManager::GetTransportationManager()->GetNavigator("World"); 
 
-  G4ThreeVector localVertex;
+  //G4ThreeVector localVertex;
+  G4Point3D localVertex;
   G4String localMaterial; 
   G4int maxtries=100000, itry=1;
   do {
@@ -140,7 +141,9 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
     localMaterial = vol->GetLogicalVolume()->GetMaterial()->GetName();
   } while (!fSolid->Inside(localVertex) && ++itry < maxtries && strcmp(fMaterial, localMaterial) != 0) ;
 
-  G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  HepGeom::Point3D<G4double> vtx(localVertex.x(), localVertex.y(), localVertex.z());
+  vtx = fBulkTransform * vtx;
+  //G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
   fCounter++;
 }
@@ -200,6 +203,8 @@ void SLArBulkVertexGenerator::Config(const G4String& volumeName) {
   SetBulkLogicalVolume(volume->GetLogicalVolume()); 
   SetSolidTranslation(volume->GetTranslation()); 
   SetSolidRotation(volume->GetRotation()); 
+  
+  fBulkTransform = geo::GetTransformToGlobal(volume);
   return;
 }
 

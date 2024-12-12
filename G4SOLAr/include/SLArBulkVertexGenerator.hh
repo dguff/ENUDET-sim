@@ -88,6 +88,7 @@ private:
   G4LogicalVolume * fLogVol = nullptr; ///< Reference to the logical volume
   G4ThreeVector fBulkTranslation; ///< The box position in world coordinate frame
   G4RotationMatrix fBulkRotation; ///< The box rotation in world coordinate frame
+  G4Transform3D fBulkTransform; ///< The box transformation in world coordinate frame
   double fTolerance{1.0 * CLHEP::um}; ///< Geometrical tolerance (length)
   unsigned int fRandomSeed{0}; ///< Seed for the random number generator
   bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes

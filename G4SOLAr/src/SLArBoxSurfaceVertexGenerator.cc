@@ -213,8 +213,9 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   }
   //G4cout << "local_displacement: " << local_displacement << G4endl;
 
-  G4ThreeVector localVertex = face_center_local + local_displacement;
-  G4ThreeVector finalVertex = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  HepGeom::Point3D<G4double> localVertex = face_center_local + local_displacement;
+  HepGeom::Point3D<G4double> finalVertex = fBulkTransform * localVertex;
+  //G4ThreeVector finalVertex = fBulkInverseRotation(localVertex) + fBulkTranslation;
 
   vertex_.set(finalVertex.x(), finalVertex.y(), finalVertex.z()); 
   //G4cout << "vertex = " << vertex_ << G4endl;
@@ -242,6 +243,8 @@ if ( config.HasMember("time") ) {
   SetBoxLogicalVolume(volume->GetLogicalVolume()); 
   SetSolidTranslation(volume->GetTranslation()); 
   SetSolidRotation(volume->GetRotation()); 
+
+  fBulkTransform = geo::GetTransformToGlobal(volume);
 
   if (config.HasMember("origin_face")) {
       FixVertexFace(true); 
