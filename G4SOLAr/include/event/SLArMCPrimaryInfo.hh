@@ -19,6 +19,8 @@ class SLArMCPrimaryInfo : public TNamed
   public:
     SLArMCPrimaryInfo();
     SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p);
+    SLArMCPrimaryInfo& operator=(const SLArMCPrimaryInfo& p);
+    SLArMCPrimaryInfo(SLArMCPrimaryInfo&&) = default;
     ~SLArMCPrimaryInfo();
 
     void SetPosition(const double&  x, const double&  y, const double&  z, const double& t = 0);
