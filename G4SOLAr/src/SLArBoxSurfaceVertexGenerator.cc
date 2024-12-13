@@ -236,7 +236,8 @@ if ( config.HasMember("time") ) {
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
   if (volume == nullptr) {
     char err_msg[200]; 
-    sprintf(err_msg, "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
+    snprintf(err_msg, sizeof(err_msg),
+	    "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
     throw std::runtime_error(err_msg);
   }
 
@@ -266,7 +267,8 @@ void SLArBoxSurfaceVertexGenerator::Config( const G4String& config ) {
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
   if (volume == nullptr) {
     char err_msg[200];
-    sprintf(err_msg, "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
+    snprintf(err_msg, sizeof(err_msg),
+	     "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
     throw std::runtime_error(err_msg); 
   }
 
@@ -299,19 +301,19 @@ const rapidjson::Document SLArBoxSurfaceVertexGenerator::ExportConfig() const {
 
   rapidjson::Value str_gen_type;
   char buffer[50];
-  int len = sprintf(buffer, "%s", gen_type.data());
+  int len = snprintf(buffer, sizeof(buffer),"%s", gen_type.data());
   str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
   vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
   memset(buffer, 0, sizeof(buffer));
 
   rapidjson::Value str_solid_vol;
-  len = sprintf(buffer, "%s", solid_name.data());
+  len = snprintf(buffer, sizeof(buffer), "%s", solid_name.data());
   str_solid_vol.SetString(buffer, len, vtx_info.GetAllocator());
   vtx_info.AddMember("solid_volume", str_solid_vol, vtx_info.GetAllocator()); 
   memset(buffer, 0, sizeof(buffer));
 
   rapidjson::Value str_logic_vol; 
-  len = sprintf(buffer, "%s", logic_name.data());
+  len = snprintf(buffer, sizeof(buffer), "%s", logic_name.data());
   str_logic_vol.SetString(buffer, len, vtx_info.GetAllocator());
   memset(buffer, 0, sizeof(buffer));
   vtx_info.AddMember("logical_volume", str_logic_vol, vtx_info.GetAllocator()); 
