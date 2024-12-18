@@ -29,10 +29,10 @@
             "type" : "Plane",
             "shape" : "Circle",
             "radius" : {"val" : 10, "unit" : "cm"},
-            "centre" : {"val" : [0, 0, 0], "unit" : "cm"},
+            "center" : {"val" : [0, 0, 0], "unit" : "cm"},
             "volume" : "TPC11", 
             "rot1" : [1.0, 0.0, 0.0],
-            "rot2" : [0.0, 0.0, 2.0]
+            "rot2" : [0.0, 0.0, 1.0]
           }
         }
       }

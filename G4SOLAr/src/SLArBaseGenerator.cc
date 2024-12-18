@@ -29,18 +29,18 @@ const rapidjson::Document SLArBaseGenerator::ExtSourceInfo_t::ExportConfig() con
   hist_doc.SetObject(); 
 
   char buffer[200];
-  int len = sprintf(buffer, "%s", filename.data());
+  int len = snprintf(buffer, sizeof(buffer), "%s", filename.data());
   rapidjson::Value jfilename;
   jfilename.SetString(buffer, len, hist_doc.GetAllocator());
   hist_doc.AddMember("filename", jfilename, hist_doc.GetAllocator()); 
 
   rapidjson::Value jobjname(rapidjson::kStringType);
-  len = sprintf(buffer, "%s", objname.data()); 
+  len = snprintf(buffer, sizeof(buffer), "%s", objname.data()); 
   jobjname.SetString(buffer, len, hist_doc.GetAllocator()); 
   hist_doc.AddMember("objname", jobjname, hist_doc.GetAllocator()); 
 
   rapidjson::Value jtype(rapidjson::kStringType);
-  len = sprintf(buffer, "%s", type.data()); 
+  len = snprintf(buffer, sizeof(buffer), "%s", type.data()); 
   jtype.SetString(buffer, len, hist_doc.GetAllocator()); 
   hist_doc.AddMember("type", jtype, hist_doc.GetAllocator()); 
   return hist_doc; 
@@ -109,7 +109,7 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
       {
         char err_msg[100];
         gen::printVtxGeneratorType();
-        sprintf(err_msg, "Unable to find %s vertex generator among the available options\n", 
+        snprintf(err_msg, sizeof(err_msg), "Unable to find %s vertex generator among the available options\n", 
             type.data()); 
         std::cerr << err_msg << std::endl;
         exit( EXIT_FAILURE ); 
@@ -307,11 +307,13 @@ void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config
   } 
   else if (dir_mode == "sun") {
     local.mode = EDirectionMode::kSunDir;
-    if (dir_config.HasMember("nadir_histogram") == false) {
-      fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
-      exit(EXIT_FAILURE); 
+    //if (dir_config.HasMember("nadir_histogram") == false) {
+    //fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
+    //exit(EXIT_FAILURE); 
+    //}
+    if (dir_config.HasMember("nadir_histogram")) {
+      local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
     }
-    local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
   }
 }
 
@@ -325,7 +327,7 @@ const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
   rapidjson::Value jmode; 
 
   if (dconfig.mode == EDirectionMode::kFixedDir) {
-    len = sprintf(buffer, "fixed"); 
+    len = snprintf(buffer, sizeof(buffer), "fixed"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     rapidjson::Value jaxis(rapidjson::kArrayType); 
@@ -335,19 +337,21 @@ const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
     doc.AddMember("axis", jaxis, doc.GetAllocator()); 
   }
   else if (dconfig.mode == EDirectionMode::kRandomDir) {
-    len = sprintf(buffer, "isotropic"); 
+    len = snprintf(buffer, sizeof(buffer), "isotropic"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
   }
   else if (dconfig.mode == EDirectionMode::kSunDir) {
-    len = sprintf(buffer, "sun_direction"); 
+    len = snprintf(buffer, sizeof(buffer), "sun_direction"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
 
-    const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
-    rapidjson::Value nadir_hist_info; 
-    nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
-    doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
+    if (dconfig.nadir_hist.filename.empty() == false) {
+      const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
+      rapidjson::Value nadir_hist_info; 
+      nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
+      doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
+    }
   }
 
   return doc;
@@ -475,19 +479,19 @@ const rapidjson::Document SLArBaseGenerator::ExportEnergyConfig() const {
   rapidjson::Value jmode; 
 
   if (econfig.mode == EEnergyMode::kFixed) {
-    len = sprintf(buffer, "fixed"); 
+    len = snprintf(buffer, sizeof(buffer), "fixed"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     doc.AddMember("energy_MeV", econfig.energy_value, doc.GetAllocator()); 
   }
   else if (econfig.mode == EEnergyMode::kCustom) {
-    len = sprintf(buffer, "custom"); 
+    len = snprintf(buffer, sizeof(buffer), "custom"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     doc.AddMember("label", rapidjson::StringRef(econfig.energy_distribution_label.data()), doc.GetAllocator()); 
   }
   else if (econfig.mode == EEnergyMode::kExtSpectrum) {
-    len = sprintf(buffer, "spectrum"); 
+    len = snprintf(buffer, sizeof(buffer), "spectrum"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     const rapidjson::Document spectrum_doc = ExportEnergyConfig(); 

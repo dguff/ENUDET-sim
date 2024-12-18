@@ -39,24 +39,32 @@ void SLArGPSVertexGenerator::Config(const rapidjson::Value& config)
   if (config.HasMember("center")){
     G4ThreeVector center;
     G4double vunit = 1.0; 
-    if (config["center"].HasMember("unit")) {
+    const auto& jcenter = config["center"];
+    if (jcenter.HasMember("unit")) {
       vunit = unit::GetJSONunit(config["center"]);
     }
-    const auto& jcenter = config["center"];
-    if (jcenter.IsArray() == false) {
+    if (jcenter.HasMember("val") == false) {
       G4String msg = "SLArGPSVertexGenerator::Config ERROR: ";
-      msg += "field \"center\" must be a rapidjson::Array\n";
+      msg += "field \"center\" must have a field \"val\"\n";
+      throw std::invalid_argument(msg);
+    }
+
+    const auto& jcoords = jcenter["val"];
+    if (jcoords.IsArray() == false) {
+      G4String msg = "SLArGPSVertexGenerator::Config ERROR: ";
+      msg += "field \"val\" of \"center\" must be a rapidjson::Array\n";
       throw std::invalid_argument(msg); 
     }
     double xx[3] = {0.0, 0.0, 0.0}; 
     size_t i = 0; 
-    for (const auto& jval : jcenter.GetArray()) {
+    for (const auto& jval : jcoords.GetArray()) {
       if (jval.IsNumber() == false) {
         G4String msg = "SLArGPSVertexGenerator::Config ERROR: ";
         msg += "field \"center\" must be a rapidjson::Array of numbers\n";
         throw std::invalid_argument(msg); 
       }
       xx[i] = jval.GetDouble();
+      i++;
     }
     center.set( xx[0]*vunit, xx[1]*vunit, xx[2]*vunit );
     fPSPosGen->SetCentreCoords( center );
