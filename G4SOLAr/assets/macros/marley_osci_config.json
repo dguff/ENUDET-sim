@@ -6,11 +6,7 @@
       "target" : {"nuclides" : [1000180400], "atom_fractions" : [1.0]}, 
       "reactions" : ["ve40ArCC_Bhattacharya2009.react"], 
       "direction" : {
-        "mode" : "sun", 
-        "nadir_histogram" : {
-          "filename" : "./assets/marley_cfg/nadir_pdf.root", 
-          "objname" : "nadir_hist_surf"
-        }
+        "mode" : "sun"
       },
       "energy" : {
         "mode" : "mono", 

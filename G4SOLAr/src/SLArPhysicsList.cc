@@ -41,13 +41,8 @@
 #include "G4ParticleTypes.hh"
 #include "G4ParticleTable.hh"
 
-//#include "G4PhysListFactory.hh"
-#include "FTFP_BERT.hh"
-#include "FTFP_BERT_HP.hh"
-#include "QGSP_BERT_HP.hh"
-#include "QGSP_BIC_AllHP.hh"
+#include "G4PhysListFactory.hh"
 #include "G4EmLivermorePhysics.hh"
-#include "G4EmStandardPhysics_option4.hh"
 
 #include "G4Gamma.hh"
 #include "G4Electron.hh"
@@ -81,23 +76,21 @@ SLArPhysicsList::SLArPhysicsList(G4String physName, G4bool do_cerenkov) :
   fCutForElectron  = 0.1*CLHEP::mm;
   fCutForPositron  = 0.1*CLHEP::mm;
 
-  //    G4PhysListFactory factory;
-  G4VModularPhysicsList* phys = NULL;
-  if (physName == "QGSP_BERT_HP") {
-    phys = new QGSP_BERT_HP;
-  } 
-  else if (physName == "QGSP_BIC_AllHP") {
-    phys = new QGSP_BIC_AllHP; 
+  G4VModularPhysicsList* phys = nullptr;
+  G4PhysListFactory factory;
+  if (factory.IsReferencePhysList(physName)) {
+    phys = factory.GetReferencePhysList(physName);
+    if(!phys)G4Exception("SLArPhysicsList::SLArPhysicsList","InvalidSetup",
+        FatalException,"PhysicsList does not exist");
+    fMessenger = new SLArPhysicsListMessenger(this);
   }
   else {
-    phys = new FTFP_BERT;
+    G4cout << "Physics list " << physName << " is not defined." << G4endl;
+    G4cout << "Available Physics Lists are:" << G4endl;
+    factory.AvailablePhysLists();
+    G4Exception("SLArPhysicsList::SLArPhysicsList","InvalidSetup",
+        FatalException,"PhysicsList does not exist");
   }
-  //    if (factory.IsReferencePhysList(physName)) {
-  //       phys = factory.GetReferencePhysList(physName);
-  //       if(!phys)G4Exception("SLArPhysicsList::SLArPhysicsList","InvalidSetup",
-  //                            FatalException,"PhysicsList does not exist");
-  fMessenger = new SLArPhysicsListMessenger(this);
-  //    }
 
   for (G4int i = 0; ; ++i) {
     G4VPhysicsConstructor* elem =
@@ -113,7 +106,6 @@ SLArPhysicsList::SLArPhysicsList(G4String physName, G4bool do_cerenkov) :
 
   RegisterPhysics(new SLArExtraPhysics());
   RegisterPhysics(fOpticalPhysics);
-  //RegisterPhysics(new G4RadioactiveDecayPhysics());
   ReplacePhysics(new G4EmLivermorePhysics());
 
   fStepMaxProcess = new SLArStepMax();

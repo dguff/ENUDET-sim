@@ -6,19 +6,20 @@
 
 #include <cstdio>
 #include <memory>
-#include <G4Event.hh>
-#include <G4EventManager.hh>
-#include <G4RunManager.hh>
+#include "G4Event.hh"
+#include "G4EventManager.hh"
+#include "G4RunManager.hh"
 
-#include <SLArBaseGenerator.hh>
-#include <SLArBulkVertexGenerator.hh>
-#include <SLArBoxSurfaceVertexGenerator.hh>
-#include <SLArAnalysisManager.hh>
-#include <SLArRunAction.hh>
-#include <SLArRandomExtra.hh>
-#include <SLArUnit.hpp>
+#include "SLArBaseGenerator.hh"
+#include "SLArBulkVertexGenerator.hh"
+#include "SLArBoxSurfaceVertexGenerator.hh"
+#include "SLArGPSVertexGenerator.hh"
+#include "SLArAnalysisManager.hh"
+#include "SLArRunAction.hh"
+#include "SLArRandomExtra.hh"
+#include "SLArUnit.hpp"
 
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/prettywriter.h"
 
 
 namespace gen {
@@ -28,18 +29,18 @@ const rapidjson::Document SLArBaseGenerator::ExtSourceInfo_t::ExportConfig() con
   hist_doc.SetObject(); 
 
   char buffer[200];
-  int len = sprintf(buffer, "%s", filename.data());
+  int len = snprintf(buffer, sizeof(buffer), "%s", filename.data());
   rapidjson::Value jfilename;
   jfilename.SetString(buffer, len, hist_doc.GetAllocator());
   hist_doc.AddMember("filename", jfilename, hist_doc.GetAllocator()); 
 
   rapidjson::Value jobjname(rapidjson::kStringType);
-  len = sprintf(buffer, "%s", objname.data()); 
+  len = snprintf(buffer, sizeof(buffer), "%s", objname.data()); 
   jobjname.SetString(buffer, len, hist_doc.GetAllocator()); 
   hist_doc.AddMember("objname", jobjname, hist_doc.GetAllocator()); 
 
   rapidjson::Value jtype(rapidjson::kStringType);
-  len = sprintf(buffer, "%s", type.data()); 
+  len = snprintf(buffer, sizeof(buffer), "%s", type.data()); 
   jtype.SetString(buffer, len, hist_doc.GetAllocator()); 
   hist_doc.AddMember("type", jtype, hist_doc.GetAllocator()); 
   return hist_doc; 
@@ -51,8 +52,8 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
   }
   
   G4String type = config["type"].GetString(); 
-  G4cerr << "Building " << type.data() << " vertex generator" << G4endl;
   EVertexGenerator kGen = getVtxGenIndex( type ); 
+  printf("[gen] Building %s vertex generator (type %i)\n", type.data(), kGen);
 
   switch (kGen) {
     case (EVertexGenerator::kPoint) : 
@@ -67,6 +68,19 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
         break;
       }
     
+    case (EVertexGenerator::kGPSPos) : 
+      {
+        printf("Building GPS vertex generator\n");
+        fVtxGen = std::make_unique<SLArGPSVertexGenerator>();
+        try { fVtxGen->Config( config["config"] ); }
+        catch (const std::exception& e) {
+          std::cerr << "ERROR configuring SLArGPSPosVertexGenerator()" << std::endl;
+          std::cerr << e.what() << std::endl;
+          exit( EXIT_FAILURE );
+        }
+        break;
+      }
+
     case (EVertexGenerator::kBulk) : 
       {
         fVtxGen = std::make_unique<SLArBulkVertexGenerator>(); 
@@ -95,7 +109,7 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
       {
         char err_msg[100];
         gen::printVtxGeneratorType();
-        sprintf(err_msg, "Unable to find %s vertex generator among the available options\n", 
+        snprintf(err_msg, sizeof(err_msg), "Unable to find %s vertex generator among the available options\n", 
             type.data()); 
         std::cerr << err_msg << std::endl;
         exit( EXIT_FAILURE ); 
@@ -105,6 +119,7 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
 
   printf("[gen] %s vtx gen for generator %s: %p\n", 
       fVtxGen->GetType().data(), fLabel.data(), static_cast<void*>(fVtxGen.get())); 
+  fVtxGen->Print();
   
   return;
 }
@@ -214,7 +229,7 @@ G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) 
     // Select nadir angle
     const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
     const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
-    const double theta = 107.7*TMath::DegToRad(); 
+    const double theta = 102.5*TMath::DegToRad(); 
     const double cos_theta = cos( theta ); 
     const double sin_theta = sin( theta ); 
     const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
@@ -234,31 +249,6 @@ G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) 
 
 G4ThreeVector SLArBaseGenerator::SampleDirection() {
   return SampleDirection( fConfig.dir_config ); 
-  //auto& dir_config = fConfig.dir_config; 
-
-  //SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
-  //SLArRandom* slar_random = run_action->GetTRandomInterface(); 
-
-  //if (dir_config.mode == EDirectionMode::kFixedDir) {
-    //dir_config.direction_tmp.set( dir_config.axis.x(), dir_config.axis.y(), dir_config.axis.z() ); 
-  //}
-  //else if (dir_config.mode == EDirectionMode::kRandomDir) {
-    //dir_config.direction_tmp = SLArRandom::SampleRandomDirection();
-  //}
-  //else if (dir_config.mode == EDirectionMode::kSunDir) {
-    //// Select nadir angle
-    //const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
-    //const double azimuth = 107.7*TMath::DegToRad(); 
-    //const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
-    //dir_config.direction_tmp.set(
-      //+2*cos_nadir * cos( azimuth ) / TMath::Pi(), 
-      //-sin_nadir, 
-      //-2*cos_nadir * sin( azimuth ) / TMath::Pi()
-      //);
-    //dir_config.direction_tmp = dir_config.direction_tmp.unit(); 
-  //}
-
-  //return dir_config.direction_tmp; 
 }
 
 G4double SLArBaseGenerator::SampleEnergy(EnergyConfig_t& ene_config) {
@@ -279,20 +269,6 @@ G4double SLArBaseGenerator::SampleEnergy(EnergyConfig_t& ene_config) {
 
 G4double SLArBaseGenerator::SampleEnergy() {
   return SampleEnergy(fConfig.ene_config); 
-  //auto& ene_config = fConfig.ene_config; 
-  //G4double ene = 1.0*CLHEP::MeV;
-
-  //SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
-  //SLArRandom* slar_random = run_action->GetTRandomInterface(); 
-
-  //if (ene_config.mode == EEnergyMode::kFixed) {
-    //ene_config.energy_tmp = ene_config.energy_value; 
-  //}
-  //else if (ene_config.mode == EEnergyMode::kExtSpectrum) {
-    //ene_config.energy_tmp = fEnergySpectrum->GetRandom( slar_random->GetEngine().get() ); 
-  //}
-
-  //return ene_config.energy_tmp;
 }
 
 void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config) {
@@ -331,11 +307,13 @@ void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config
   } 
   else if (dir_mode == "sun") {
     local.mode = EDirectionMode::kSunDir;
-    if (dir_config.HasMember("nadir_histogram") == false) {
-      fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
-      exit(EXIT_FAILURE); 
+    //if (dir_config.HasMember("nadir_histogram") == false) {
+    //fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
+    //exit(EXIT_FAILURE); 
+    //}
+    if (dir_config.HasMember("nadir_histogram")) {
+      local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
     }
-    local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
   }
 }
 
@@ -349,7 +327,7 @@ const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
   rapidjson::Value jmode; 
 
   if (dconfig.mode == EDirectionMode::kFixedDir) {
-    len = sprintf(buffer, "fixed"); 
+    len = snprintf(buffer, sizeof(buffer), "fixed"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     rapidjson::Value jaxis(rapidjson::kArrayType); 
@@ -359,19 +337,21 @@ const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
     doc.AddMember("axis", jaxis, doc.GetAllocator()); 
   }
   else if (dconfig.mode == EDirectionMode::kRandomDir) {
-    len = sprintf(buffer, "isotropic"); 
+    len = snprintf(buffer, sizeof(buffer), "isotropic"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
   }
   else if (dconfig.mode == EDirectionMode::kSunDir) {
-    len = sprintf(buffer, "sun_direction"); 
+    len = snprintf(buffer, sizeof(buffer), "sun_direction"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
 
-    const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
-    rapidjson::Value nadir_hist_info; 
-    nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
-    doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
+    if (dconfig.nadir_hist.filename.empty() == false) {
+      const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
+      rapidjson::Value nadir_hist_info; 
+      nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
+      doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
+    }
   }
 
   return doc;
@@ -499,19 +479,19 @@ const rapidjson::Document SLArBaseGenerator::ExportEnergyConfig() const {
   rapidjson::Value jmode; 
 
   if (econfig.mode == EEnergyMode::kFixed) {
-    len = sprintf(buffer, "fixed"); 
+    len = snprintf(buffer, sizeof(buffer), "fixed"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     doc.AddMember("energy_MeV", econfig.energy_value, doc.GetAllocator()); 
   }
   else if (econfig.mode == EEnergyMode::kCustom) {
-    len = sprintf(buffer, "custom"); 
+    len = snprintf(buffer, sizeof(buffer), "custom"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     doc.AddMember("label", rapidjson::StringRef(econfig.energy_distribution_label.data()), doc.GetAllocator()); 
   }
   else if (econfig.mode == EEnergyMode::kExtSpectrum) {
-    len = sprintf(buffer, "spectrum"); 
+    len = snprintf(buffer, sizeof(buffer), "spectrum"); 
     jmode.SetString(buffer, len, doc.GetAllocator()); 
     doc.AddMember("mode", jmode, doc.GetAllocator()); 
     const rapidjson::Document spectrum_doc = ExportEnergyConfig(); 

@@ -8,33 +8,32 @@
 
 #define SLAREVEDISPLAY_HH
 
-#include <RtypesCore.h>
 #include <cstddef>
 #include <iostream>
-#include <TFile.h>
-#include <TTree.h>
+#include "TFile.h"
+#include "TTree.h"
 
-#include <TGLabel.h>
-#include <TGNumberEntry.h>
-#include <TEveManager.h>
-#include <TEveBoxSet.h>
-#include <TEveManager.h>
-#include <TEveEventManager.h>
-#include <TEveViewer.h>
-#include <TEveFrameBox.h>
-#include <TEveTrack.h>
-#include <Math/Vector3D.h>
-#include <TTimer.h>
+#include "TGLabel.h"
+#include "TGNumberEntry.h"
+#include "TEveManager.h"
+#include "TEveBoxSet.h"
+#include "TEveManager.h"
+#include "TEveEventManager.h"
+#include "TEveViewer.h"
+#include "TEveFrameBox.h"
+#include "TEveTrack.h"
+#include "Math/Vector3D.h"
+#include "TTimer.h"
 
-#include <memory>
-#include <rapidjson/document.h>
+#include "memory"
+#include "rapidjson/document.h"
 
-#include <event/SLArMCEvent.hh>
-#include <SLArRecoHits.hpp>
+#include "event/SLArMCEvent.hh"
+#include "SLArRecoHits.hh"
 
-#include <config/SLArCfgAnode.hh>
-#include <config/SLArCfgSuperCellArray.hh>
-#include <config/SLArCfgBaseSystem.hh>
+#include "config/SLArCfgAnode.hh"
+#include "config/SLArCfgSuperCellArray.hh"
+#include "config/SLArCfgBaseSystem.hh"
 
 namespace display {
 
@@ -135,7 +134,7 @@ namespace display {
       TTree* fHitTree = {}; 
       TFile* fMCTruthFile = {};
       TTree* fMCTruthTree = {};
-      hitvarContainerPtr_t fHitVars = {};
+      reco::hitvarContainerPtr fHitVars = {};
       SLArMCEvent* fMCEvent = {};
       std::map<int, std::unique_ptr<SLArCfgAnode>> fCfgAnodes = {}; 
       std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>> fCfgPDS = {}; 

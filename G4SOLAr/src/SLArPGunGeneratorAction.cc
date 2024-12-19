@@ -75,7 +75,6 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticleMomentumDirection( SampleDirection(fConfig.dir_config) );
     fParticleGun->SetParticleEnergy( SampleEnergy(fConfig.ene_config) ); 
     fParticleGun->SetParticleTime( vtx_time ); 
-    printf("PGun time: %g\n", vtx_time);
     fParticleGun->GeneratePrimaryVertex(anEvent);
 
     fConfig.ene_config.energy_tmp = fParticleGun->GetParticleEnergy();

@@ -48,7 +48,9 @@ namespace geo {
     return pv_list;
   }
 
-  inline static const G4Transform3D GetTransformToGlobal(G4VPhysicalVolume* pv) {
+  bool track_crosses_volume(const G4ThreeVector& vtx, const G4ThreeVector& dir, const G4String& pv_name);
+
+  inline static const G4Transform3D GetTransformToGlobal(const G4VPhysicalVolume* pv) {
     G4Transform3D globalTransform = G4Transform3D::Identity;
     while (pv->GetMotherLogical() != nullptr) {
       G4Transform3D localTransform(pv->GetObjectRotationValue(), pv->GetObjectTranslation());
