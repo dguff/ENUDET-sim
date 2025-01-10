@@ -68,6 +68,19 @@ int main (int argc, char *argv[]) {
     }
   }
 
+  // setup output file
+  TFile* output_file = new TFile(output_filename, "recreate");
+  TTree* output_tree = new TTree("CalibratedHitTree", "Calibrated hit collection tree");
+  double neutrino_energy = 0.0; 
+  double collected_energy = 0.0; 
+  double calibrated_energy = 0.0;
+  double drift_coordinate = 0.0; 
+  output_tree->Branch("enu", &neutrino_energy); 
+  output_tree->Branch("ecol", &collected_energy); 
+  output_tree->Branch("ecal", &calibrated_energy); 
+  output_tree->Branch("drift", &drift_coordinate); 
+
+  // setup the chain
   TChain chain_hit("HitTree");
   TChain chain_gen("GenTree");
 
@@ -79,13 +92,6 @@ int main (int argc, char *argv[]) {
     return 1;
   }
   
-  // setup output file
-  TFile output_file(output_filename, "recreate");
-  TTree output_tree("CalibratedHitTree", "Calibrated hit collection tree");
-  double neutrino_energy = 0.0; 
-  double collected_energy = 0.0; 
-  double calibrated_energy = 0.0;
-
   TPRegexp rgx_seed("[0-9]{10}");
 
   while (std::getline(file_list, line)) {
@@ -112,6 +118,9 @@ int main (int argc, char *argv[]) {
       std::cerr << "Error: GenTree and HitTree have different number of entries in file " << event_file_path.Data() << std::endl;
       continue;
     }
+
+    printf("adding %s to gen_chain\n", event_file_path.Data());
+    printf("adding %s to hit_chain\n\n", hit_file_path.Data()); 
 
     hit_file.Close();
     event_file.Close();
@@ -153,22 +162,32 @@ int main (int argc, char *argv[]) {
     // compute the weighted mean drift distance
     double x_mean = 0.0; 
     double w = 0.0; 
-    for (size_t j = 0; j < hit_x->size(); j++) {
-      x_mean += hit_x->at(j) * hit_q->at(j);
+    for (size_t j = 0; j < hit_y->size(); j++) {
+      x_mean += hit_y->at(j) * hit_q->at(j);
       w += hit_q->at(j);
     }
     x_mean /= w;
-    x_mean *= 10.0; // convert to cm
+    x_mean /= 10.0; // convert to cm
+      
+
+    if (x_mean < 0) {
+      drift_coordinate = x_mean + 650;
+    }
+    else {
+      drift_coordinate = 650 - x_mean;
+    }
 
     collected_energy = total_q * argon_w * recombination_factor;
     double tau_elec = 0.04586717986370039*collected_energy + 5.278259363488911;
-    calibrated_energy = collected_energy * exp(x_mean / (drift_velocity * tau_elec) );
 
-    output_tree.Fill();
+    calibrated_energy = collected_energy * exp(drift_coordinate / (drift_velocity * tau_elec) );
+
+    output_tree->Fill();
   }
 
-  output_tree.Write();
-  output_file.Close();
+  output_file->cd();
+  output_tree->Write();
+  output_file->Close();
 
   return 0;
 }
