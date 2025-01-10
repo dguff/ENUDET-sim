@@ -27,8 +27,14 @@ target_link_libraries(hit_viewer
   G4SOLAr::SLArReadoutSystemConfig 
   )
 
+add_executable(hit_calibration hit_calibration.cc)
+target_link_libraries(hit_calibration
+  PRIVATE
+  ${ROOT_LIBRARIES} 
+  G4SOLAr::SLArGenRecords
+)
 
-install(TARGETS hit_converter hit_viewer
+install(TARGETS hit_converter hit_viewer hit_calibration
   LIBRARY DESTINATION "${SOLAR_UTILS_BIN_DIR}"
   RUNTIME DESTINATION "${SOLAR_UTILS_BIN_DIR}"
   )
