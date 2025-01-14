@@ -5,14 +5,15 @@
  */
 
 #include <iostream>
+#include <fstream>
 #include <vector>
+#include <cmath>
 #include <getopt.h>
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
 #include "TPRegexp.h"
 
-#include "event/SLArMCEvent.hh"
 #include "event/SLArGenRecords.hh"
 
 void print_usage() {
@@ -119,9 +120,6 @@ int main (int argc, char *argv[]) {
       continue;
     }
 
-    printf("adding %s to gen_chain\n", event_file_path.Data());
-    printf("adding %s to hit_chain\n\n", hit_file_path.Data()); 
-
     hit_file.Close();
     event_file.Close();
 
@@ -161,20 +159,25 @@ int main (int argc, char *argv[]) {
 
     // compute the weighted mean drift distance
     double x_mean = 0.0; 
-    double w = 0.0; 
-    for (size_t j = 0; j < hit_y->size(); j++) {
-      x_mean += hit_y->at(j) * hit_q->at(j);
-      w += hit_q->at(j);
-    }
-    x_mean /= w;
-    x_mean /= 10.0; // convert to cm
-      
+    if (total_q > 0) {
+      double w = 0.0; 
+      for (size_t j = 0; j < hit_y->size(); j++) {
+        x_mean += hit_y->at(j) * hit_q->at(j);
+        w += hit_q->at(j);
+      }
+      x_mean /= w;
+      x_mean /= 10.0; // convert to cm
 
-    if (x_mean < 0) {
-      drift_coordinate = x_mean + 650;
+
+      if (x_mean < 0) {
+        drift_coordinate = x_mean + 650;
+      }
+      else {
+        drift_coordinate = 650 - x_mean;
+      }
     }
     else {
-      drift_coordinate = 650 - x_mean;
+      drift_coordinate = 1.0; // no effect.
     }
 
     collected_energy = total_q * argon_w * recombination_factor;
