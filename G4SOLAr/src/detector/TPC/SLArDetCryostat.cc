@@ -59,9 +59,9 @@ void SLArDetCryostat::BuildCryostatStructure(const rapidjson::Value& jcryo) {
   const auto jlayers = jcryo["Cryostat_structure"].GetArray(); 
   printf("SLArDetCryostat::BuildCryostatStructure\n");
 
-  G4double tgtZ = fGeoInfo->GetGeoPar("target_z");
-  G4double tgtY = fGeoInfo->GetGeoPar("target_y");
-  G4double tgtX = fGeoInfo->GetGeoPar("target_x");
+  G4double tgtZ = fGeoInfo->GetGeoPar("target_size_z");
+  G4double tgtY = fGeoInfo->GetGeoPar("target_size_y");
+  G4double tgtX = fGeoInfo->GetGeoPar("target_size_x");
 
   G4double cryostat_tk = 0.; 
 
@@ -609,10 +609,10 @@ void SLArDetCryostat::BuildCryostat()
   if (fBuildSupport) {
     BuildSupportStructureUnit();
   }
-  G4cerr << "SLArDetCryostat::BuildCryostat()" << G4endl;
-  G4double tgtZ         = fGeoInfo->GetGeoPar("target_z");
-  G4double tgtY         = fGeoInfo->GetGeoPar("target_y");
-  G4double tgtX         = fGeoInfo->GetGeoPar("target_x");
+  G4cout << "SLArDetCryostat::BuildCryostat()\n";
+  G4double tgtZ         = fGeoInfo->GetGeoPar("target_size_z");
+  G4double tgtY         = fGeoInfo->GetGeoPar("target_size_y");
+  G4double tgtX         = fGeoInfo->GetGeoPar("target_size_x");
   G4double cryo_tk      = fGeoInfo->GetGeoPar("cryostat_tk"); 
   G4double waffle_tk    = fGeoInfo->GetGeoPar("waffle_total_width"); 
   const G4double cryo_tot_tk  = cryo_tk + waffle_tk; 
@@ -627,7 +627,7 @@ void SLArDetCryostat::BuildCryostat()
   // Create outer box 
   G4Box* boxOut = new G4Box("fBoxOut_solid", 
       x_ + 2*CLHEP::mm, y_ + 2*CLHEP::mm, z_ + 2*CLHEP::mm); 
-
+  
   // Create inner box 
   G4Box* boxInn = new G4Box("fBoxInn_solid", 
       x_-cryo_tot_tk, y_-cryo_tot_tk, z_-cryo_tot_tk);
@@ -638,9 +638,13 @@ void SLArDetCryostat::BuildCryostat()
 
   // Create Cryostat container volume
   G4cerr << "Create Cryostat" << G4endl;
-  fGeoInfo->SetGeoPar("cryostat_x", 2*x_);
-  fGeoInfo->SetGeoPar("cryostat_y", 2*y_);
-  fGeoInfo->SetGeoPar("cryostat_z", 2*z_);
+  fGeoInfo->SetGeoPar("cryostat_size_x", 2*x_);
+  fGeoInfo->SetGeoPar("cryostat_size_y", 2*y_);
+  fGeoInfo->SetGeoPar("cryostat_size_z", 2*z_);
+  printf("Cryostat size: [%.0f, %.0f, %.0f] - [%.0f, %.0f, %.0f]\n", 
+      boxOut->GetXHalfLength(), boxOut->GetYHalfLength(), boxOut->GetZHalfLength(),
+      boxInn->GetXHalfLength(), boxInn->GetYHalfLength(), boxInn->GetZHalfLength()
+      ); 
   fMaterial = fMatWorld->GetMaterial(); 
 
   SetLogicVolume(
@@ -657,6 +661,9 @@ void SLArDetCryostat::BuildCryostat()
     auto layer = ll.second;
     printf("layer: %i\n", ll.first); 
     layer->fMaterial = SLArMaterial::FindInMaterialTable(layer->fMaterialName); 
+    printf("size: %.0f, %.0f, %.0f - tk: %.0f\n", 
+        2*layer->fHalfSizeX, 2*layer->fHalfSizeY, 2*layer->fHalfSizeZ, 
+        layer->fThickness);
     layer->fModule = BuildCryostatLayer(layer->fName, 
         layer->fHalfSizeX, layer->fHalfSizeY, layer->fHalfSizeZ, 
         layer->fThickness, layer->fMaterial); 
@@ -810,17 +817,6 @@ SLArBaseDetModule* SLArDetCryostat::BuildCryostatLayer(
   mod->SetLogicVolume(new G4LogicalVolume(
         mod->GetModSV(), mod->GetMaterial(), name+"LV", 0, 0, 0)); 
 
-/*
- *  //create a daughter volume on the -z face to be used as a sensitive detector 
- *  //for neutron shielding studies
- *
- *  G4Box* b_test_sv = new G4Box("b_test_sv_"+name, x_, y_, 0.5*tk_); 
- *  G4LogicalVolume* b_test_lv = new G4LogicalVolume(b_test_sv, mat, "b_test_lv_"+name, 
- *      0, 0, 0, 0); 
- *  new G4PVPlacement(0, G4ThreeVector(0, 0, -z_-0.5*tk_), b_test_lv, "b_test_pv_"+name, 
- *      mod->GetModLV(), false, 8, true); 
- *
- */
   return mod; 
 }
 
