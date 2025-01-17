@@ -274,9 +274,9 @@ SLArBaseDetModule* SLArDetCryostat::BuildSupportStructure(geo::EBoxFace kFace) {
   G4ThreeVector dim;
   G4double cryo_tk = fGeoInfo->GetGeoPar("cryostat_tk"); 
   dim.set(
-      fGeoInfo->GetGeoPar("target_x") + 2*cryo_tk,
-      fGeoInfo->GetGeoPar("target_y") + 2*cryo_tk, 
-      fGeoInfo->GetGeoPar("target_z") + 2*cryo_tk); 
+      fGeoInfo->GetGeoPar("target_size_x") + 2*cryo_tk,
+      fGeoInfo->GetGeoPar("target_size_y") + 2*cryo_tk, 
+      fGeoInfo->GetGeoPar("target_size_z") + 2*cryo_tk); 
   const auto spacing = fGeoInfo->GetGeoPar("waffle_spacing"); 
 
   // get normal versor for the given cryostat face

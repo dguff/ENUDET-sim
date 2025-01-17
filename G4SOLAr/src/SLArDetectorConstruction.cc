@@ -990,7 +990,6 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
 
   }
 
-  /*
   printf("\nWaffle unit\n");
   const auto waffle = fCryostat->GetWaffleUnit(); 
   const auto waffle_lv = waffle->GetModLV(); 
@@ -1019,7 +1018,7 @@ G4VIStore* SLArDetectorConstruction::CreateImportanceStore() {
       istore->AddImportanceGeometryCell(imp, cell); 
     }
   }
-  */
+  
 
 
   printf("\nCryostat layers\n");
