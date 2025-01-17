@@ -78,6 +78,7 @@ G4double SLArGeoInfo::GetGeoPar(G4String str)
   {
     G4cerr << "SLArGeoInfo::GetGeoPar() Par " 
            << str << " not found in parameter map" << G4endl;
+    exit(EXIT_FAILURE);
   }
   else {
     out = fGeoPar.find(str)->second;
