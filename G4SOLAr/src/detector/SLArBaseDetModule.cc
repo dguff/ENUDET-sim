@@ -63,13 +63,8 @@ G4VPhysicalVolume* SLArBaseDetModule::GetModPV(
   if (pCopyNo == 0) pCopyNo = fID;
   else fID = pCopyNo;
 
-  G4bool surf_check = false; 
-#ifdef SLAR_DEBUG
-  surf_check = true; 
-#endif
-
   fModPV = new G4PVPlacement(fRot,fVec, 
-      fModLV, fName, mlv, pMany, pCopyNo, surf_check);
+      fModLV, fName, mlv, pMany, pCopyNo, true);
   return fModPV;
 }
 
