@@ -53,24 +53,33 @@ namespace gen {
     fConfig.corsika_db_dir = config["corsika_db_dir"].GetString();
 
     // --- Detector measurements ---
-    if ( config.HasMember("corsika_det_xmin") )
-      fConfig.corsika_det_x[0] = config["corsika_det_xmin"].GetDouble();
-    if ( config.HasMember("corsika_det_xmax") )
-      fConfig.corsika_det_x[1] = config["corsika_det_xmax"].GetDouble();
+    if ( config.HasMember("det_center") ) {
+      auto det_center_array = config["det_center"].GetArray();
+      for (int i=0; i < 3; i++)
+	fConfig.det_center[i] = det_center_array[i].GetDouble();
+    }
+    if ( config.HasMember("det_size") ) {
+      auto det_size_array = config["det_size"].GetArray();
+      for (int i=0; i < 3; i++)
+	fConfig.det_size[i] = det_size_array[i].GetDouble();
+    }
 
-    if ( config.HasMember("corsika_det_ymin") )
-      fConfig.corsika_det_y[0] = config["corsika_det_ymin"].GetDouble();
-    if ( config.HasMember("corsika_det_ymax") )
-      fConfig.corsika_det_y[1] = config["corsika_det_ymax"].GetDouble();
+    // --- Corsika inputs ---
+    if ( config.HasMember("gen_buffer") ) {
+      auto gen_buffer_array = config["gen_buffer"].GetArray();
+      for (int i=0; i < 2; i++)
+	fConfig.gen_buffer[i] = gen_buffer_array[i].GetDouble();
+    }
+    if ( config.HasMember("gen_offset") )
+      fConfig.gen_offset = config["gen_offset"].GetDouble();
 
-    // --- Generator information ---
-    if ( config.HasMember("corsika_gen_Emin") )
-      fConfig.corsika_E[0] = config["corsika_gen_Emin"].GetInt();
-    if ( config.HasMember("corsika_gen_Emax") )
-      fConfig.corsika_E[1] = config["corsika_gen_Emax"].GetInt();
-
-    if ( config.HasMember("corsika_gen_dT") )
-      fConfig.corsika_dT = config["corsika_gen_dT"].GetDouble();
+    if ( config.HasMember("gen_E") ) {
+      auto gen_E_array = config["gen_E"].GetArray();
+      for (int i=0; i < 2; i++)
+	fConfig.gen_E[i] = gen_E_array[i].GetDouble();
+    }
+    if ( config.HasMember("gen_dT") )
+      fConfig.gen_dT = config["gen_dT"].GetDouble();    
 
   }
   // - - - - - - - - - - - - - - - - -
@@ -79,8 +88,24 @@ namespace gen {
   // - - - - - - - - - - - - - - - - -
 
   void SLArCorsikaGeneratorAction::Configure()
-  {    
-    // Null for now.
+  {
+    const auto *detector = dynamic_cast<const SLArDetectorConstruction*>
+      (G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+    const auto *cryostat = dynamic_cast<const SLArBaseDetModule*>(detector->GetLArTargetVolume());
+    const auto *box = dynamic_cast<const G4Box*>(cryostat->GetModSV());
+    if (!box) {
+      G4cerr << "Error: G4Box is null or the solid is not a G4Box!" << G4endl;
+      return;
+    }
+
+    if ( fConfig.det_size[0] < 0)
+      for (int i=0; i < 3; i++) {
+	fConfig.det_size[0] = 2*box->GetXHalfLength()/1000;
+	fConfig.det_size[1] = 2*box->GetZHalfLength()/1000;
+	fConfig.det_size[2] = 2*box->GetYHalfLength()/1000;
+      }
+
+    
   }
   // - - - - - - - - - - - - - - - - -
 
@@ -104,15 +129,31 @@ namespace gen {
     d.AddMember("corsika_db_dir", rapidjson::StringRef(fConfig.corsika_db_dir.data()), d.GetAllocator());
     
     // Detector specific
-    d.AddMember("corsika_det_xmin", fConfig.corsika_det_x[0], d.GetAllocator());
-    d.AddMember("corsika_det_xmax", fConfig.corsika_det_x[1], d.GetAllocator());
-    d.AddMember("corsika_det_ymin", fConfig.corsika_det_y[0], d.GetAllocator());
-    d.AddMember("corsika_det_ymax", fConfig.corsika_det_y[1], d.GetAllocator());
+    rapidjson::Value det_center_array(rapidjson::kArrayType);
+    for (G4double value : fConfig.det_center)
+      det_center_array.PushBack(value, d.GetAllocator());
+    d.AddMember("det_center", det_center_array, d.GetAllocator());
+
+    rapidjson::Value det_size_array(rapidjson::kArrayType);
+    for (G4double value : fConfig.det_size)
+      det_size_array.PushBack(value, d.GetAllocator());
+    d.AddMember("det_size", det_size_array, d.GetAllocator());
+    
 
     // Generator specific
-    d.AddMember("corsika_gen_Emin", fConfig.corsika_E[0], d.GetAllocator());
-    d.AddMember("corsika_gen_Emax", fConfig.corsika_E[1], d.GetAllocator());
-    d.AddMember("corsika_gen_dT",   fConfig.corsika_dT, d.GetAllocator());
+    rapidjson::Value gen_buffer_array(rapidjson::kArrayType);
+    for (G4double value : fConfig.gen_buffer)
+      gen_buffer_array.PushBack(value, d.GetAllocator());
+    d.AddMember("gen_buffer", gen_buffer_array, d.GetAllocator());
+    
+    d.AddMember("gen_offset", fConfig.gen_offset, d.GetAllocator());
+    
+    rapidjson::Value gen_E_array(rapidjson::kArrayType);
+    for (G4double value : fConfig.gen_E)
+      gen_E_array.PushBack(value, d.GetAllocator());
+    d.AddMember("gen_E",  gen_E_array,    d.GetAllocator());
+    
+    d.AddMember("gen_dT", fConfig.gen_dT, d.GetAllocator());
 
     d.Accept(writer);
     config_str = buffer.GetString();
@@ -130,24 +171,20 @@ namespace gen {
   void SLArCorsikaGeneratorAction::GeneratePrimaries(G4Event *ev)
   {
 
+    
     // Read the database using the reader class 
     DBReader *corsDB = new DBReader((fConfig.corsika_db_dir+"/cosmic_db_H_50_10000000.root").c_str());
-   
-    //Setup a detector level to read from 
-    Detector *pdMuon = new Detector(fConfig.corsika_det_x, fConfig.corsika_det_y, fConfig.corsika_E);
-    pdMuon->ValidateRange();
     
-    // Collect primaries from the detector. Should probably put this in the function
-    //    std::vector<int> primary_gen = pdMuon->GetPrimaries(corsDB, 1.8E4, fConfig.corsika_dT);
-    // Sort the vector lowest to highest in order to speed up searching (we can skip many
-    // of the early events this way...
-    //    sort(primary_gen.begin(), primary_gen.end());
+    //Setup a detector level to read from 
+    EDetector *pdMuon = new EDetector(fConfig.det_size, fConfig.det_center);
   
     // Set the spill time for all EHandler objects
-    EShower::SetSpillT(fConfig.corsika_dT);
+    EShower::SetSpillT(fConfig.gen_dT);
     
     // Create a handler for the shower
-    EShower showerHandler(corsDB, pdMuon);
+    EShower showerHandler(corsDB, pdMuon, fConfig.gen_E, EShower::H);
+    showerHandler.SetBuffer(fConfig.gen_buffer);
+    showerHandler.SetOffset(fConfig.gen_offset);
     showerHandler.NShowers();
     
     
@@ -165,7 +202,6 @@ namespace gen {
   
     G4ThreeVector vtx(0., 0., 0.);
     std::vector<G4PrimaryVertex*> primary_vertices;
-    int particle_idx = 0;
     for (const auto &part : particles) {
       
       G4PrimaryParticle *incident_part = new G4PrimaryParticle(part.m_pdg,
@@ -173,23 +209,18 @@ namespace gen {
                      -part.m_mom[2]*1E3,
                      part.m_mom[1]*1E3,
                      part.m_eK*1E3);
-      vtx.set(part.m_vtx[0]*1E3, 2000, part.m_vtx[1]*1E3);
+      vtx.set(part.m_vtx[0]*1E3, (fConfig.gen_offset)*1E3, part.m_vtx[1]*1E3);
       auto vertex = new G4PrimaryVertex(vtx, 0.);
       vertex->SetPrimary(incident_part);
       primary_vertices.push_back(vertex);
-      
-      particle_idx++;
     }
-      
-    std::cout << "Number of particles: " << particle_idx << std::endl; 
-    int partCount = 0; // Purely for output purposes
+
     for (const auto& vertex : primary_vertices) 
-    { 
       ev->AddPrimaryVertex(vertex);
-    }
+    
   }
   // - - - - - - - - - - - - - - - - -
-
+  
   // ***************************************************************************
 
 

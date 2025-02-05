@@ -15,17 +15,19 @@
  * ============================================== */
 
 #include "SLArBaseGenerator.hh"
+#include "SLArDetectorConstruction.hh"
+#include "SLArDetCryostat.hh"
 
 #include "G4Event.hh"
 #include "G4ThreeVector.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
+#include "G4RunManager.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
 
-
 #include "DBReader.hh"
-#include "detector.hh"
+#include "EDetector.hh"
 #include "EParticle.hh"
 #include "EShower.hh"
 
@@ -38,11 +40,13 @@ namespace gen{
 	public:
     	// Read configuration file
     	struct CorsikaConfig_t {
-      		G4String corsika_db_dir {};
-            G4double corsika_det_x[2] {-4., 4.};
-            G4double corsika_det_y[2] {-4., 4.};
-            G4double    corsika_E[2] {50, 10000000};
-            G4double corsika_dT = 2.;
+	  G4String corsika_db_dir {};
+	  G4double det_center[3] {0.};
+	  G4double det_size[3] {-1};
+	  G4double gen_buffer[2] {0., 0.};
+	  G4double gen_offset = 0.;
+	  G4double gen_E[2] {50, 1E8};
+	  G4double gen_dT = 2.;
     	};
 
 		// ----- Constructors -----
