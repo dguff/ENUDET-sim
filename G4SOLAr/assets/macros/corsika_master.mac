@@ -15,7 +15,7 @@
 
 # Set particle energy and source position 
 /SLAr/gen/configure assets/macros/corsika_config.json
-/SLAr/manager/SetOutputName corsika_out.root
+/SLAr/manager/SetOutputName corsika_H_0.001_0000_50_1E8.root
 
 # Fire!
 /run/beamOn 1

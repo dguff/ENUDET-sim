@@ -171,31 +171,36 @@ namespace gen {
   void SLArCorsikaGeneratorAction::GeneratePrimaries(G4Event *ev)
   {
 
-    
     // Read the database using the reader class 
-    DBReader *corsDB = new DBReader((fConfig.corsika_db_dir+"/cosmic_db_H_50_10000000.root").c_str());
+    //DBReader *corsDB = new DBReader((fConfig.corsika_db_dir+"/cosmic_db_H_50_10000000.root").c_str());
     
     //Setup a detector level to read from 
     EDetector *pdMuon = new EDetector(fConfig.det_size, fConfig.det_center);
   
     // Set the spill time for all EHandler objects
     EShower::SetSpillT(fConfig.gen_dT);
+
+    //    std::vector<std::string> primaries = {"H", "He", "C"};
+    std::vector<std::string> primaries = {"H"};
     
     // Create a handler for the shower
-    EShower showerHandler(corsDB, pdMuon, fConfig.gen_E, EShower::H);
+    EShower showerHandler(fConfig.corsika_db_dir, pdMuon, fConfig.gen_E, primaries);
     showerHandler.SetBuffer(fConfig.gen_buffer);
     showerHandler.SetOffset(fConfig.gen_offset);
     showerHandler.NShowers();
     
-    
     // Create a handler for the particle 
-    EParticle particleHandler(corsDB, pdMuon);
+    EParticle particleHandler(fConfig.corsika_db_dir, pdMuon, primaries);
 
+    for (int i=0; i < primaries.size(); i++) {
     
-    for ( int shower : showerHandler.GetShowers() ) {
-      showerHandler.Process(shower);
-      particleHandler.Process(shower, &showerHandler);
- 
+      for ( int shower : showerHandler.GetShowers(i) ) {
+	showerHandler.Process(shower, i);
+	particleHandler.Process(shower, &showerHandler, i);
+      }
+
+      particleHandler.ResetParticle();
+
     }
     
     const std::vector<EParticle::Particle> &particles = particleHandler.GetParticles();

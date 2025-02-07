@@ -4,7 +4,7 @@
     "label" : "corsika_test",
     "config" : {
 	"corsika_db_dir" : "/Users/jmcelwee/Documents/NDTF/cosmics/database/",
-	"gen_buffer"     : [2, 2],
+	"gen_buffer"     : [0, 0],
 	"gen_offset"     : 0,
 	"gen_E"          : [50, 1E8],
 	"gen_dT"         : 0.001
