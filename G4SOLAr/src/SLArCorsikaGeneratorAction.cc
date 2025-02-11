@@ -215,7 +215,7 @@ namespace gen {
                      part.m_mom[1]*1E3,
                      part.m_eK*1E3);
       vtx.set(part.m_vtx[0]*1E3, (fConfig.gen_offset)*1E3, part.m_vtx[1]*1E3);
-      auto vertex = new G4PrimaryVertex(vtx, 0.);
+      auto vertex = new G4PrimaryVertex(vtx, part.m_t);
       vertex->SetPrimary(incident_part);
       primary_vertices.push_back(vertex);
     }
