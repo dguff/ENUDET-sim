@@ -161,7 +161,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
                     ${ECosmic_INCLUDE_DIR}
-                    ${RapidJSON_INCLUDE_DIR}/..
+                    ${RapidJSON_INCLUDE_DIR}
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
 		    ${ECOSMIC_SRC}/include
