@@ -13,31 +13,32 @@
 #include <limits>
 
 // BxDecay0:
-#include <bxdecay0/decay0_generator.h>
-#include <bxdecay0/std_random.h>
-#include <bxdecay0/event.h>       
-#include <bxdecay0/bb_utils.h>
-#include <bxdecay0/mdl_event_op.h>
+#include "bxdecay0/decay0_generator.h"
+#include "bxdecay0/std_random.h"
+#include "bxdecay0/event.h"       
+#include "bxdecay0/bb_utils.h"
+#include "bxdecay0/mdl_event_op.h"
 
 // Geant4:
-#include <globals.hh>
-#include <G4ParticleMomentum.hh>
-#include <G4ParticleGun.hh>
-#include <G4Gamma.hh>
-#include <G4Electron.hh>
-#include <G4Positron.hh>
-#include <G4Alpha.hh>
-#include <G4SystemOfUnits.hh>
-#include <G4RunManager.hh>
+#include "globals.hh"
+#include "G4ParticleMomentum.hh"
+#include "G4ParticleGun.hh"
+#include "G4Gamma.hh"
+#include "G4Electron.hh"
+#include "G4Positron.hh"
+#include "G4Alpha.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4RunManager.hh"
 
 // This project:
+#include "SLArIsotropicDirectionGenerator.hh"   
 #include "SLArDecay0GeneratorMessenger.hh"
 
 // rapidjson
-#include <rapidjson/document.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/document.h"
+#include "rapidjson/reader.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 
 namespace gen {
 namespace {
@@ -804,10 +805,6 @@ namespace bxdecay0_g4{
   void SLArDecay0GeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
     CopyConfigurationToString(config);
 
-    if (config.HasMember("direction")) {
-      SourceDirectionConfig( config["direction"], fConfig.dir_config );
-    }
-
     if (config.HasMember("energy")) {
       SourceEnergyConfig( config["energy"], fConfig.ene_config );
     }
@@ -832,7 +829,14 @@ namespace bxdecay0_g4{
       SetupVertexGenerator( config["vertex_gen"] ); 
     }
     else {
-      fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+      fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
+    }
+
+    if ( config.HasMember("direction") ) {
+      SetupDirectionGenerator( config["direction"] );
+    }
+    else {
+      fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
     }
     return;
   }
