@@ -18,6 +18,7 @@
 #include <SLArVertextGenerator.hh>
 
 namespace gen {
+namespace vertex {
 class SLArBulkVertexGenerator: public SLArVertexGenerator
 {
 public:
@@ -106,7 +107,7 @@ private:
      
 };
 }
-
+}
 
 #endif /* end of include guard SLARBULKVERTEXGENERATOR_HH */
 

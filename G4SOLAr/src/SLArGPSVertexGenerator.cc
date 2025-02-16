@@ -7,8 +7,8 @@
 #include "SLArGPSVertexGenerator.hh"
 #include "SLArGeoUtils.hh"
 
-namespace gen
-{
+namespace gen {
+namespace vertex {
 
 SLArGPSVertexGenerator::SLArGPSVertexGenerator() 
 {
@@ -460,6 +460,6 @@ void SLArGPSVertexGenerator::PrintConfigVolumeSource() const {
   }
   return;
 }
-
+}
 
 }

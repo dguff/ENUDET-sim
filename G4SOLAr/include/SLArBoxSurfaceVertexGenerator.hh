@@ -18,6 +18,7 @@
 #include <SLArVertextGenerator.hh>
 
 namespace gen {
+namespace vertex {
 class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
 {
   public: 
@@ -75,6 +76,7 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     G4double fSurface = 0.0; 
     unsigned int fCounter = 0.0; // Internal vertex counter
 }; 
+}
 }
 #endif /* end of include guard SLARBOXSURFACEVERTEXGENERATOR_HH */
 

@@ -12,6 +12,7 @@
 #include <G4Box.hh>
 
 namespace gen {
+namespace vertex {
 SLArBoxSurfaceVertexGenerator::SLArBoxSurfaceVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse(); 
@@ -333,5 +334,6 @@ const rapidjson::Document SLArBoxSurfaceVertexGenerator::ExportConfig() const {
   vtx_info.AddMember("time", jtime, vtx_info.GetAllocator());
 
   return vtx_info;
+}
 }
 }

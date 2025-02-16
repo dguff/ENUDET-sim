@@ -114,6 +114,7 @@ namespace gen {
     };
   }
 
+  namespace vertex {
   enum EVertexGenerator {
     kUndefinedVtxGen = -1, 
     kPoint = 0, 
@@ -275,7 +276,7 @@ namespace gen {
       G4Transform3D fTransform = {};
 
   };
-
+  }
 }
 
 

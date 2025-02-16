@@ -12,8 +12,8 @@
 #include "G4SPSPosDistribution.hh"
 #include "G4SPSRandomGenerator.hh"
 
-namespace gen 
-{
+namespace gen {
+namespace vertex {
 
 /**
  * @class SLArGPSVertexGenerator
@@ -51,6 +51,7 @@ class SLArGPSVertexGenerator : public SLArVertexGenerator
     G4double _beam_sigma_y = 0.0;
 };
 
+}
 }
 
 #endif /* end of include guard SLARGPSVERTEXGENERATOR_HH */
