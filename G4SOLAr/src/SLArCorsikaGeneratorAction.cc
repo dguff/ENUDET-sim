@@ -84,6 +84,7 @@ namespace gen {
       fConfig.gen_T_off = config["gen_T_off"].GetDouble();
 
     if ( config.HasMember("primaries") ) {
+      fConfig.primaries.clear();
       const auto &primaries = config["primaries"];
       if ( primaries.IsArray() )
 	for ( const auto &prim : primaries.GetArray() ) {
@@ -205,19 +206,21 @@ namespace gen {
     // Set the spill time for all EHandler objects
     EShower::SetSpillT(fConfig.gen_dT);
 
-    //    std::vector<std::string> primaries = {"H", "He", "C"};
-    std::vector<std::string> primaries = {"H"};
+    //    std::vector<std::string> primaries = {"H"};
+    //    for (auto value : fConfig.primaries)
+    //      std::cout << value << std::endl;
+    
     
     // Create a handler for the shower
-    EShower showerHandler(fConfig.corsika_db_dir, pdMuon, fConfig.gen_E, primaries);
+    EShower showerHandler(fConfig.corsika_db_dir, pdMuon, fConfig.gen_E, fConfig.primaries);
     showerHandler.SetBuffer(fConfig.gen_buffer);
     showerHandler.SetOffset(fConfig.gen_offset);
     showerHandler.NShowers();
     
     // Create a handler for the particle 
-    EParticle particleHandler(fConfig.corsika_db_dir, pdMuon, primaries);
+    EParticle particleHandler(fConfig.corsika_db_dir, pdMuon, fConfig.primaries);
 
-    for (int i=0; i < primaries.size(); i++) {
+    for (int i=0; i < fConfig.primaries.size(); i++) {
     
       for ( int shower : showerHandler.GetShowers(i) ) {
 	showerHandler.Process(shower, i);
@@ -240,7 +243,7 @@ namespace gen {
                      part.m_mom[1]*1E3,
                      part.m_eK*1E3);
       vtx.set(part.m_vtx[0]*1E3, (fConfig.gen_offset)*1E3, part.m_vtx[1]*1E3);
-      auto vertex = new G4PrimaryVertex(vtx, part.m_t);
+      auto vertex = new G4PrimaryVertex(vtx, fConfig.gen_T_off + part.m_t);
       vertex->SetPrimary(incident_part);
       primary_vertices.push_back(vertex);
     }
