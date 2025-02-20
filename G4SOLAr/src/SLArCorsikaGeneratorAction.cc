@@ -80,7 +80,23 @@ namespace gen {
     }
     if ( config.HasMember("gen_dT") )
       fConfig.gen_dT = config["gen_dT"].GetDouble();    
+    if ( config.HasMember("gen_T_off") )
+      fConfig.gen_T_off = config["gen_T_off"].GetDouble();
 
+    if ( config.HasMember("primaries") ) {
+      const auto &primaries = config["primaries"];
+      if ( primaries.IsArray() )
+	for ( const auto &prim : primaries.GetArray() ) {
+	  const G4String primary_name = prim.GetString();
+	  fConfig.primaries.push_back(primary_name);
+	}
+      else if (primaries.IsString()) {
+	const G4String primary_name = primaries.GetString();
+	fConfig.primaries.push_back(primary_name);
+      }
+    }
+      
+    
   }
   // - - - - - - - - - - - - - - - - -
 
@@ -154,7 +170,16 @@ namespace gen {
     d.AddMember("gen_E",  gen_E_array,    d.GetAllocator());
     
     d.AddMember("gen_dT", fConfig.gen_dT, d.GetAllocator());
+    d.AddMember("gen_T_off", fConfig.gen_T_off, d.GetAllocator());
 
+
+    // Particle stuff
+    rapidjson::Value jprimaries(rapidjson::kArrayType);
+    for (const auto & prim : fConfig.primaries)
+      jprimaries.PushBack( rapidjson::StringRef(prim.c_str()), d.GetAllocator());
+    d.AddMember("primaries", jprimaries, d.GetAllocator());
+    
+    
     d.Accept(writer);
     config_str = buffer.GetString();
     return config_str;

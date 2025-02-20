@@ -47,6 +47,8 @@ namespace gen{
 	  G4double gen_offset = 0.;
 	  G4double gen_E[2] {50, 1E8};
 	  G4double gen_dT = 2.;
+	  G4double gen_T_off = 0.;
+	  std::vector<G4String> primaries = { "H", "He", "C", "O" };
     	};
 
 		// ----- Constructors -----
