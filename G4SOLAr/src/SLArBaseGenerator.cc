@@ -116,6 +116,10 @@ void SLArBaseGenerator::SetupDirectionGenerator(const rapidjson::Value& config) 
   direction::EDirectionGenerator kGen = direction::getDirGenIndex( type ); 
   printf("[gen] Building %s direction generator (type %i)\n", type.data(), kGen);
 
+  if (kGen != direction::kIsotropicDir && config.HasMember("config") == false) {
+    throw std::invalid_argument("direction generator missing mandatory \"config\" field\n");
+  }
+
   switch (kGen) {
     case (direction::EDirectionGenerator::kFixedDir) : 
       {
@@ -132,12 +136,6 @@ void SLArBaseGenerator::SetupDirectionGenerator(const rapidjson::Value& config) 
     case (direction::kIsotropicDir) : 
       {
         fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
-        try { fDirGen->Config( config["config"] ); }        
-        catch (const std::exception& e) {
-          std::cerr << "ERROR configuring SLArIsotropicDirectionGenerator()" << std::endl;
-          std::cerr << e.what() << std::endl;
-          exit( EXIT_FAILURE );
-        }
         break;
       }
 
@@ -488,7 +486,7 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
           anEvent->GetPrimaryVertex(i)->GetT0()); 
     }
     for (int ip = 0; ip<np; ip++) {
-      //printf("getting particle %i...\n", ip); 
+      printf("getting particle %i...\n", ip); 
       auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
       G4String name = ""; 
 
@@ -505,7 +503,8 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       }
 
       tc_primary.SetTrackID(particle->GetTrackID());
-      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+      tc_primary.SetPosition(
+          anEvent->GetPrimaryVertex(i)->GetX0(),
           anEvent->GetPrimaryVertex(i)->GetY0(), 
           anEvent->GetPrimaryVertex(i)->GetZ0());
       tc_primary.SetMomentum(

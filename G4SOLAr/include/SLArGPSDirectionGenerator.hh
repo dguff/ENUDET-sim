@@ -71,6 +71,7 @@ namespace direction{
         if (jval.HasMember(field.data()) == false) {
           G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
           msg += "Missing mandatory field \"" + field + "\"\n";
+          fprintf(stderr, "%s", msg.data());
           exit(EXIT_FAILURE);
         }
         return true;
@@ -80,6 +81,7 @@ namespace direction{
         if (jval[field.data()].IsArray() == false) {
           G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
           msg += "Field \"" + field + "\" must be a rapidjson::Array\n";
+          fprintf(stderr, "%s", msg.data());
           exit(EXIT_FAILURE);
         }
         return true;
@@ -89,6 +91,17 @@ namespace direction{
         if (jval[field.data()].IsNumber() == false) {
           G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
           msg += "Field \"" + field + "\" must be a number\n";
+          fprintf(stderr, "%s", msg.data());
+          exit(EXIT_FAILURE);
+        }
+        return true;
+      }
+
+      inline bool CheckJSONFieldIsObject(const rapidjson::Value& jval, const G4String& field) const {
+        if (jval[field.data()].IsObject() == false) {
+          G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
+          msg += "Field \"" + field + "\" must be a rapidjson::Object\n";
+          fprintf(stderr, "%s", msg.data());
           exit(EXIT_FAILURE);
         }
         return true;
@@ -98,7 +111,30 @@ namespace direction{
         if (jval[field.data()].IsString() == false) {
           G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
           msg += "Field \"" + field + "\" must be a string\n";
+          fprintf(stderr, "%s", msg.data());
           exit(EXIT_FAILURE);
+        }
+        return true;
+      }
+
+      inline bool CheckJSONFieldIsSValue(const rapidjson::Value& j, const G4String& field) const {
+        if (j.HasMember("val") == false) {
+          G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
+          msg += "Field \"" + field + "\" must have a \"val\" field\n";
+          fprintf(stderr, "%s", msg.data());
+          exit(EXIT_FAILURE);
+        }
+
+        const auto& jval = j["val"];
+        if (jval.IsNumber() == false && jval.IsArray() == false) {
+          G4String msg = "SLArGPSDirectionGenerator::CheckJSONFieldIsSValue ERROR: ";
+          msg += "Field \"val\" must be a number or an array\n";
+          fprintf(stderr, "%s", msg.data());
+          exit(EXIT_FAILURE);
+        }
+        
+        if (j.HasMember("unit")) {
+          CheckJSONFieldIsString(j, "unit");
         }
         return true;
       }

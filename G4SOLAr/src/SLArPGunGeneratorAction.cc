@@ -107,7 +107,14 @@ void SLArPGunGeneratorAction::SourceConfiguration(const rapidjson::Value& config
   }
   
   if (config.HasMember("direction")) {
-    SetupDirectionGenerator( config["direction"] );
+    try {
+      SetupDirectionGenerator( config["direction"] );
+    }
+    catch (const std::exception& e) {
+      std::cerr << "ERROR setting up direction generator" << std::endl;
+      std::cerr << e.what() << std::endl;
+      exit( EXIT_FAILURE );
+    }
   }
   else{
     fDirGen = std::make_unique<direction::SLArFixedDirectionGenerator>();

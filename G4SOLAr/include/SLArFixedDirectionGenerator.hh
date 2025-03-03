@@ -48,23 +48,41 @@ namespace gen{
           const auto to_global = geo::GetTransformToGlobal(ref);
           fTransform = to_global;
         }
-        if ( !config.HasMember("xyz") ) {
-          throw std::invalid_argument("fixed dir gen missing mandatory \"xyz\" field\n");
+        if ( !config.HasMember("axis") ) {
+          throw std::invalid_argument("fixed dir gen missing mandatory \"axis\" field\n");
         }
 
-        const auto& jxyz = config["xyz"];
-        if (jxyz.HasMember("val") == false) {
-          throw std::invalid_argument("field \"val\" not found in \"xyz\" field\n");
+        const auto& jxyz = config["axis"];
+        if ( jxyz.IsObject() ) {
+          if (jxyz.HasMember("val") == false) {
+            throw std::invalid_argument("field \"val\" not found in \"xyz\" field\n");
+          }
+          const auto& jxyz_val = jxyz["val"];
+          if (jxyz_val.IsArray() == false) {
+            throw std::invalid_argument("field \"value\" must be a rapidjson::Array\n");
+          }
+          if (jxyz_val.Size() != 3) {
+            throw std::invalid_argument("field \"value\" must be a rapidjson::Array of size 3\n");
+          }
+
+          G4double vunit = unit::GetJSONunit(jxyz);
+          
+          fDirection.setX( jxyz_val.GetArray()[0].GetDouble() * vunit ); 
+          fDirection.setY( jxyz_val.GetArray()[1].GetDouble() * vunit ); 
+          fDirection.setZ( jxyz_val.GetArray()[2].GetDouble() * vunit ); 
         }
-        const auto& jxyz_val = jxyz["val"];
-        if (jxyz_val.IsArray() == false) {
-          throw std::invalid_argument("field \"value\" must be a rapidjson::Array\n");
+        else if (jxyz.IsArray()) {
+          const auto& jxyz_array = jxyz.GetArray();
+          if (jxyz_array.Size() != 3) {
+            throw std::invalid_argument("field \"axis\" must be a rapidjson::Array of size 3\n");
+          }
+          fDirection.setX( jxyz_array[0].GetDouble() ); 
+          fDirection.setY( jxyz_array[1].GetDouble() ); 
+          fDirection.setZ( jxyz_array[2].GetDouble() ); 
         }
-        G4double vunit = unit::GetJSONunit(jxyz);
-        assert(jxyz_val.Size() == 3);
-        fDirection.setX( jxyz_val.GetArray()[0].GetDouble() * vunit ); 
-        fDirection.setY( jxyz_val.GetArray()[1].GetDouble() * vunit ); 
-        fDirection.setZ( jxyz_val.GetArray()[2].GetDouble() * vunit ); 
+        else {
+          throw std::invalid_argument("field \"axis\" must be a rapidjson::Array or a rapidjson::Object\n");
+        }
         return;
       }
 

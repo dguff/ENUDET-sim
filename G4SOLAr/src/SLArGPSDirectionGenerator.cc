@@ -22,9 +22,9 @@ namespace direction{
       CheckJSONFieldIsArray(config["rot1"], "rot1");
       G4ThreeVector rot1;
       rot1.set( 
-          unit::ParseJsonVal(config["rot1"][0]), 
-          unit::ParseJsonVal(config["rot1"][1]), 
-          unit::ParseJsonVal(config["rot1"][2]) );
+          config["rot1"][0].GetDouble(), 
+          config["rot1"][1].GetDouble(), 
+          config["rot1"][2].GetDouble() );
       fGPSConfig.rot1.set( rot1.x(), rot1.y(), rot1.z() );
       fAngDist->DefineAngRefAxes("angref1", rot1);
     }
@@ -32,22 +32,22 @@ namespace direction{
       CheckJSONFieldIsArray(config["rot2"], "rot2");
       G4ThreeVector rot2;
       rot2.set( 
-          unit::ParseJsonVal(config["rot2"][0]), 
-          unit::ParseJsonVal(config["rot2"][1]), 
-          unit::ParseJsonVal(config["rot2"][2]) );
+          config["rot2"][0].GetDouble(), 
+          config["rot2"][1].GetDouble(), 
+          config["rot2"][2].GetDouble() );
       fGPSConfig.rot2.set( rot2.x(), rot2.y(), rot2.z() );
       fAngDist->DefineAngRefAxes("angref2", rot2);
     }
 
     // set min and max theta angle (theta = 0 -> -z direction) 
     if (config.HasMember("mintheta")) {
-      CheckJSONFieldIsNumber(config["mintheta"], "mintheta");
+      CheckJSONFieldIsSValue(config["mintheta"], "mintheta");
       G4double mintheta = unit::ParseJsonVal(config["mintheta"]);
       fAngDist->SetMinTheta( mintheta );
       fGPSConfig.mintheta = mintheta;
     }
     if (config.HasMember("maxtheta")) {
-      CheckJSONFieldIsNumber(config["maxtheta"], "maxtheta");
+      CheckJSONFieldIsSValue(config["maxtheta"], "maxtheta");
       G4double maxtheta = unit::ParseJsonVal(config["maxtheta"]);
       fAngDist->SetMaxTheta( maxtheta );
       fGPSConfig.maxtheta = maxtheta;
@@ -61,7 +61,7 @@ namespace direction{
       fGPSConfig.minphi = minphi;
     }
     if (config.HasMember("maxphi")) {
-      CheckJSONFieldIsNumber(config["maxphi"], "maxphi");
+      CheckJSONFieldIsSValue(config["maxphi"], "maxphi");
       G4double maxphi = unit::ParseJsonVal(config["maxphi"]);
       fAngDist->SetMaxPhi( maxphi );
       fGPSConfig.maxphi = maxphi;
@@ -69,20 +69,20 @@ namespace direction{
 
     // set the beam sigma in x and y
     if (config.HasMember("sigma_x")) {
-      CheckJSONFieldIsNumber(config["sigma_x"], "sigma_x");
+      CheckJSONFieldIsSValue(config["sigma_x"], "sigma_x");
       G4double sigma_x = unit::ParseJsonVal(config["sigma_x"]);
       fAngDist->SetBeamSigmaInAngX( sigma_x );
       fGPSConfig.sigma_x = sigma_x;
     }
     if (config.HasMember("sigma_y")) {
-      CheckJSONFieldIsNumber(config["sigma_y"], "sigma_y");
+      CheckJSONFieldIsSValue(config["sigma_y"], "sigma_y");
       G4double sigma_y = unit::ParseJsonVal( config["sigma_y"] ); 
       fAngDist->SetBeamSigmaInAngY( sigma_y );
       fGPSConfig.sigma_y = sigma_y;
     }
     // set the beam sigma in r
     if (config.HasMember("sigma_r")) {
-      CheckJSONFieldIsNumber(config["sigma_r"], "sigma_r");
+      CheckJSONFieldIsSValue(config["sigma_r"], "sigma_r");
       G4double sigma_r = unit::ParseJsonVal( config["sigma_r"] );
       fAngDist->SetBeamSigmaInAngR( sigma_r );
       fGPSConfig.sigma_r = sigma_r;
@@ -90,12 +90,16 @@ namespace direction{
 
     // set the beam focus point 
     if (config.HasMember("focuspoint")) {
-      CheckJSONFieldIsArray(config["focuspoint"], "focuspoint");
+      CheckJSONFieldIsSValue(config["focuspoint"], "focuspoint");
       G4ThreeVector focuspoint;
+      const auto& jfocuspoint = config["focuspoint"];
+      const auto& jval = jfocuspoint["val"];
+      CheckJSONFieldIsArray(jval, "val");
+      G4double vunit = unit::GetJSONunit(jfocuspoint);
       focuspoint.set( 
-          unit::ParseJsonVal(config["focuspoint"][0]), 
-          unit::ParseJsonVal(config["focuspoint"][1]), 
-          unit::ParseJsonVal(config["focuspoint"][2]) );
+          jval[0].GetDouble() * vunit, 
+          jval[1].GetDouble() * vunit, 
+          jval[2].GetDouble() * vunit );
       fGPSConfig.focus_point.set( focuspoint.x(), focuspoint.y(), focuspoint.z() );
       fAngDist->SetFocusPoint( focuspoint );
     }
