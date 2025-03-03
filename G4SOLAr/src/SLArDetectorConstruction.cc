@@ -477,7 +477,8 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   
   // Compute the position of the TPCs including cryostat dimensions
   const G4double target_size_y = fDetector->GetGeoPar("det_size_y"); 
-  const G4double cryostat_tk = fCryostat->GetGeoPar("cryostat_tk") + fCryostat->GetGeoPar("waffle_total_width");
+  G4double cryostat_tk = fCryostat->GetGeoPar("cryostat_tk");
+  if (fCryostat->HasSupportStructure()) cryostat_tk += fCryostat->GetGeoPar("waffle_total_width");
 
   // 3. Build and place the LAr target
   G4cout << "\nSLArDetectorConstruction: Building the Detector Volume" << G4endl;
@@ -495,7 +496,9 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   G4cout << "target_halfsize: " << 0.5*target_size_y << G4endl;
   G4cout << "hall_center: " << hall_center << G4endl;
   G4cout << "cryostat thickness: " << cryostat_tk << G4endl; 
-  G4cout << "waffle thickness: " << fCryostat->GetGeoPar("waffle_total_width") << G4endl;
+  if (fCryostat->HasSupportStructure()) {
+    G4cout << "waffle thickness: " << fCryostat->GetGeoPar("waffle_total_width") << G4endl;
+  }
   G4cout << "target_y: " << target_pos << G4endl;
 
   fDetector->SetModPV( new G4PVPlacement(
