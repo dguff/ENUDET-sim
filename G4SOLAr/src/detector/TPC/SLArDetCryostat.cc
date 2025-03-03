@@ -614,7 +614,8 @@ void SLArDetCryostat::BuildCryostat()
   G4double tgtY         = fGeoInfo->GetGeoPar("target_size_y");
   G4double tgtX         = fGeoInfo->GetGeoPar("target_size_x");
   G4double cryo_tk      = fGeoInfo->GetGeoPar("cryostat_tk"); 
-  G4double waffle_tk    = fGeoInfo->GetGeoPar("waffle_total_width"); 
+  G4double waffle_tk    = 0.0; 
+  if (fBuildSupport) waffle_tk = fGeoInfo->GetGeoPar("waffle_total_width"); 
   const G4double cryo_tot_tk  = cryo_tk + waffle_tk; 
    
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
