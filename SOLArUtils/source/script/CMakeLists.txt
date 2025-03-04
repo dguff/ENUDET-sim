@@ -27,8 +27,13 @@ target_link_libraries(hit_viewer
   G4SOLAr::SLArReadoutSystemConfig 
   )
 
+add_executable(merge_gen merge_gen.cc)
+target_link_libraries(merge_gen
+  PRIVATE
+  ${ROOT_LIBRARIES}
+)
 
-install(TARGETS hit_converter hit_viewer
+install(TARGETS hit_converter hit_viewer merge_gen
   LIBRARY DESTINATION "${SOLAR_UTILS_BIN_DIR}"
   RUNTIME DESTINATION "${SOLAR_UTILS_BIN_DIR}"
   )

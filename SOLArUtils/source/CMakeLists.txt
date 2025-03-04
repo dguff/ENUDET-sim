@@ -68,7 +68,7 @@ include_directories(
   ${G4SOLAR_INCLUDE_DIR}
   ${Geant4_INCLUDE_DIR}
   ${ROOT_INCLUDE_DIRS}
-  "${RapidJSON_INCLUDE_DIR}/.."
+  "${RapidJSON_INCLUDE_DIR}/"
   )
 if (CLHEP_EXTERNAL) 
   include_directories(${CLHEP_EXTERNAL})
