@@ -92,14 +92,16 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     G4PrimaryParticle* particle = new G4PrimaryParticle(fParticleDefinition);
 
     fConfig.dir_config.direction_tmp = SampleDirection(fConfig.dir_config);
-    fConfig.ene_config.energy_tmp = SampleEnergy();
+    fConfig.ene_config.energy_tmp = SampleEnergy(fConfig.ene_config);
 
     particle->SetMomentumDirection( fConfig.dir_config.direction_tmp ); 
     particle->SetKineticEnergy( fConfig.ene_config.energy_tmp ); 
 
     if (fParticleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()) {
       G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( fConfig.dir_config.direction_tmp ); 
-      //printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
+#ifdef SLAR_DEBUG
+      printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
+#endif
       particle->SetPolarization(polarization.x(), polarization.y(), polarization.z()); 
     }
 
