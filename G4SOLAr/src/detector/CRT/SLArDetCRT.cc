@@ -44,4 +44,18 @@ void SLArDetCRT::BuildMaterial(G4String db_file)
 }
 // - - - - - - - - - - - - - - -
 
+// - - - - - - - - - - - - - - -
+void SLArDetCRT::Init(const rapidjson::Value& jconf)
+{
+    assert(jconf.IsObject());
+  auto jtpc = jconf.GetObject();
+  assert(jtpc.HasMember("dimensions"));
+  assert(jtpc.HasMember("position"  ));
+  assert(jtpc.HasMember("copyID"    ));
+
+  SetID(jtpc["copyID"].GetInt());
+  fGeoInfo->ReadFromJSON(jtpc["dimensions"].GetArray());
+}
+// - - - - - - - - - - - - - - -
+
 //****************************************************************************
