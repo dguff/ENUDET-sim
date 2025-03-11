@@ -10,6 +10,10 @@
 
 #include "detector/SLArBaseDetModule.hh"
 
+// --- G4 Gumf ---
+#include "G4Box.hh"
+
+
 class SLArDetCRT : public SLArBaseDetModule {
 
 public:
@@ -20,7 +24,7 @@ public:
   void BuildMaterial(G4String);
 
 
-  virtual void Init(const rapidjson::Value& jconf) override;
+  //  virtual void Init(const rapidjson::Value& jconf) override;
   
 
 private:

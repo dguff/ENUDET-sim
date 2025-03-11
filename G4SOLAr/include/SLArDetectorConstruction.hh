@@ -11,6 +11,7 @@
 #include "detector/TPC/SLArDetTPC.hh"
 #include "detector/TPC/SLArDetCryostat.hh"
 #include "detector/TPC/SLArDetCathode.hh"
+#include "detector/CRT/SLArDetCRT.hh" // --JM
 #include "detector/SuperCell/SLArDetSuperCell.hh"
 #include "detector/SuperCell/SLArDetSuperCellArray.hh"
 #include "detector/Anode/SLArDetReadoutTile.hh"
@@ -64,7 +65,9 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     //! Construct Sensitive Detectors and cryostat scorers
     virtual void ConstructSDandField();
     //! Construct virtual pixelization of the anode readout system
-    void ConstructAnodeMap(); 
+    void ConstructAnodeMap();
+    //! Construct CRT
+    void ConstructCRT();
     G4VIStore* CreateImportanceStore();
     //! Return SLArDetectorConstruction::fTPCs map
     inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
@@ -113,10 +116,12 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
 
     //! TPC detector object (cryostat + LAr target)
     SLArBaseDetModule* fDetector;
-    SLArDetCryostat* fCryostat; 
+    SLArDetCryostat* fCryostat;
     std::map<int, SLArDetTPC*> fTPC;
     std::map<int, SLArDetCathode*> fCathode; 
 
+    SLArDetCRT* fCRT; // --JM
+  
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
     SLArGeoInfo fCavernGeoPars; //!< Cavern volume geometry attributes
     SLArDetExpHall* fExpHall; //!< Experimental Hall detector object

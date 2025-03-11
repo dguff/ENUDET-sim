@@ -168,6 +168,11 @@ void SLArDetectorConstruction::Init() {
     G4cout << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
   }
 
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Initialise CRTs
+
+  fCRT = new SLArDetCRT(); //--JM
+
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
   if (d.HasMember("SuperCell") && d.HasMember("PhotoDetectionSystem")) {
@@ -437,6 +442,22 @@ void SLArDetectorConstruction::ConstructCathode() {
   }
 }
 
+void SLArDetectorConstruction::ConstructCRT() // --JM
+{
+
+  fCRT->BuildMaterial(fMaterialDBFile);
+  fCRT->BuildCRT();
+ 
+  auto geoinfo = fCRT->GetGeoInfo();
+  fCRT->GetModPV(
+        "CRT_pv", 0,
+        G4ThreeVector(geoinfo->GetGeoPar("pos_x"),
+                      geoinfo->GetGeoPar("pos_y"),
+                      geoinfo->GetGeoPar("pos_z")),
+        fDetector->GetModLV(), 0);
+
+}
+
 /**
  * @details Construct the world volume, build and place the 
  * SLArDetectorConstruction::fTPC object. 
@@ -518,6 +539,9 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
         fDetector->GetModLV(), false, tpc.first);
     tpc.second->SetVisAttributes(); 
   }
+
+  G4cout << "\nSLArDetectorConstruction: Building the CRT" << G4endl;
+  ConstructCRT();
 
   // 3. Build and place the "conventional" Photon Detection System 
   if (fSuperCell) BuildAndPlaceSuperCells();
