@@ -47,6 +47,7 @@ void SLArBulkVertexGenerator::SetBulkLogicalVolume(G4LogicalVolume * logvol_)
 {
   fSolid = logvol_->GetSolid();
   fLogVol = logvol_;
+  fMass = GetMassVolumeGenerator();
   std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: solid=" << fSolid << "\n";
 }
 
