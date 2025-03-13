@@ -120,7 +120,9 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     std::map<int, SLArDetTPC*> fTPC;
     std::map<int, SLArDetCathode*> fCathode; 
 
-    SLArDetCRT* fCRT; // --JM
+    SLArBaseDetModule *fTagger;
+    std::map<int, SLArDetCRT*> fCRT;
+    //SLArDetCRT* fCRT; // --JM
   
     SLArGeoInfo fWorldGeoPars;//!< World volume geometry parameters
     SLArGeoInfo fCavernGeoPars; //!< Cavern volume geometry attributes

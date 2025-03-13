@@ -108,3 +108,28 @@ void SLArDetCRT::Init(const rapidjson::Value& jconf)
 //****************************************************************************
 
 
+//****************************************************************************
+//***** OTHER STUFF **********************************************************
+
+// - - - - - - - - - - - - - - -
+void SLArDetCRT::SetVisAttributes()
+{
+    G4cout << "SLArDetCRT::SetVisAttributes Setting visual parameters." << G4endl;
+
+    G4VisAttributes *visOut = new G4VisAttributes();
+
+    visOut->SetVisibility(true);
+    visOut->SetColour(1., 1., 0., 1.);
+    fModLV->SetVisAttributes( visOut );
+}
+// - - - - - - - - - - - - - - -
+
+//****************************************************************************
+
+
+
+
+
+
+
+
