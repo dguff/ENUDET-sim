@@ -19,6 +19,15 @@
     {"name" : "inner_size_z", "val" : 15.0, "unit" : "m"}
   ]
   },
+    "CRT" : {
+	"copyID" : 60,
+	"position": {"xyz" : [0, 10, 0], "unit" : "m"},
+	"dimensions" : [
+            {"name" : "crt_x"  , "val" : 10, "unit" :  "m"},
+            {"name" : "crt_y"  , "val" : 1, "unit" :  "m"},
+            {"name" : "crt_z"  , "val" : 10, "unit" :  "m"}
+	]	
+    },
   "TPC" : [
     {"copyID" : 10, 
       "position": {"xyz" : [-180.05, 0, 0], "unit" : "cm"},

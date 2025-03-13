@@ -1,8 +1,8 @@
 /*************************************************
- * Filename:   SLArDetCRT.hh     		 *
- * Author:     Jordan McElwee 			 *
- * Created:    2025-03-04 15:18 		 * 
- * Description:					 *
+ * Filename:   SLArDetCRT.hh     		             *
+ * Author:     Jordan McElwee 			             *
+ * Created:    2025-03-04 15:18 		             * 
+ * Description:					                         *
  *************************************************/
 
 #ifndef SLARDETCRT_HH
@@ -13,6 +13,8 @@
 // --- G4 Gumf ---
 #include "G4Box.hh"
 
+#include "G4UIcommand.hh"
+
 
 class SLArDetCRT : public SLArBaseDetModule {
 
@@ -22,9 +24,10 @@ public:
 
   void BuildCRT();
   void BuildMaterial(G4String);
+  void BuildDefaultGeoParMap()
 
 
-  //  virtual void Init(const rapidjson::Value& jconf) override;
+  virtual void Init(const rapidjson::Value& jconf) override;
   
 
 private:

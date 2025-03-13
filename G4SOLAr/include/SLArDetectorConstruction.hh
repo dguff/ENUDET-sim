@@ -151,6 +151,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     void InitAnode(const rapidjson::Value&);
     //! Parse the description of the TPC volumes
     void InitTPC(const rapidjson::Value&); 
+    //! Parse the description of the CRT volumes 
+    void InitCRT(const rapidjson::Value&); // --JM
     //! Parse the description of the cathode elements
     void InitCathode(const rapidjson::Value&); 
 };

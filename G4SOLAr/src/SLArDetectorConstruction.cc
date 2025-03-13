@@ -152,6 +152,17 @@ void SLArDetectorConstruction::Init() {
   InitExpHall(*jhall);
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Initialise CRTs
+  // --JM
+  
+  if (d.HasMember("CRT"))
+  {
+    G4cout << "SLArDetectorConstruction::Init CRT" << G4endl; 
+    InitCRT(d["CRT"]);
+  }
+
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
   G4cout << "SLArDetectorConstruction::Init TPC" << G4endl;
   InitTPC(d["TPC"]); 
@@ -167,11 +178,6 @@ void SLArDetectorConstruction::Init() {
     fCryostat->BuildCryostatStructure(d["Cryostat"]);
     G4cout << "SLArDetectorConstruction::Init Cryostat DONE" << G4endl;
   }
-
-  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // Initialise CRTs
-
-  fCRT = new SLArDetCRT(); //--JM
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   // Initialize Photodetectors
@@ -210,6 +216,13 @@ void SLArDetectorConstruction::InitTPC(const rapidjson::Value& jtpc) {
     fTPC.insert(std::make_pair(detTPC->GetID(), detTPC)); 
   }
 
+}
+
+// --JM
+void SLArDetectorConstruction::InitCRT(const rapidjson::Value &jCRT) 
+{
+  fCRT = new SLArDetCRT();
+  fCRT->Init(jCRT);
 }
 
 void SLArDetectorConstruction::InitCathode(const rapidjson::Value& jcathode) {
@@ -451,9 +464,9 @@ void SLArDetectorConstruction::ConstructCRT() // --JM
   auto geoinfo = fCRT->GetGeoInfo();
   fCRT->GetModPV(
         "CRT_pv", 0,
-        G4ThreeVector(geoinfo->GetGeoPar("pos_x"),
-                      geoinfo->GetGeoPar("pos_y"),
-                      geoinfo->GetGeoPar("pos_z")),
+        G4ThreeVector(geoinfo->GetGeoPar("crt_pos_x"),
+                      geoinfo->GetGeoPar("crt_pos_y"),
+                      geoinfo->GetGeoPar("crt_pos_z")),
         fDetector->GetModLV(), 0);
 
 }
