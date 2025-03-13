@@ -13,6 +13,7 @@
 // --- G4 Gumf ---
 #include "G4Box.hh"
 
+#include "G4VisAttributes.hh"
 #include "G4UIcommand.hh"
 
 
@@ -24,8 +25,9 @@ public:
 
   void BuildCRT();
   void BuildMaterial(G4String);
-  void BuildDefaultGeoParMap()
+  void BuildDefaultGeoParMap();
 
+  void SetVisAttributes();
 
   virtual void Init(const rapidjson::Value& jconf) override;
   
