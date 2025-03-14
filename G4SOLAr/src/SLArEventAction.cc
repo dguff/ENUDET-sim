@@ -251,6 +251,12 @@ G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ve
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
     auto bktManager = SLArAnaMgr->GetBacktrackerManager( backtracker::kVUVSiPM ); 
 
+    const auto detector = 
+      static_cast<const SLArDetectorConstruction*>(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
+    const auto tile = detector->GetReadoutTile(); 
+    const int n_cell_row = tile->GetNumberOfCellRows();
+    const int n_cell_col = tile->GetNumberOfCellCols();
+
     // Fill histograms
     G4int n_hit = hHC1->entries();
 
@@ -291,6 +297,11 @@ G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ve
       const int mtIdx = mtCfg.GetIdx();
       const int tIdx = tCfg.GetIdx();
 
+      // Compute unique identifier of SiPM replacing cell nr
+      dstHit.DumpInfo();
+      const int sipm_nr = n_cell_row * dstHit.GetRowCellNr() + dstHit.GetCellNr();
+      dstHit.SetCellNr( sipm_nr );
+
       auto& ev_anode = SLArAnaMgr->GetEvent().GetEventAnodeByID(anode_idx);
       auto& ev_tile = ev_anode.RegisterHit(dstHit, mtIdx, tIdx);
       
@@ -307,7 +318,7 @@ G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ve
 
       if (bktManager) {
         if (bktManager->IsNull() == false) {
-          auto records = 
+          auto& records = 
             ev_tile.GetBacktrackerVector( ev_tile.ConvertToClock(dstHit.GetTime()) );
 
           for (size_t ib = 0; ib < bktManager->GetBacktrackers().size(); ib++) {
