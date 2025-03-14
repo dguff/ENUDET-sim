@@ -24,6 +24,8 @@
 #include "detector/SuperCell/SLArDetSuperCellArray.hh"
 #include "detector/SuperCell/SLArSuperCellSD.hh"
 
+#include "detector/CRT/SLArCRTSD.hh"
+
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgReadoutTile.hh"
@@ -629,6 +631,15 @@ void SLArDetectorConstruction::ConstructSDandField()
     SDman->AddNewDetector(tpcSD);
     SetSensitiveDetector(tpc.second->GetModLV(), tpcSD);
     iTPC++; 
+  }
+
+  // Set CRT SD
+  if (fCRT)
+  {
+    G4VSensitiveDetector *crtSD 
+      = new SLArCRTSD(SDname = "/crt");
+    SDman->AddNewDetector(crtSD);
+    SetSensitiveDetector(fCRT->GetModLV(), crtSD);
   }
 
 #endif
