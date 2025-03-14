@@ -156,7 +156,7 @@ void SLArDetectorConstruction::Init() {
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialise CRTs
   // --JM
-  
+
   if (d.HasMember("CRT"))
   {
     G4cout << "SLArDetectorConstruction::Init CRT" << G4endl; 
@@ -223,9 +223,14 @@ void SLArDetectorConstruction::InitTPC(const rapidjson::Value& jtpc) {
 // --JM
 void SLArDetectorConstruction::InitCRT(const rapidjson::Value &jCRT) 
 {
-  fCRT = new SLArDetCRT();
-  fCRT->Init(jCRT);
-}
+  assert(jCRT.IsArray());
+
+  for (auto &crt : jCRT.GetArray()) {
+    SLArDetCRT *detCRT = new SLArDetCRT();
+    detCRT->Init(crt);
+    fCRT.insert( std::make_pair(detCRT->GetID(), detCRT) );
+  }
+} 
 
 void SLArDetectorConstruction::InitCathode(const rapidjson::Value& jcathode) {
   assert(jcathode.IsArray()); 
@@ -460,16 +465,19 @@ void SLArDetectorConstruction::ConstructCathode() {
 void SLArDetectorConstruction::ConstructCRT() // --JM
 {
 
-  fCRT->BuildMaterial(fMaterialDBFile);
-  fCRT->BuildCRT();
+  for (auto &crt : fCRT) {
+    crt.second->BuildMaterial(fMaterialDBFile);
+    crt.second->BuildCRT();
  
-  auto geoinfo = fCRT->GetGeoInfo();
-  fCRT->GetModPV(
+    auto geoinfo = crt.second->GetGeoInfo();
+    crt.second->GetModPV(
         "CRT_pv", 0,
         G4ThreeVector(geoinfo->GetGeoPar("crt_pos_x"),
                       geoinfo->GetGeoPar("crt_pos_y"),
                       geoinfo->GetGeoPar("crt_pos_z")),
-        fDetector->GetModLV(), 0);
+        fWorldLog, 0);
+    crt.second->SetVisAttributes();
+  }
 
 }
 
