@@ -5,7 +5,7 @@
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 15.00, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" :  6.52, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" : 15.50, "unit" :  "m"}
+        {"name" : "tpc_z"  , "val" :  5.50, "unit" :  "m"}
       ], 
       "field_cage" : {
         "corner_radius" : {"val" : 100, "unit" : "mm"}, 
@@ -22,7 +22,7 @@
       "dimensions" : [
         {"name" : "tpc_x"  , "val" :15.00, "unit" :  "m"},
         {"name" : "tpc_y"  , "val" : 6.52, "unit" :  "m"},
-        {"name" : "tpc_z"  , "val" :15.50, "unit" :  "m"}
+        {"name" : "tpc_z"  , "val" : 5.50, "unit" :  "m"}
       ], 
       "field_cage" : {
         "corner_radius" : {"val" : 100, "unit" : "mm"}, 
@@ -40,7 +40,7 @@
      "dimensions" : [
        {"name" : "dim_x", "val" : 14.00, "unit" : "m"},
        {"name" : "dim_y", "val" :  1.00, "unit" : "mm" },
-       {"name" : "dim_z", "val" : 15.00, "unit" : "m" }
+       {"name" : "dim_z", "val" :  5.00, "unit" : "m" }
      ]
     }
   ],
@@ -54,7 +54,7 @@
       "dimensions" : [
         {"name" : "dim_y", "val" :  1.00, "unit" : "cm"},
         {"name" : "dim_x", "val" : 14.00, "unit" :  "m"},
-        {"name" : "dim_z", "val" : 15.00, "unit" :  "m"}
+        {"name" : "dim_z", "val" :  5.00, "unit" :  "m"}
       ]
     }, 
     {"copyID" : 51, 
@@ -66,7 +66,7 @@
       "dimensions" : [
         {"name" : "dim_y", "val" : 1.00, "unit" : "cm"},
         {"name" : "dim_x", "val" : 14.0, "unit" :  "m"},
-        {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+        {"name" : "dim_z", "val" :  5.0, "unit" :  "m"}
       ]
     }
   ]

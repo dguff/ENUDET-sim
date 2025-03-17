@@ -17,7 +17,7 @@
     "dimensions" : [
       {"name" : "dim_y", "val" : 1.10, "unit" : "cm"},
       {"name" : "dim_x", "val" : 6.00, "unit" :  "m"},
-      {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+      {"name" : "dim_z", "val" : 5.00, "unit" :  "m"}
     ],
     "replication_data" : [
       {"replica_axis" : "x", "spacing" : {"val" : 80, "unit" : "cm"} }, 
@@ -34,7 +34,7 @@
     "dimensions" : [
       {"name" : "dim_y", "val" : 1.10, "unit" : "cm"},
       {"name" : "dim_x", "val" : 6.00, "unit" :  "m"},
-      {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+      {"name" : "dim_z", "val" : 5.00, "unit" :  "m"}
     ],
     "replication_data" : [
       {"replica_axis" : "x", "spacing" : {"val" : 80, "unit" : "cm"} }, 
@@ -44,7 +44,7 @@
   {"copyID" : 32,
     "tpcID" : 10,
     "name" : "SCArray32000",
-    "position" : {"xyz" : [0, 0, 7.7], "unit" : "m"}, 
+    "position" : {"xyz" : [0, 0, 2.7], "unit" : "m"}, 
     "normal" : [0, 0, -1],
     "rot" : {"val" : [90, -90, 0], "unit" : "degree"}, 
     "photodet_model" : "SuperCell", 
@@ -61,7 +61,7 @@
   {"copyID" : 33,
     "tpcID" : 10,
     "name" : "SCArray33000",
-    "position" : {"xyz" : [0, 0, -7.7], "unit" : "m"}, 
+    "position" : {"xyz" : [0, 0, -2.7], "unit" : "m"}, 
     "normal" : [0, 0, 1],
     "rot" : {"val" : [90, 90, 0], "unit" : "degree"}, 
     "photodet_model" : "SuperCell", 
@@ -85,7 +85,7 @@
     "dimensions" : [
       {"name" : "dim_y", "val" : 1.10, "unit" : "cm"},
       {"name" : "dim_x", "val" : 14.00, "unit" :  "m"},
-      {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+      {"name" : "dim_z", "val" : 5.00, "unit" :  "m"}
     ],
     "replication_data" : [
       {"replica_axis" : "x", "spacing" : {"val" : 80, "unit" : "cm"} }, 
@@ -102,7 +102,7 @@
     "dimensions" : [
       {"name" : "dim_y", "val" : 1.10, "unit" : "cm"},
       {"name" : "dim_x", "val" : 6.00, "unit" :  "m"},
-      {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+      {"name" : "dim_z", "val" : 5.00, "unit" :  "m"}
     ],
     "replication_data" : [
       {"replica_axis" : "x", "spacing" : {"val" : 80, "unit" : "cm"} }, 
@@ -119,7 +119,7 @@
     "dimensions" : [
       {"name" : "dim_y", "val" : 1.10, "unit" : "cm"},
       {"name" : "dim_x", "val" : 6.00, "unit" :  "m"},
-      {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+      {"name" : "dim_z", "val" : 5.00, "unit" :  "m"}
     ],
     "replication_data" : [
       {"replica_axis" : "x", "spacing" : {"val" : 80, "unit" : "cm"} }, 
@@ -129,7 +129,7 @@
   {"copyID" : 42,
     "tpcID" : 11,
     "name" : "SCArray42000",
-    "position" : {"xyz" : [0, 0,  7.70], "unit" : "m"}, 
+    "position" : {"xyz" : [0, 0,  2.70], "unit" : "m"}, 
     "normal" : [0, 0, -1],
     "rot" : {"val" : [90, -90, 0], "unit" : "degree"}, 
     "photodet_model" : "SuperCell", 
@@ -146,7 +146,7 @@
   {"copyID" : 43,
     "tpcID" : 11,
     "name" : "SCArray43000",
-    "position" : {"xyz" : [0, 0, -7.70], "unit" : "m"}, 
+    "position" : {"xyz" : [0, 0, -2.70], "unit" : "m"}, 
     "normal" : [0, 0, 1],
     "rot" : {"val" : [90, 90, 0], "unit" : "degree"}, 
     "photodet_model" : "SuperCell", 
@@ -170,7 +170,7 @@
     "dimensions" : [
       {"name" : "dim_y", "val" : 1.10, "unit" : "cm"},
       {"name" : "dim_x", "val" : 14.00, "unit" :  "m"},
-      {"name" : "dim_z", "val" : 15.0, "unit" :  "m"}
+      {"name" : "dim_z", "val" : 5.00, "unit" :  "m"}
     ],
     "replication_data" : [
       {"replica_axis" : "x", "spacing" : {"val" : 80, "unit" : "cm"} }, 
