@@ -82,23 +82,8 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
         // fix track ID in primary output object
         auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
         for (auto &primaryInfo : primaries) {
-          if (aTrack->GetDynamicParticle()->GetPDGcode() == primaryInfo.GetCode()) {
-            G4double tolerance = 1e-3;
-            if (primaryInfo.GetCode() > 10000) {
-              //printf("possible canidate %i - [%g, %g, %g] vs [%g, %g, %g]\n", 
-                  //primaryInfo.GetCode(), 
-                  //aTrack->GetMomentum().x(), aTrack->GetMomentum().y(), aTrack->GetMomentum().z(), 
-                  //primaryInfo.GetMomentum()[0], primaryInfo.GetMomentum()[1], primaryInfo.GetMomentum()[2]); 
-              tolerance = 5e-2;
-            }
-            if (fabs(aTrack->GetMomentum().x() - primaryInfo.GetMomentum()[0]) < tolerance &&
-                fabs(aTrack->GetMomentum().y() - primaryInfo.GetMomentum()[1]) < tolerance &&
-                fabs(aTrack->GetMomentum().z() - primaryInfo.GetMomentum()[2]) < tolerance) {
-              //printf("This is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
-              primaryInfo.SetTrackID(aTrack->GetTrackID()); 
-              break;
-            }
-          }
+          G4double match = PositivePrimaryIdentification(aTrack, primaryInfo);
+          if (match) break;
         }
       } else {
         //printf("Not a primary, recording parent id\n");
@@ -224,6 +209,38 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 
 
   return kClassification;
+}
+
+bool SLArStackingAction::PositivePrimaryIdentification(const G4Track* aTrack, SLArMCPrimaryInfo& aPrimary) const
+{
+  if (aTrack->GetDynamicParticle()->GetPDGcode() == aPrimary.GetCode()) {
+
+    const G4ThreeVector pVertex(aPrimary.GetVertex().at(0), aPrimary.GetVertex().at(1), aPrimary.GetVertex().at(2));
+    const G4ThreeVector pMomentum(aPrimary.GetMomentum().at(0), aPrimary.GetMomentum().at(1), aPrimary.GetMomentum().at(2));
+
+    const G4ThreeVector& track_pos = aTrack->GetPosition();
+    const G4ThreeVector& track_mom = aTrack->GetMomentum();
+
+    const G4ThreeVector diffPos = track_pos - pVertex;
+    const G4ThreeVector diffMom = track_mom - pMomentum;
+
+    G4double tolerance = 1e-3;
+    if (aPrimary.GetCode() > 10000) {
+      //printf("possible canidate %i - [%g, %g, %g] vs [%g, %g, %g]\n", 
+      //primaryInfo.GetCode(), 
+      //aTrack->GetMomentum().x(), aTrack->GetMomentum().y(), aTrack->GetMomentum().z(), 
+      //primaryInfo.GetMomentum()[0], primaryInfo.GetMomentum()[1], primaryInfo.GetMomentum()[2]); 
+      tolerance = 5e-2;
+    }
+
+    if ( diffPos.mag() < tolerance && diffMom.mag() < tolerance ) {
+      //printf("This is a primary: Corrsponding primary info found (%i)\n", primaryInfo.GetTrackID());
+      aPrimary.SetTrackID(aTrack->GetTrackID()); 
+      return true;
+    }
+  }
+
+  return false;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
