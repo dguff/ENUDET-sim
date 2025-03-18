@@ -16,12 +16,12 @@
 #pragma link C++ class std::vector<SLArEventPhotonHit>++;
 #pragma link C++ class SLArEventBacktrackerRecord++;
 #pragma link C++ class std::vector<SLArEventBacktrackerRecord>++;
-#pragma link C++ class std::map<Int_t, UShort_t>++;
+#pragma link C++ class std::map<int, UShort_t>++;
 #pragma link C++ typedef BacktrackerCounter_t++;
 #pragma link C++ class SLArEventBacktrackerVector++;
-#pragma link C++ class std::map<UShort_t, SLArEventBacktrackerVector>++;
+#pragma link C++ class std::map<int, SLArEventBacktrackerVector>++;
 #pragma link C++ typedef BacktrackerVectorCollection_t++;
-#pragma link C++ class std::map<UShort_t, UShort_t>++;
+#pragma link C++ class std::map<int, UShort_t>++;
 #pragma link C++ typedef HitsCollection_t++;
 #pragma link C++ class SLArEventHitsCollection<SLArEventPhotonHit>++;
 #pragma link C++ class SLArEventHitsCollection<SLArEventChargeHit>++;
