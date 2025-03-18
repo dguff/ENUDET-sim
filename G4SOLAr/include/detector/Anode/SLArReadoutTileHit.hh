@@ -90,7 +90,7 @@ private:
     G4int         fRowCellNr; 
     G4int         fCellNr; 
     G4double      fWavelength;
-    G4double      fTime;
+    G4float       fTime;
     G4int         fPhType;
     G4int         fPhProducerID;
     G4ThreeVector fLocalPos;
