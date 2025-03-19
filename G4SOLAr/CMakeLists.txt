@@ -136,13 +136,6 @@ if (ECosmic_FOUND)
   message(STATUS "ECosmic found: include at ${ECosmic_INCLUDE_DIR}")
 endif()
 
-find_library(ECOSMIC_LIB
-  NAMES ECosmic
-  PATHS "${G4SOLAR_EXT_DIR}/ecosmics/lib"
-  REQUIRED
-  NO_DEFAULT_PATH
-  )
-	
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -290,7 +283,7 @@ target_link_libraries(solar_sim PRIVATE SLArScintillation)
 target_link_libraries(solar_sim PRIVATE SLArReadoutSystemConfig)
 target_link_libraries(solar_sim PRIVATE BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim PRIVATE ${MARLEY} ${MARLEY_ROOT})
-target_link_libraries(solar_sim PRIVATE ${ECOSMIC_LIB})
+target_link_libraries(solar_sim PRIVATE ECosmic::ECosmic)
 if (SLAR_CRY_INTERFACE)
   target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
 endif()
