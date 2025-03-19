@@ -15,7 +15,7 @@ echo $SCRIPT_PATH
 # Get the directory containing the script
 # This might be overkill...
 if [[ "$SCRIPT_PATH" == */* ]]; then
-    ENUDET_DIR=`$(cd "$(dirname "$SCRIPT_PATH")" && pwd)`
+    ENUDET_DIR=$(cd "$(dirname "$SCRIPT_PATH")" && pwd)
 else
     ENUDET_DIR="$PWD"
 fi
@@ -58,9 +58,8 @@ export PATH="${PATH}:${ENUDET_INSTALL}"
 
 #*************************************************************
 #***** Setup Externals ***************************************
-
-cd ${ENUDET_DIR}/G4SOLAr/extern/install/marley
-source setup_marley.sh
+ 
+source ${ENUDET_DIR}/G4SOLAr/extern/install/marley/setup_marley.sh
 
 cd ${ENUDET_DIR}/G4SOLAr/extern/install/ecosmics
 source ../../src/ecosmics/setup_ecosmic.sh
