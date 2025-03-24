@@ -505,10 +505,15 @@ const rapidjson::Document SLArBaseGenerator::ExportEnergyConfig() const {
 
 void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int firstVertex) {
 
+  SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
+  const G4Transform3D& world2LArVolume = run_action->GetTransformWorld2Det();
+
   SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
   G4IonTable* ionTable = G4IonTable::GetIonTable(); 
 
   G4int total_vertices = anEvent->GetNumberOfPrimaryVertex(); 
+
+
 
   if (fVerbose) {
     printf("[gen] %s primary generator action produced %i vertex(ices)\n", 
@@ -540,9 +545,11 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       }
 
       tc_primary.SetTrackID(particle->GetTrackID());
-      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
-          anEvent->GetPrimaryVertex(i)->GetY0(), 
-          anEvent->GetPrimaryVertex(i)->GetZ0());
+
+      const HepGeom::Point3D<double> pos = anEvent->GetPrimaryVertex(i)->GetPosition();
+      const HepGeom::Point3D<double> posLAr = world2LArVolume * pos;
+
+      tc_primary.SetPosition(posLAr.x(), posLAr.y(), posLAr.z());
       tc_primary.SetMomentum(
           particle->GetPx(), particle->GetPy(), particle->GetPz(), 
           particle->GetKineticEnergy());
