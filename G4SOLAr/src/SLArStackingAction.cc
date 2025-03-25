@@ -35,6 +35,7 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArUserTrackInformation.hh"
+#include "SLArRunAction.hh"
 
 #include "G4VProcess.hh"
 #include "G4RunManager.hh"
@@ -218,7 +219,11 @@ bool SLArStackingAction::PositivePrimaryIdentification(const G4Track* aTrack, SL
     const G4ThreeVector pVertex(aPrimary.GetVertex().at(0), aPrimary.GetVertex().at(1), aPrimary.GetVertex().at(2));
     const G4ThreeVector pMomentum(aPrimary.GetMomentum().at(0), aPrimary.GetMomentum().at(1), aPrimary.GetMomentum().at(2));
 
-    const G4ThreeVector& track_pos = aTrack->GetPosition();
+    const HepGeom::Point3D<double>& track_pos_world = aTrack->GetPosition();
+    const SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
+    const G4Transform3D& world2LArVolume = run_action->GetTransformWorld2Det();
+
+    const G4ThreeVector& track_pos = world2LArVolume * track_pos_world;
     const G4ThreeVector& track_mom = aTrack->GetMomentum();
 
     const G4ThreeVector diffPos = track_pos - pVertex;
