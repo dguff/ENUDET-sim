@@ -44,15 +44,17 @@ class G4TouchableHistory;
 class SLArCRTSD : public G4VSensitiveDetector
 {
 public:
-    SLArCRTSD(G4String name);
+    SLArCRTSD(G4String name, G4int crtID);
     virtual ~SLArCRTSD();
     
-    virtual void Initialize(G4HCofThisEvent*HCE);
-    virtual G4bool ProcessHits(G4Step* aStep, G4TouchableHistory* ROhist);
-   
+    virtual void Initialize(G4HCofThisEvent*HCE) override;
+    virtual G4bool ProcessHits(G4Step *aStep, G4TouchableHistory *ROhist) override;
+    void EndOfEvent(G4HCofThisEvent *hce) override;
+
 private:
     SLArCRTHitsCollection* fHitsCollection;
     G4int fHCID;
+    G4int fCRTID;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

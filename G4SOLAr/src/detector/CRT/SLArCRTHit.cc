@@ -47,7 +47,7 @@ G4ThreadLocal G4Allocator<SLArCRTHit>* SLArCRTHitAllocator;
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 SLArCRTHit::SLArCRTHit()
-  : G4VHit(), fCRTNo(0), fPDG(0), fTime(0.), fLocalPos(0), fWorldPos(0)
+  : G4VHit(), fCRTNo(0), fPDG(0), fTime(0.), fEkin(0.), fLocalPos(0), fWorldPos(0), fDirection(0)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -120,10 +120,15 @@ void SLArCRTHit::Print()
 {
 
     G4cout << " CRT#: " << fCRTNo << "\n"
-           << " : time "         << fTime/CLHEP::ns << " (ns)"
+           << " : pdg "         << fPDG << "\n"
+           << " : time "         << fTime/CLHEP::ns << " (ns)" << "\n"
+           << " : Ekin "         << fEkin << " (MeV)" << "\n"
            << " --- global (x,y,z) "<< G4BestUnit(fWorldPos.x(), "Length")
            << ", " << G4BestUnit(fWorldPos.y(), "Length")
-           << ", " << G4BestUnit(fWorldPos.z(), "Length") << G4endl;
+           << ", " << G4BestUnit(fWorldPos.z(), "Length") << "\n"
+           << " --- dir (dx,dy,dz) " << fDirection.x()
+           << ", " << fDirection.y()
+           << ", " << fDirection.z() << G4endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

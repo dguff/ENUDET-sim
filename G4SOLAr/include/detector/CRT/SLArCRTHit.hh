@@ -47,18 +47,26 @@ public:
     void SetTime(G4double t) { fTime = t; }
     G4double GetTime() const { return fTime / CLHEP::ns; }
 
+    void SetEkin(G4double ekin) { fEkin = ekin; }
+    G4double GetEkin() const { return fEkin; }
+
     void SetLocalPos(G4ThreeVector xyz) { fLocalPos = xyz; }
     G4ThreeVector GetLocalPos() const { return fLocalPos; }
 
     void SetWorldPos(G4ThreeVector xyz) { fWorldPos = xyz; }
     G4ThreeVector GetWorldPos() const { return fWorldPos; }
 
+    void SetDir(G4ThreeVector xyz) { fDirection = xyz; }
+    G4ThreeVector GetDir() const { return fDirection; }
+
 private:
     G4int         fCRTNo;
     G4int         fPDG;
     G4double      fTime;
+    G4double      fEkin;
     G4ThreeVector fLocalPos;
     G4ThreeVector fWorldPos;
+    G4ThreeVector fDirection;
 };
 
 typedef G4THitsCollection<SLArCRTHit> SLArCRTHitsCollection;

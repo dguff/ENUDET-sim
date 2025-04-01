@@ -39,10 +39,10 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-SLArCRTSD::SLArCRTSD(G4String name)
-: G4VSensitiveDetector(name), fHitsCollection(0), fHCID(-1)
+SLArCRTSD::SLArCRTSD(G4String name, G4int crtID)
+: G4VSensitiveDetector(name), fHitsCollection(0), fHCID(-1), fCRTID(crtID)
 {
-    collectionName.insert("CRTColl");
+    collectionName.insert("CRT"+std::to_string(crtID)+"Coll");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -89,6 +89,7 @@ G4bool SLArCRTSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   G4ThreeVector worldPos = preStepPoint->GetPosition();
   G4ThreeVector localPos = touchable->GetHistory()->GetTopTransform().TransformPoint(worldPos);
+  G4ThreeVector partDir = preStepPoint->GetMomentumDirection();
   G4int pdgCode = track->GetParticleDefinition()->GetPDGEncoding();
 
   SLArCRTHit* hit = new SLArCRTHit();
@@ -96,14 +97,20 @@ G4bool SLArCRTSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   hit->SetPDG(pdgCode);
   hit->SetWorldPos(worldPos);
   hit->SetLocalPos(localPos);
+  hit->SetDir(partDir);
   hit->SetTime(preStepPoint->GetGlobalTime());
+  hit->SetEkin(preStepPoint->GetKineticEnergy());
   hit->SetCRTNo(preStepPoint->GetTouchableHandle()->GetCopyNumber());
+
+  hit->Print();
 
   fHitsCollection->insert(hit);
     
-  delete hit;
-
   return true;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void SLArCRTSD::EndOfEvent(G4HCofThisEvent *hce)
+{
+}
