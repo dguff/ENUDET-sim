@@ -17,6 +17,7 @@
 #include "event/SLArMCPrimaryInfo.hh"
 #include "event/SLArEventAnode.hh"
 #include "event/SLArEventSuperCellArray.hh"
+#include "event/SLArEventCRT.hh"
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
@@ -58,6 +59,7 @@ class SLArMCEvent : public TObject
     SLArEventAnode& GetEventAnodeByID(const int& id); 
     inline std::map<int, SLArEventSuperCellArray>& GetEventSuperCellArray() {return fEvSuperCellArray;}
     inline SLArEventSuperCellArray& GetEventSuperCellArray(const int& id) {return fEvSuperCellArray.find(id)->second;}
+    inline std::vector<SLArEventCRT> &GetEventCRT() { return fEvCRT; }
 
     inline std::vector<SLArMCPrimaryInfo>& GetPrimaries() {return fSLArPrimary ;}
     inline SLArMCPrimaryInfo& GetPrimary(int ip) {return fSLArPrimary.at(ip);}
@@ -84,9 +86,11 @@ class SLArMCEvent : public TObject
     std::map<int, SLArEventAnode> fEvAnode;
     //! Event data structure of the super-cell system
     std::map<int, SLArEventSuperCellArray> fEvSuperCellArray; 
+    //! Event data structure of the CRT system
+    std::vector<SLArEventCRT> fEvCRT;
 
   public:
-    ClassDef(SLArMCEvent, 4);
+    ClassDef(SLArMCEvent, 5);
 };
 
 #endif /* end of include guard SLArEVENT_HH */

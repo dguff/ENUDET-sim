@@ -35,6 +35,7 @@
 #pragma link C++ class SLArEventSuperCell++;
 #pragma link C++ class std::map<int, SLArEventSuperCell>++;
 #pragma link C++ class SLArEventSuperCellArray++;
+#pragma link C++ class SLArEventCRT++;
 
 #endif
 

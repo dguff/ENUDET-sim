@@ -32,6 +32,10 @@ SLArMCEvent::SLArMCEvent(const SLArMCEvent& ev) : TObject(ev)
   for (const auto & itr : ev.fEvSuperCellArray) {
     fEvSuperCellArray[itr.first] = SLArEventSuperCellArray(itr.second);
   }
+
+  for (const auto& c : ev.fEvCRT) {
+    fEvCRT.push_back( SLArEventCRT(c) );
+  }
 }
 
 SLArMCEvent::~SLArMCEvent()
@@ -53,6 +57,8 @@ SLArMCEvent::~SLArMCEvent()
     //delete p; 
   //}
   fSLArPrimary.clear();
+
+  fEvCRT.clear();
   std::cerr << "~SLArMCEvent DONE" << std::endl;
 }
 

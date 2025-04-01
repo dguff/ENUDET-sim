@@ -55,6 +55,8 @@ add_library(SLArMCEventReadout
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCell.hh
   ${G4SOLAR_SRC_DIR}/event/SLArEventSuperCellArray.cc
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCellArray.hh
+  ${G4SOLAR_SRC_DIR}/event/SLArEventCRT.cc
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventCRT.hh
   )
 #target_include_directories(SLArMCEventReadout 
   #PUBLIC 
@@ -76,6 +78,7 @@ ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventAnode.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCell.hh
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventSuperCellArray.hh
+  ${G4SOLAR_INCLUDE_DIR}/event/SLArEventCRT.hh
   MODULE SLArMCEventReadout
   LINKDEF
   ${G4SOLAR_INCLUDE_DIR}/event/SLArEventReadoutLinkDef.h

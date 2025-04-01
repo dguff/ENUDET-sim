@@ -118,6 +118,7 @@ private:
     G4int fTileHCollID;
     G4int fSuperCellHCollID;
     std::vector<G4int> fLArHCollID;
+    std::vector<G4int> fCRTHCollID;
     std::vector<G4int> fExtScorerHCollID;
 
     G4int fHitCount;
@@ -137,6 +138,7 @@ private:
     G4int RecordEventSuperCell( const G4Event* ev, const G4int& verbose = 0); 
     G4int RecordEventLAr(const G4Event* ev, const G4int& verbose = 0);
     G4int RecordEventExtScorer(const G4Event* ev, const G4int& verbose = 0); 
+    G4int RecordEventCRT(const G4Event* ev, const G4int& verbose = 0);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

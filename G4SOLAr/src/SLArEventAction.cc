@@ -15,6 +15,7 @@
 #include "physics/SLArElectronDrift.hh"
 #include "detector/TPC/SLArExtScorerSD.hh"
 #include "detector/TPC/SLArExtHit.hh"
+#include "detector/CRT/SLArCRTHit.hh"
 
 #include "G4Event.hh"
 #include "G4RunManager.hh"
@@ -78,6 +79,13 @@ void SLArEventAction::BeginOfEventAction(const G4Event*)
       auto coll_id = 
         sdManager->GetCollectionID("TPC"+std::to_string(tpc.first)+"Coll");
       fLArHCollID.push_back(coll_id); 
+    }
+  }
+  if (fCRTHCollID.empty()) {
+    for (const auto &crt : detConstruction->GetDetCRTs() ) {
+      auto coll_id = 
+        sdManager->GetCollectionID("CRT"+std::to_string(crt.first)+"Coll");
+      fCRTHCollID.push_back(coll_id); 
     }
   }
 
@@ -176,6 +184,10 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
 
     if (verbose > 1) printf("Recording SuperCell hits...\n");
     RecordEventSuperCell( event, verbose );
+    if (verbose > 1) printf("DONE\n");
+    
+    if (verbose > 1) printf("Recording CRT hits...\n");
+    RecordEventCRT( event, verbose );
     if (verbose > 1) printf("DONE\n");
      
     // apply zero suppression to charge signal
@@ -452,6 +464,47 @@ G4int SLArEventAction::RecordEventLAr(const G4Event* ev, const G4int& verbose)
       SLArLArHit* hit = (*hHC1)[0];
       fTotEdep = hit->GetDepositedEnergy();
       n_hits++;
+    }
+  }
+
+  return n_hits;
+}
+
+G4int SLArEventAction::RecordEventCRT(const G4Event* ev, const G4int& verbose) {
+  G4int n_hits = 0; 
+  G4HCofThisEvent* hce = ev->GetHCofThisEvent();
+  if (fCRTHCollID.empty()) return 0;
+  else 
+  {
+    // recover analysis manager
+    SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
+    auto &ev_crt = SLArAnaMgr->GetEvent().GetEventCRT();
+
+    for (const auto &id : fCRTHCollID) {
+      SLArCRTHitsCollection* hHC1 
+        = static_cast<SLArCRTHitsCollection*>(hce->GetHC(id));
+
+      for (size_t i = 0; i < hHC1->entries(); i++)
+      {
+        SLArCRTHit *hit = (*hHC1)[i];
+
+        G4ThreeVector locPos = hit->GetLocalPos();
+        G4ThreeVector glbPos = hit->GetWorldPos();
+        G4ThreeVector dir = hit->GetDir();
+
+        SLArEventCRT crtEv;
+        crtEv.SetCRTNo(hit->GetCRTNo());
+        crtEv.SetPDG(hit->GetPDG());
+        crtEv.SetTime(hit->GetTime());
+        crtEv.SetEkin(hit->GetEkin());
+        crtEv.SetLocalPos(locPos.x(), locPos.y(), locPos.z());
+        crtEv.SetGlobalPos(glbPos.x(), glbPos.y(), glbPos.z());
+        crtEv.SetDir(dir.x(), dir.y(), dir.z());
+
+        ev_crt.push_back(crtEv);
+
+        n_hits++;
+      }
     }
   }
 
