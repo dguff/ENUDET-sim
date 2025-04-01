@@ -73,6 +73,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
     //! Return TPC with given id
     SLArDetTPC* GetDetTPC(G4int tpcid);
+    //! Return SLArDetectorConstruction::fCRTs map
+    inline std::map<G4int, SLArDetCRT*>& GetDetCRTs() {return fCRT;}
     //! Build SuperCell object and place the SuperCells according to the given configuration
     void BuildAndPlaceSuperCells();
     //! Build the ReadoutTile object and the place the MegaTiles according to the given configuration

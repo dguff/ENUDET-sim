@@ -642,13 +642,12 @@ void SLArDetectorConstruction::ConstructSDandField()
   }
 
   // Set CRT SD
-  if (fCRT)
-  {
-    G4VSensitiveDetector *crtSD 
-      = new SLArCRTSD(SDname = "/crt");
-    SDman->AddNewDetector(crtSD);
-    SetSensitiveDetector(fCRT->GetModLV(), crtSD);
-  }
+ for (const auto crt : fCRT) {
+   auto crtSD 
+     = new SLArCRTSD(SDname = "/crt"+std::to_string(crt.first), crt.first);
+   SDman->AddNewDetector(crtSD);
+   SetSensitiveDetector(crt.second->GetModLV(), crtSD);
+ }
 
 #endif
 
