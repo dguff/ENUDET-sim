@@ -19,12 +19,13 @@
 namespace gen {
 struct GenieEvent_t{
   Long64_t EvtNum;
-  int nPart;
-  int pdg[100];
-  int status[100];
-  double p4[100][4];
-  double x4[100][4];
-  double vtx[4];
+  int      nPart;
+  int      pdg[100];
+  int      status[100];
+  double   p4[100][4];
+  double   x4[100][4];
+  double   vtx[4];
+  int      t;
 };
 
 class SLArGENIEGeneratorAction : public SLArBaseGenerator

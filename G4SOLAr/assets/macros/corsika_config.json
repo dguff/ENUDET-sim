@@ -1,0 +1,15 @@
+{
+  "generator" : {
+    "type" : "corsika",
+    "label" : "corsika_test",
+    "config" : {
+	"corsika_db_dir" : "/Users/jmcelwee/Documents/NDTF/cosmics/database/",
+	"gen_buffer"     : [0, 0],
+	"gen_offset"     : 0,
+	"gen_E"          : [50, 1E8],
+	"gen_dT"         : 0.001,
+	"gen_T_off"      : 0,
+	"primaries"      : "H"
+    }
+  }
+}

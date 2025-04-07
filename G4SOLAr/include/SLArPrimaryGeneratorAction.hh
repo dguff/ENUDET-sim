@@ -49,7 +49,8 @@ namespace gen {
   class SLArPBombGeneratorAction; 
   //class SLArBackgroundGeneratorAction;
   class SLArExternalGeneratorAction;
-  class SLArGENIEGeneratorAction;//--JM
+  class SLArGENIEGeneratorAction;
+  class SLArCorsikaGeneratorAction; // --JM
 
 
   namespace bxdecay0_g4 {

@@ -124,7 +124,6 @@ find_library(MARLEY_ROOT
   NO_DEFAULT_PATH
   )
 
-
 # 4. G4CASCADE
 include( ${PROJECT_SOURCE_DIR}/cmake/G4CASCADE_setup.cmake )
 
@@ -155,9 +154,10 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${BxDecay0_INCLUDE_DIR}
                     ${MARLEY_DIR}/include
                     ${ECosmic_INCLUDE_DIR}
-                    ${RapidJSON_INCLUDE_DIR}/..
+                    ${RapidJSON_INCLUDE_DIR}
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIRS}
+		    ${ECOSMIC_SRC}/include
 )
 
 if (CLHEP_EXTERNAL) 
@@ -283,6 +283,7 @@ target_link_libraries(solar_sim PRIVATE SLArScintillation)
 target_link_libraries(solar_sim PRIVATE SLArReadoutSystemConfig)
 target_link_libraries(solar_sim PRIVATE BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4)
 target_link_libraries(solar_sim PRIVATE ${MARLEY} ${MARLEY_ROOT})
+target_link_libraries(solar_sim PRIVATE ECosmic::ECosmic)
 if (SLAR_CRY_INTERFACE)
   target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
 endif()

@@ -58,6 +58,7 @@ void SLArGENIEGeneratorAction::Configure() {
   m_gtree->SetBranchAddress("StdHepP4",&gVar.p4);
   m_gtree->SetBranchAddress("StdHepX4",&gVar.x4);
   m_gtree->SetBranchAddress("EvtVtx",&gVar.vtx);
+  m_gtree->SetBranchAddress("EnuOriginTime",&gVar.t);
 }
 
 G4String SLArGENIEGeneratorAction::WriteConfig() const {
@@ -91,7 +92,7 @@ G4String SLArGENIEGeneratorAction::WriteConfig() const {
 void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 {
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
-
+  
   int evtNum = ev->GetEventID() + fConfig.tree_first_entry;
   m_gtree->GetEntry(evtNum);
   std::cout << "   GENIE TTree event selection: " << evtNum << std::endl;
@@ -104,19 +105,23 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 
   for (int i=0; i<gVar.nPart; i++){
 
-    G4bool pdg_valid = SLArBaseGenerator::PDGCodeIsValid( gVar.pdg[i] ); 
+    /*G4bool pdg_valid = SLArBaseGenerator::PDGCodeIsValid( gVar.pdg[i] ); 
     if ( pdg_valid == false ) {
       fprintf(stdout, "SLArGENIEGeneratorAction::GeneratePrimaries() WARNING. Event %i contains particle with PDG code %i, which is not valid.\n", 
           evtNum, gVar.pdg[i]); 
       continue;
-    }
+    }*/
+
+    if (gVar.pdg[i] >= 2000000000) continue;
+    
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
+
       G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
           gVar.p4[i][0]*CLHEP::GeV,
           gVar.p4[i][1]*CLHEP::GeV,
           gVar.p4[i][2]*CLHEP::GeV,
           gVar.p4[i][3]*CLHEP::GeV);
-      auto vertex = new G4PrimaryVertex(vtx, 0.); // Not sure which is better here
+      auto vertex = new G4PrimaryVertex(vtx, gVar.t); // Not sure which is better here
       //    auto vertex = new G4PrimaryVertex(vtx, gVar.vtx[3]); 
       vertex->SetPrimary(particle);
       primary_vertices.push_back(vertex);
@@ -127,9 +132,10 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
       particle_idx++;
     }
   }
-
+  
   for (const auto& vertex : primary_vertices)
     ev->AddPrimaryVertex(vertex);
+
 }
 
 //***********************************************************************
