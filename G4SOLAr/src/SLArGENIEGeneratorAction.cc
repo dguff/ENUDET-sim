@@ -92,8 +92,6 @@ G4String SLArGENIEGeneratorAction::WriteConfig() const {
 void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 {
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
-
-  std::cout << "Maybe we get here..." << std::endl;
   
   int evtNum = ev->GetEventID() + fConfig.tree_first_entry;
   m_gtree->GetEntry(evtNum);
@@ -115,12 +113,9 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
     }*/
 
     if (gVar.pdg[i] >= 2000000000) continue;
-
-    std::cout << "We get to here" << std::endl;
     
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
 
-      std::cout << "Something about this?" << std::endl;
       G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
           gVar.p4[i][0]*CLHEP::GeV,
           gVar.p4[i][1]*CLHEP::GeV,
@@ -137,12 +132,10 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
       particle_idx++;
     }
   }
-  std::cout << "We get to here 2" << std::endl;
   
   for (const auto& vertex : primary_vertices)
     ev->AddPrimaryVertex(vertex);
 
-  std::cout << "We get to here 3" << std::endl;
 }
 
 //***********************************************************************
