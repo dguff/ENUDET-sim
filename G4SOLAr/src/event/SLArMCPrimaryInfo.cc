@@ -107,6 +107,7 @@ void SLArMCPrimaryInfo::PrintParticle() const
   std::cout << "Generator:" << fGeneratorLabel << std::endl;
   std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
+  std::cout << "Time    :" << fTime << " (ns)" << std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 
                          << fVertex[1]<< ", " 
                          << fVertex[2] << " (mm)" << std::endl;
