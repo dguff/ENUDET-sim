@@ -106,7 +106,7 @@ namespace direction{
 
     // check user hist information for theta and phi (user mode only) 
     if (config.HasMember("theta_hist")) {
-      G4String type = config["theta_hist"]["type"].GetString();
+      G4String type = fAngDist->GetDistType();
       if (type != "user") {
         fprintf(stderr, "SLArGPSDirectionGenerator WARNING: theta_hist can be used only with \"user\" generator\n");
         exit(EXIT_FAILURE);
@@ -125,7 +125,7 @@ namespace direction{
     }
 
     if (config.HasMember("phi_hist")) {
-      G4String type = config["phi_hist"]["type"].GetString();
+      G4String type = fAngDist->GetDistType();
       if (type != "user") {
         fprintf(stderr, "SLArGPSDirectionGenerator WARNING: phi_hist can be used only with \"user\" generator\n");
         exit(EXIT_FAILURE);
@@ -163,6 +163,12 @@ namespace direction{
     printf("\t- sigma_r: %g\n", fGPSConfig.sigma_r);
     if (fGPSConfig.focus_point.mag2()) {
       printf("\t- focus point: %g, %g, %g\n", fGPSConfig.focus_point.x(), fGPSConfig.focus_point.y(), fGPSConfig.focus_point.z());
+    }
+    if (fGPSConfig.theta_hist.filename.empty() == false) {
+      printf("\t- theta_hist: %s, %s\n", fGPSConfig.theta_hist.filename.data(), fGPSConfig.theta_hist.objname.data());
+    }
+    if (fGPSConfig.phi_hist.filename.empty() == false) {
+      printf("\t- phi_hist: %s, %s\n", fGPSConfig.phi_hist.filename.data(), fGPSConfig.phi_hist.objname.data());
     }
     return;
   } 

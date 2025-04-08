@@ -1,4 +1,3 @@
-/**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArGPSDirectionGenerator.hh
  * @created     : Wednesday Feb 12, 2025 11:40:20 CET
@@ -16,6 +15,37 @@
 namespace gen{
 namespace direction{
 
+  /**
+   * @class SLArGPSDirectionGenerator
+   * @brief Interface to the G4SPSAngDistribution class
+   *
+   * This class is a wrapper around the G4SPSAngDistribution class, which is used to generate
+   * the direction of primary particles. It provides methods to configure the
+   * direction generator, shoot directions, and export the configuration in JSON format.
+   *
+   * The configuration is done using a JSON object, which is passed to the Config method.
+   * The arguments are supposed to be in the same format used in GPS macro commands
+   * and are:
+   * - `type`: the type of the source 
+   *   (`iso` [default], `cos`, `planar`, `beam1d`, `beam2d`, `focused`, `user`)
+   * - `rot1`, `rot2`: Defines the rotation vectors AR1 [default (1,0,0)] and 
+   *   AR2 [default (0,1,0)] for the angular distribution and are not necessarily 
+   *   unit vectors.  
+   * - `mintheta`, `maxtheta`: the minimum and maximum theta angles (theta = 0 -> -z direction). 
+   *   Values must be given in JSON object with key "val", and optionally with key 
+   *   "unit" for the unit.
+   * - `minphi`, `maxphi`: the minimum and maximum phi angles. Values must be given in
+   *   JSON object with key "val", and optionally with key "unit" for the unit.
+   * - `sigma_x`, `sigma_y`, `sigma_r`: Sets the standard deviation [default 0 rad] 
+   *   of beam directional profile in the radial, x- and y- direction. 
+   * - `focus_point`: the focus point for a beam source. Its coordinates are given
+   *   in a JSON object with key "val" associated to a three-dimensional array,
+   *   and optionally with key "unit" for the unit.
+   * - `theta_hist`, `phi_hist`: the name of the histogram file and object to be used
+   *   for the angular distribution. The histogram must be a TH1D object with 
+   *   angles in radians. The configuration is done using a JSON object with the
+   *   `type` field set to "user", and the `filename` and `objname` fields.
+   */
   class SLArGPSDirectionGenerator : public SLArDirectionGenerator {
     public: 
       struct GPSAngConfig_t {
