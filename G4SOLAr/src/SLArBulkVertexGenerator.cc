@@ -13,6 +13,7 @@
 #include <TMath.h>
 
 namespace gen {
+namespace vertex {
 SLArBulkVertexGenerator::SLArBulkVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse();
@@ -277,5 +278,6 @@ const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
 
 
   return vtx_info;
+}
 }
 }

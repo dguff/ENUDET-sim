@@ -13,8 +13,8 @@
 #include "G4ThreeVector.hh"
 #include "G4RandomTools.hh"
 
-#include <TRandom3.h>
-#include <TH1.h>
+#include "TRandom3.h"
+#include "TH1.h"
 
 class SLArRandom {
   public:

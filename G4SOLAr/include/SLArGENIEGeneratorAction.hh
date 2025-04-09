@@ -5,16 +5,17 @@
 #include <string>
 #include <vector>
 
-#include <SLArBaseGenerator.hh>
+#include "SLArBaseGenerator.hh"
+#include "SLArGeneratorConfig.hh"
 
 #include "TFile.h"
 #include "TTree.h"
 
-#include <G4Event.hh>
-#include <G4ThreeVector.hh>
-#include <G4VUserPrimaryGeneratorAction.hh>
-#include <G4PrimaryVertex.hh>
-#include <G4PrimaryParticle.hh>
+#include "G4Event.hh"
+#include "G4ThreeVector.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4PrimaryVertex.hh"
+#include "G4PrimaryParticle.hh"
 
 namespace gen {
 struct GenieEvent_t{

@@ -26,6 +26,15 @@ namespace gen {
       {"window", ETimeGeneratorMode::kWindow}
     };
 
+   /**
+    * @brief Get the time generator mode from its label string
+    *
+    * @param str The string representing the time generator mode (e.g., "fixed", "window")
+    * @return The corresponding `ETimeGeneratorMode` value
+    *
+    * This function checks if the provided string matches any of the known
+    * time generator modes and returns the corresponding enum value.
+    */ 
     static inline ETimeGeneratorMode GetTimeGeneratorMode(const G4String& str) {
       ETimeGeneratorMode kGen = ETimeGeneratorMode::kFixed;
       if (timeGenMap.find(str) != timeGenMap.end()) {
@@ -34,6 +43,12 @@ namespace gen {
       return kGen;
     }
 
+    /**
+     * @brief Get the string label of a time generator given its mode enumerator
+     *
+     * @param kMode The time generator mode enumerator (e.g., kFixed, kWindow)
+     * @return The corresponding string label (e.g., "fixed", "window")
+     */
     static inline G4String  GetTimeGeneratorModeString(const ETimeGeneratorMode kMode) {
       if (kMode == ETimeGeneratorMode::kFixed) {return G4String("fixed");}
       else if (kMode == ETimeGeneratorMode::kWindow) {return G4String("window"); }
@@ -43,13 +58,37 @@ namespace gen {
       }
     }
 
+    /**
+     * @class SLArTimeGenerator
+     * @brief Class for generating vertex times for Geant4 primary particles
+     *
+     * This class is used to generate the time of the primary particles in 
+     * the SoLAr simulation framework. It provides methods to configure the time
+     * generator, sample times, and export the configuration in JSON format.
+     *
+     * The configuration is done using a JSON object, which is passed to the
+     * SourceConfiguration method. The arguments are:
+     * - `mode`: the mode of the time generator (`fixed` or `window`)
+     * - `event_time`: the fixed time value (in ns) for the `fixed` mode
+     * - `event_window_limits`: the time window limits for the `window` mode. 
+     *   This field must contain two subfields: `t0` and `t1`, which define the
+     *   start and end of the time window. `t0` and `t1` are JSON 
+     *   objects with the fields `val` and `unit`, where `val` is the time value
+     *   and `unit` is the unit of the time value (default is ns).
+     */
     class SLArTimeGenerator {
       public: 
+        /**
+         * @struct TimeGenConfig_t
+         * @brief Configuration structure for the time generator
+         *  
+         * This structure contains the configuration parameters for the time generator.
+         */
         struct TimeGenConfig_t {
-          ETimeGeneratorMode mode = ETimeGeneratorMode::kFixed;
-          G4double time = 0.0; 
-          G4double time_min = 0.0; 
-          G4double time_max = 0.0; 
+          ETimeGeneratorMode mode = ETimeGeneratorMode::kFixed; //!< Time generator mode
+          G4double time = 0.0; //!< Time value (in ns) for the fixed mode
+          G4double time_min = 0.0; //!< Start of the time window (in ns) for the window mode
+          G4double time_max = 0.0; //!< End of the time window (in ns) for the window mode
         };
 
         inline SLArTimeGenerator() {};
@@ -57,6 +96,27 @@ namespace gen {
         inline TimeGenConfig_t& GetTimeConfig() {return fConfig;}
         inline const TimeGenConfig_t& GetTimeConfig() const {return fConfig;}
 
+        /**
+         * @brief Configure the time generator
+         *
+         * @param jconfig The JSON configuration object for the time generator
+         *
+         * This method configures the time generator based on the provided
+         * configuration. The "mode" of the generator is mandatory.
+         * Available modes are:
+         * - "fixed" for a fixed time value
+         * - "window" for a time window
+         * 
+         * The "event_time" field is used for the `fixed` mode, and it must
+         * be a JSON object with the fields `val` and `unit`, where `val` is
+         * the time value and `unit` is the unit of the time value (default is ns).
+         * 
+         * The "event_window_limits" field is used for the `window` mode, and it
+         * must be a JSON object with two subfields: `t0` and `t1`, which define
+         * the start and end of the time window. `t0` and `t1` are JSON
+         * objects with the fields `val` and `unit`, where `val` is the time value
+         * and `unit` is the unit of the time value (default is ns).
+         */
         void SourceConfiguration(const rapidjson::Value& jconfig) {
           assert(jconfig.HasMember("mode")); 
           fConfig.mode = GetTimeGeneratorMode( jconfig["mode"].GetString() ); 
@@ -72,16 +132,26 @@ namespace gen {
             //getchar();
           }
         }
-
+        
+        /**
+         * @brief Calculate the time interval associated to the time generator
+         */
         G4double CalculateTotalTime() const {
           if (fConfig.mode == ETimeGeneratorMode::kFixed) {
-            return fConfig.time;
+            return 0.0;
           }
           else {
             return fConfig.time_max - fConfig.time_min;
           }
         }
 
+        /**
+         * @brief Sample a time value
+         *
+         * @return The sampled time value (in ns)
+         *
+         * This method samples a time value based on the configured mode.
+         */
         inline G4double SampleTime() {
           switch (fConfig.mode) {
             case time::kFixed : {
@@ -101,6 +171,14 @@ namespace gen {
           return fConfig.time;
         }
 
+        /**
+         * @brief Export the configuration in JSON format
+         *
+         * @return The JSON document containing the configuration
+         *
+         * Exports the configuration of the time generator in JSON format for 
+         * storing the configuration in the output file.
+         */
         const rapidjson::Document ExportConfig() const {
           rapidjson::Document d; 
           d.SetObject(); 
@@ -127,6 +205,8 @@ namespace gen {
     };
   }
 
+  namespace vertex {
+
   enum EVertexGenerator {
     kUndefinedVtxGen = -1, 
     kPoint = 0, 
@@ -141,6 +221,15 @@ namespace gen {
     {"gps_pos", EVertexGenerator::kGPSPos}
   };
 
+  /**
+   * @brief Get the vertex generator type from its label string
+   *
+   * @param str The string representing the vertex generator type (e.g., "point", "gps_pos")
+   * @return The corresponding `EVertexGenerator` value
+   *
+   * This function checks if the provided string matches any of the known
+   * vertex generator types and returns the corresponding enum value.
+   */
   static inline EVertexGenerator getVtxGenIndex(G4String str) {
     EVertexGenerator kGen = EVertexGenerator::kUndefinedVtxGen;
     if (vtxGenMap.find(str) != vtxGenMap.end()) {
@@ -149,6 +238,12 @@ namespace gen {
     return kGen;
   }
 
+  /**
+   * @brief Get the string label of a vertex generator given its type enumerator
+   *
+   * @param kGen The vertex generator type enumerator (e.g., kPoint, kGPSPos)
+   * @return The corresponding string label (e.g., "point", "gps_pos")
+   */
   static inline void printVtxGeneratorType() {
     printf("Available vertex generators:\n");
     for (const auto& vgen : vtxGenMap) {
@@ -157,20 +252,59 @@ namespace gen {
     return;
   }
 
+  /**
+   * @class SLArVertexGenerator
+   * @brief Base class for vertex generators
+   * 
+   * This class provides an interface for generating vertices in the SoLAr
+   * simulation framework. It defines the basic methods that all vertex
+   * generators must implement, such as `ShootVertex`, `Config`, and
+   * `ExportConfig`.
+   */
   class SLArVertexGenerator {
     public:
       SLArVertexGenerator() = default;
 
       virtual ~SLArVertexGenerator() = default;
 
-      /// Check if the generator can provide at least one more vertex (default: return true)
+      /**
+       * Check if the generator can provide at least one more vertex (default: return true)
+       */
       inline virtual bool HasNextVertex() const {return true;}
+      /**
+       * Get the type of the vertex generator
+       */
       virtual G4String GetType() const = 0; 
+      /**
+       * @brief Generate a vertex
+       * @param vertex_ The generated vertex
+       */
       virtual void ShootVertex(G4ThreeVector &  vertex_) = 0;
+
+      /**
+       * @brief Configure the vertex generator
+       */
       virtual void Config(const rapidjson::Value&) = 0;
+      /**
+       * @brief Export the configuration in JSON format
+       * @return The JSON document containing the configuration
+       */
       virtual const rapidjson::Document ExportConfig() const = 0;  
+      /**
+       * @brief Print the configuration to the standard output
+       *
+       * This method prints the configuration of the vertex generator to the standard output.
+       */
       virtual void Print() const = 0;
+      /**
+       * @brief Get the vertex time generator
+       * @return The time generator object
+       */
       inline time::SLArTimeGenerator& GetTimeGenerator() {return fTimeGen;}
+      /**
+       * @brief Get the vertex time generator (const version)
+       * @return The time generator object
+       */
       inline const time::SLArTimeGenerator& GetTimeGenerator() const {return fTimeGen;}
 
       time::SLArTimeGenerator fTimeGen = {}; 
@@ -188,6 +322,22 @@ namespace gen {
       }
   };
 
+  /**
+   * @class SLArPointVertexGenerator
+   * @brief Point vertex generator
+   *
+   * This class implements a point vertex generator. The vertex is set
+   * to a fixed position in the 3D space. The position can be configured
+   * using the `Config` method, which takes a JSON object as input.
+   *
+   * The JSON object should contain the following fields:
+   * - `xyz`: the position of the vertex, given as a JSON object with
+   *   `val` field containing an array of three values (x, y, z) and
+   *   an optional `unit` field for the unit of the values.
+   * - `volume` (optional): the name of the reference volume for the vertex position.
+   * - `time` (optional): the time generator configuration, passed to the
+   *
+   */
   class SLArPointVertexGenerator : public SLArVertexGenerator {
     public: 
       inline SLArPointVertexGenerator() : fVertex(0.0, 0.0, 0.0) {}
@@ -209,6 +359,21 @@ namespace gen {
         return;
       }
 
+      /**
+       * @brief Configure the vertex generator
+       *
+       * @param config The configuration object
+       *
+       * This method configures the vertex generator based on the provided
+       * configuration object. The configuration object is expected to be
+       * in JSON format and should contain the following fields:
+       * - `xyz`: the position of the vertex, given as a JSON object with 
+       *   `val` field containing an array of three values (x, y, z) and 
+       *   an optional `unit` field for the unit of the values.
+       * - `volume` (optional): the name of the reference volume for the vertex position.
+       * - `time` (optional): the time generator configuration, passed to the
+       *   `SLArTimeGenerator::SourceConfiguration` method.
+       */
       inline void Config(const rapidjson::Value& config) override {
         if ( config.HasMember("time") ) {
           fTimeGen.SourceConfiguration( config["time"] );
@@ -288,7 +453,7 @@ namespace gen {
       G4Transform3D fTransform = {};
 
   };
-
+  }
 }
 
 
