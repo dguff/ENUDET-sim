@@ -28,6 +28,7 @@
 #include "G4RunManager.hh"
 #include "G4Event.hh"
 #include "G4RunManager.hh"
+#include "CLHEP/Random/RandPoisson.h"
 
 namespace gen {
 
@@ -105,11 +106,33 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
   const auto slar_random = run_action->GetTRandomInterface();
   
-  for (size_t iev = 0; iev < fConfig.n_particles; iev++) {
+  G4int expected_particles = 0;
+  G4int total_particles = 0;
+  G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
+  //G4cout << "Total time: " << total_time << G4endl;
+  G4double face_area = 0;
+  if (auto ptr = dynamic_cast<const SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
+    face_area = ptr->GetSurfaceGenerator();
+    //G4cout << "Face Area: " << face_area << G4endl;
+  }
+  //G4cout << "Flux: " << fConfig.flux << G4endl;
+
+  if (fConfig.flux != 0) {
+    expected_particles = fConfig.flux * total_time * face_area;
+    total_particles = CLHEP::RandPoisson::shoot(expected_particles);
+    //G4cout << "Expected particles: " << expected_particles << G4endl;
+    //G4cout << "Total Particles: " << total_particles << G4endl;
+  }
+  if (fConfig.n_particles != 1) {
+    total_particles = fConfig.n_particles;
+  }
+
+  for (size_t iev = 0; iev < total_particles; iev++) {
     G4ThreeVector vtx_pos(0, 0, 0); 
     G4ThreeVector dir(0, 0, 0);
     fVtxGen->ShootVertex(vtx_pos);
-    //G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
+    G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
+    //G4cout << "Vtx time: " << vtx_time << G4endl;
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
@@ -134,7 +157,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     fParticleGun->SetParticleMomentumDirection( dir ); 
     fParticleGun->SetParticlePosition(vtx_pos); 
     fParticleGun->SetParticleEnergy(fConfig.ene_config.energy_tmp); 
-    //fParticleGun->SetParticleTime(vtx_time); 
+    fParticleGun->SetParticleTime(vtx_time); 
 
     fParticleGun->GeneratePrimaryVertex(ev); 
 
@@ -168,6 +191,10 @@ void SLArExternalGeneratorAction::SourceConfiguration(const rapidjson::Value& co
 
   if (config.HasMember("n_particles")) {
     fConfig.n_particles = config["n_particles"].GetInt();
+  }
+
+  if (config.HasMember("flux")) {
+    fConfig.flux = unit::ParseJsonVal(config["flux"]);
   }
 
   if (config.HasMember("particle")) {

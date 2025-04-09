@@ -127,8 +127,24 @@ namespace gen {
             const auto& jwindow = jconfig["event_window_limits"];
             fConfig.time_min = unit::ParseJsonVal( jwindow["t0"] );
             fConfig.time_max = unit::ParseJsonVal( jwindow["t1"] ); 
+            //G4cout << "Time min: " << fConfig.time_min << G4endl;
+            //G4cout << "Time max: " << fConfig.time_max << G4endl;
+            //getchar();
           }
         }
+        
+        /**
+         * @brief Calculate the time interval associated to the time generator
+         */
+        G4double CalculateTotalTime() const {
+          if (fConfig.mode == ETimeGeneratorMode::kFixed) {
+            return 0.0;
+          }
+          else {
+            return fConfig.time_max - fConfig.time_min;
+          }
+        }
+
         /**
          * @brief Sample a time value
          *

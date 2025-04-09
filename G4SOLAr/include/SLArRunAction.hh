@@ -11,6 +11,7 @@
 #include <SLArRandomExtra.hh>
 
 #include "G4UserRunAction.hh"
+#include "G4Transform3D.hh"
 #include "globals.hh"
 
 class SLArEventAction;
@@ -34,12 +35,14 @@ class SLArRunAction : public G4UserRunAction
     inline void SetG4MacroFile(const G4String file_path) {fG4MacroFile = file_path;}
     inline void RegisterExtScorerLV(G4LogicalVolume* lv) {fExtScorerLV.push_back(lv);}
     inline SLArRandom* GetTRandomInterface() {return fTRandomInterface;}
+    inline const G4Transform3D& GetTransformWorld2Det() const {return fTransformWorld2Det;}
 
   private:
     G4String fG4MacroFile; 
     SLArEventAction* fEventAction = {};
     SLArElectronDrift* fElectronDrift = {}; 
     SLArRandom* fTRandomInterface = {};
+    G4Transform3D fTransformWorld2Det;
 
     std::vector<G4String> fSDName;  
     std::vector<G4LogicalVolume*> fExtScorerLV; 

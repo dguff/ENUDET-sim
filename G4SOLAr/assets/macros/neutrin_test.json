@@ -1,0 +1,195 @@
+{
+  "generator": [
+    {
+      "type" : "decay0", 
+      "label" : "Ar39_test", 
+      "config" : {
+        "decay0_type" : "background",
+        "nuclide" : "Ar39", 
+        "specific_activity" : {"val": 1.1, "unit": "Bq/kg"},
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {
+            "volume" : "TPC10",
+            "material": "LAr", 
+            "time" : {
+              "mode" : "window", 
+              "event_window_limits" : {
+                "t0" : {"val": 0, "unit" : "ns"}, "t1" : {"val" : 2, "unit" : "ms"}
+              }
+            }
+          } 
+        }
+      }
+    },
+    {
+      "type" : "decay0", 
+      "label" : "Ar42_test", 
+      "config" : {
+        "decay0_type" : "background",
+        "nuclide" : "Ar42", 
+        "specific_activity" : {"val": 40e-6, "unit": "Bq/kg"},
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {
+            "volume" : "TPC10",
+            "material": "LAr", 
+            "time" : {
+              "mode" : "window", 
+              "event_window_limits" : {
+                "t0" : {"val": 0, "unit" : "ns"}, "t1" : {"val" : 2, "unit" : "ms"}
+              }
+            }
+          } 
+        }
+      }
+    },
+    {
+      "type" : "external", 
+      "label" : "external_neutron", 
+      "config" : {
+        "particle" : "neutron", 
+        "flux" : {"val": 3.52e-5, "unit": "Hz/cm2"}, 
+        "mode" : "ext_spectrum", 
+        "energy_distribution" : {
+          "filename" : "./assets/background/baseline_lar_spectrum.root",
+          "objname" : "bl_h_lar_n"
+        },
+        "direction" : {
+          "mode" : "isotropic"
+        },
+        "vertex_gen" : {
+          "type" : "boxsurface", 
+          "config" : {
+            "volume" : "target_lar_pv",
+            "time" : {
+              "mode" : "window",
+              "event_window_limits": {
+                "t0" : {"val" : 0, "unit": "s"},
+                "t1" : {"val" : 2, "unit": "ms"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type" : "external", 
+      "label" : "external_gamma_top", 
+      "config" : {
+        "particle" : "gamma", 
+        "flux" : {"val": 0.1, "unit": "Hz/cm2"}, 
+        "mode" : "ext_spectrum", 
+        "energy_distribution" : {
+          "filename" : "./assets/background/baseline_lar_spectrum.root",
+          "objname" : "bl_h_lar_g"
+        },
+        "direction" : {
+          "mode" : "isotropic"
+        },
+        "vertex_gen" : {
+          "type" : "boxsurface", 
+          "config" : {
+            "volume" : "TPC10",
+            "origin_face" : 2,
+            "time" : {
+              "mode" : "window",
+              "event_window_limits": {
+                "t0" : {"val" : 0, "unit": "s"},
+                "t1" : {"val" : 2, "unit": "ms"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type" : "external", 
+      "label" : "external_gamma_north", 
+      "config" : {
+        "particle" : "gamma", 
+        "flux" : {"val": 0.1, "unit": "Hz/cm2"}, 
+        "mode" : "ext_spectrum", 
+        "energy_distribution" : {
+          "filename" : "./assets/background/baseline_lar_spectrum.root",
+          "objname" : "bl_h_lar_g"
+        },
+        "direction" : {
+          "mode" : "isotropic"
+        },
+        "vertex_gen" : {
+          "type" : "boxsurface", 
+          "config" : {
+            "volume" : "TPC10",
+            "origin_face" : 0,
+            "time" : {
+              "mode" : "window",
+              "event_window_limits": {
+                "t0" : {"val" : 0, "unit": "s"},
+                "t1" : {"val" : 2, "unit": "ms"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type" : "external", 
+      "label" : "external_gamma_south", 
+      "config" : {
+        "particle" : "gamma", 
+        "flux" : {"val": 0.1, "unit": "Hz/cm2"}, 
+        "mode" : "ext_spectrum", 
+        "energy_distribution" : {
+          "filename" : "./assets/background/baseline_lar_spectrum.root",
+          "objname" : "bl_h_lar_g"
+        },
+        "direction" : {
+          "mode" : "isotropic"
+        },
+        "vertex_gen" : {
+          "type" : "boxsurface", 
+          "config" : {
+            "volume" : "TPC10",
+            "origin_face" : 1,
+            "time" : {
+              "mode" : "window",
+              "event_window_limits": {
+                "t0" : {"val" : 0, "unit": "s"},
+                "t1" : {"val" : 2, "unit": "ms"}
+              }
+            }
+          }
+        }
+      }
+    },
+
+    {
+      "type" : "marley", 
+      "label" : "marley_test", 
+      "config" : {
+        "target" : {"nuclides" : [1000180400], "atom_fractions" : [1.0]}, 
+        "reactions" : ["ve40ArCC_Bhattacharya2009.react"], 
+        "direction" : {
+          "mode" : "isotropic"
+        },
+        "energy" : {
+          "mode" : "mono", 
+          "value" : {"val" : 10, "unit" : "MeV"}
+        },
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {
+            "time": {
+              "mode": "fixed",
+              "event_time": {"val": 0.5, "unit": "ms"}
+            },
+            "volume" : "TPC10", 
+            "fiducial_fraction" : 0.70, 
+            "avoid_daughters" : true
+          }
+        }
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@
 
 #include "SLArDecay0GeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
+#include <SLArBulkVertexGenerator.hh>
 
 // Standard library:
 #include <iostream>
@@ -728,8 +729,36 @@ namespace bxdecay0_g4{
     bxdecay0::event gendecay;
 
     auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
+    G4int num_decays = 0;
+    G4double exp_num_decays = 0;
+    G4double vol_mass = 0;
+    G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
+    //G4cout << "Total time: " << total_time << G4endl;
 
-    for (int iev = 0; iev < fConfig.n_decays; iev++) {
+    if (fConfig.n_decays != 0) {
+      num_decays = fConfig.n_decays;
+    }
+
+    else if  (fConfig.spec_activity) {
+      if (auto ptr = dynamic_cast<const SLArBulkVertexGenerator*>(fVtxGen.get())) {
+        vol_mass = ptr->GetMassVolumeGenerator();
+        //G4cout << "Total volume mass: " << vol_mass/CLHEP::kg << G4endl;
+        exp_num_decays = fConfig.spec_activity * vol_mass * total_time;
+        //G4cout << "Expected number of decays: " << exp_num_decays << G4endl;
+        num_decays = CLHEP::RandPoisson::shoot(exp_num_decays);
+        //G4cout << "Number of decays: " << num_decays << G4endl;
+      }
+      else {
+        std::cerr << "ERROR: Activity set but no bulk generator employed!" << '\n';
+        exit(EXIT_FAILURE);
+      }
+    }
+    else {
+      std::cerr << "ERROR: number decays or activity not set!" << '\n';
+      exit(EXIT_FAILURE);
+    }
+
+    for (int iev = 0; iev < num_decays; iev++) {
 
             const auto & particles = gendecay.get_particles();
       if (IsDebug()) std::cerr << "[debug] bxdecay0_g4::SLArDecay0GeneratorAction::GeneratePrimaries: Nb particles=" << particles.size() << '\n';
@@ -823,6 +852,10 @@ namespace bxdecay0_g4{
 
     if (config.HasMember("n_decays")) {
       fConfig.n_decays = config["n_decays"].GetInt(); 
+    }
+
+    if (config.HasMember("specific_activity")) {
+      fConfig.spec_activity = unit::ParseJsonVal(config["specific_activity"]); 
     }
 
     if (config.HasMember("vertex_gen")) {

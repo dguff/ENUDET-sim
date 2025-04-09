@@ -46,9 +46,10 @@ class SLArDecay0GeneratorAction : public SLArBaseGenerator {
       G4String  decay_category = "background"; ///< Category of the decay (mandatory)
       G4String  nuclide;        ///< Name of the decaying isotope (mandatory)
       G4long    seed = 1;       ///< Seed for the pseudo-random number generator (mandatory)
-      G4int     n_decays = 1;   ///< Number of particle decays to be simulated
+      G4int     n_decays = 0;   ///< Number of particle decays to be simulated
       G4int     dbd_mode = 0;   ///< Double beta decay mode (mandatory only for "dbd" category)
       G4int     dbd_level = 0;  ///< Daughter's energy level for DBD decay (only for "dbd" category, default to 0)
+      G4double  spec_activity = 0; //Decaying isotope specific activity (Bq/kg)
       /// Minimum sum of betas' energy in MeV 
       /// (optional for "dbd" category and some specific emitter nuclides and DBD modes)
       G4double  dbd_min_energy_MeV = -1.0;

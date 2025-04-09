@@ -64,8 +64,8 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   const G4RotationMatrix* r = target_lar_pv->GetObjectRotation();
 
   const G4Transform3D transform(*r, t);
-  const G4Transform3D transform_w2d = transform.inverse();
-  stepping->SetPointTransformation(transform_w2d);
+  fTransformWorld2Det = transform.inverse();
+  stepping->SetPointTransformation(fTransformWorld2Det);
 
   // dump cross sections
   for (const auto& xsec : SLArAnaMgr->GetXSecDumpVector()) {

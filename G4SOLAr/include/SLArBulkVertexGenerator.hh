@@ -117,6 +117,7 @@ private:
   double fFVFraction{1.0}; //!< Volume fraction 
   G4bool fRequireMaterialMatch = false;
   G4String fMaterial = {};
+  G4double fMass; //Parameter that sets up the volume mass
   
   // Working internals:
   G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes

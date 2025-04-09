@@ -403,12 +403,12 @@ void SLArDetectorConstruction::ConstructTarget() {
       target_center.x(), target_center.y(), target_center.z(), 
       target_dim[0], target_dim[1], target_dim[2]); 
 
-  fDetector->SetSolidVolume( new G4Box("target_solid", 
+  fDetector->SetSolidVolume( new G4Box("target_lar_solid", 
       0.5*target_dim[0], 0.5*target_dim[1], 0.5*target_dim[2]) ); 
   SLArMaterial* matTarget = new SLArMaterial("LAr"); 
   matTarget->BuildMaterialFromDB(fMaterialDBFile); 
   fDetector->SetLogicVolume( new G4LogicalVolume(fDetector->GetModSV(), 
-      matTarget->GetMaterial(), "lar_target_lv") ); 
+      matTarget->GetMaterial(), "target_lar_lv") ); 
   fDetector->GetModLV()->SetVisAttributes( G4VisAttributes( G4Colour(1, 0, 0) ) ); 
 
 }
@@ -496,9 +496,6 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
   G4cout << "target_halfsize: " << 0.5*target_size_y << G4endl;
   G4cout << "hall_center: " << hall_center << G4endl;
   G4cout << "cryostat thickness: " << cryostat_tk << G4endl; 
-  if (fCryostat->HasSupportStructure()) {
-    G4cout << "waffle thickness: " << fCryostat->GetGeoPar("waffle_total_width") << G4endl;
-  }
   G4cout << "target_y: " << target_pos << G4endl;
 
   fDetector->SetModPV( new G4PVPlacement(

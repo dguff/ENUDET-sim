@@ -94,6 +94,7 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
     G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
     G4double fSurface = 0.0; 
+    std::array <G4double, 6> fSurfaceFaces = {};
     unsigned int fCounter = 0.0; // Internal vertex counter
 }; 
 }
