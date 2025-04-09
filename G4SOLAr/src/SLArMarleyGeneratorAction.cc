@@ -21,31 +21,34 @@
 #include <fstream>
 #include <cstdio>
 
-#include <G4Event.hh>
-#include <G4ParticleTable.hh>
-#include <G4ParticleDefinition.hh>
-#include <G4PhysicalConstants.hh>
-#include <G4PrimaryParticle.hh>
-#include <G4PrimaryVertex.hh>
-#include <G4RunManager.hh>
-#include <G4RandomTools.hh>
+#include "G4Event.hh"
+#include "G4ParticleTable.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4PhysicalConstants.hh"
+#include "G4PrimaryParticle.hh"
+#include "G4PrimaryVertex.hh"
+#include "G4RunManager.hh"
+#include "G4RandomTools.hh"
 
-#include <marley/Event.hh>
-#include <marley/Particle.hh>
-#include <marley/RootJSONConfig.hh>
-#include <marley/marley_root.hh>
+#include "marley/Event.hh"
+#include "marley/Particle.hh"
+#include "marley/RootJSONConfig.hh"
+#include "marley/marley_root.hh"
 
-#include <SLArAnalysisManager.hh>
-#include <SLArMarleyGeneratorAction.hh>
-#include <SLArRunAction.hh>
-#include <SLArRandomExtra.hh>
+#include "SLArRootUtilities.hh"
+#include "SLArAnalysisManager.hh"
+#include "SLArMarleyGeneratorAction.hh"
+#include "SLArRunAction.hh"
+#include "SLArRandomExtra.hh"
+#include "SLArFixedDirectionGenerator.hh"
+#include "SLArSunDirectionGenerator.hh"
 
 // rapidjson
-#include <rapidjson/document.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/filewritestream.h>
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/document.h"
+#include "rapidjson/reader.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
 
 
 
@@ -192,15 +195,17 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
 
-  fConfig.dir_config.direction_tmp = SampleDirection(fConfig.dir_config);
+  G4ThreeVector ddir(0., 0., 0.);
+  fDirGen->ShootDirection(ddir);
+
   std::array<double, 3> dir = {
-    fConfig.dir_config.direction_tmp.x(), 
-    fConfig.dir_config.direction_tmp.y(), 
-    fConfig.dir_config.direction_tmp.z()};
+    fDirGen->GetTmpDirection().x(), 
+    fDirGen->GetTmpDirection().y(), 
+    fDirGen->GetTmpDirection().z()};
 
   if (fOscillogram) {
     // build neutrino energy pdf given cos(nadir)
-    const int ibin_nadir = fOscillogram->GetYaxis()->FindBin( fConfig.dir_config.cos_nadir_tmp ); 
+    const int ibin_nadir = fOscillogram->GetYaxis()->FindBin( fDirGen->GetTmpCosNadir() ); 
     std::unique_ptr<TH1D> energy_hist = std::unique_ptr<TH1D>(
         fOscillogram->ProjectionX("energy_hist", ibin_nadir, ibin_nadir) );
     // setup generator
@@ -284,44 +289,35 @@ void SLArMarleyGeneratorAction::Configure() {
 
   if (fConfig.oscillogram_info.is_empty() == false) {
     fOscillogram = std::unique_ptr<TH2F>(
-        GetFromRootfile<TH2F>( 
+        get_from_rootfile<TH2F>( 
           fConfig.oscillogram_info.filename,
           fConfig.oscillogram_info.objname)
         );
   }
 
-  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    if (fConfig.dir_config.nadir_hist.is_empty()) {
-      if (fConfig.oscillogram_info.is_empty()) {
-        fprintf(stderr, "SLArMarleyGenerator::Configure() ERROR: nadir histogram not set\n");
-        exit(EXIT_FAILURE);
+  if ( fDirGen->GetDirectionGeneratorEnum() == direction::kSunDir) {
+    direction::SLArSunDirectionGenerator* sun_dir_gen = 
+      dynamic_cast<direction::SLArSunDirectionGenerator*>(fDirGen.get());
+    if (sun_dir_gen->GetNadirDistribution() == nullptr) {
+      if (fOscillogram) {
+        TH1D* hnadir = fOscillogram->ProjectionY("nadir_hist", 1, fOscillogram->GetNbinsX() );
+        sun_dir_gen->SetNadirDistribution( hnadir ); 
       }
       else {
-        fprintf(stdout, "SLArMarleyGenerator::Configure() Setting oscillogram projection as nadir histogram\n"); 
-        fNadirDistribution = std::unique_ptr<TH1D>( 
-            std::move(fOscillogram->ProjectionY("nadir_hist", 1, fOscillogram->GetNbinsX()) )
-            );      
+        fprintf(stderr, "SLArMarleyGenerator::Configure() ERROR: nadir histogram not set. Cannot be recovered from oscillogram\n");
+        exit(EXIT_FAILURE);
       }
-    }
-    else {
-      TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-          fConfig.dir_config.nadir_hist.filename, 
-          fConfig.dir_config.nadir_hist.objname);
-
-      fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-      printf("SLArMarleyGenerator::Configure() Sourcing nadir angle distribution\n"); 
-      printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
     }
   }
 
   if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+    TH1D* hist_spectrum = get_from_rootfile<TH1D>( 
         fConfig.ene_config.spectrum_hist.filename , 
         fConfig.ene_config.spectrum_hist.objname );
 
     fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
     printf("SLArMarleyGenerator::Configure() Sourcing external energy spectrum\n"); 
-    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+    printf("fEnergySpectrum ptr: %p\n", fEnergySpectrum.get());
   }
 
   SetupMarleyGen(); 
@@ -330,10 +326,6 @@ void SLArMarleyGeneratorAction::Configure() {
 void SLArMarleyGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
 
   CopyConfigurationToString(config);
-
-  if (config.HasMember("direction")) {
-    SourceDirectionConfig( config["direction"], fConfig.dir_config );
-  }
 
   if (config.HasMember("energy")) {
     SourceEnergyConfig( config["energy"], fConfig.ene_config );
@@ -373,6 +365,10 @@ void SLArMarleyGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
     }
   }
 
+  if (config.HasMember("weight_flux")) {
+    fConfig.weight_flux = config["weight_flux"].GetBool();
+  }
+
   if (config.HasMember("oscillogram")) {
     fConfig.oscillogram_info.Configure( config["oscillogram"] ); 
   }
@@ -381,11 +377,14 @@ void SLArMarleyGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
-    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
   }
 
-  if (config.HasMember("weight_flux")) {
-    fConfig.weight_flux = config["weight_flux"].GetBool();
+  if (config.HasMember("direction")) {
+    SetupDirectionGenerator( config["direction"] );
+  }
+  else {
+    fDirGen = std::make_unique<direction::SLArFixedDirectionGenerator>();
   }
 
   return;

@@ -9,9 +9,9 @@
 #define SLARPGUNGENERATORACTION_HH
 
 #include <string>
-#include <SLArBaseGenerator.hh>
-#include <G4VUserPrimaryGeneratorAction.hh>
-#include <G4ParticleGun.hh>
+#include "SLArBaseGenerator.hh"
+#include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4ParticleGun.hh"
 class G4ParticleTable; 
 
 namespace gen {

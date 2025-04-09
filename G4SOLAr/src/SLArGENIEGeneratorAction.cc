@@ -1,14 +1,14 @@
-#include <SLArGENIEGeneratorAction.hh>
-#include <SLArAnalysisManager.hh>
-#include <G4SystemOfUnits.hh>
-#include <G4ParticleTable.hh>
-#include <G4IonTable.hh>
-#include <G4ParticleDefinition.hh>
-#include <G4String.hh>
+#include "SLArGENIEGeneratorAction.hh"
+#include "SLArAnalysisManager.hh"
+#include "G4SystemOfUnits.hh"
+#include "G4ParticleTable.hh"
+#include "G4IonTable.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4String.hh"
 
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 
 #include <cstdio>
 
@@ -41,15 +41,14 @@ void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& confi
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
-    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
   }
   return;
 }
 
 void SLArGENIEGeneratorAction::Configure() {
-  TFile *GENIEInput = TFile::Open(fConfig.tree_info.filename);
-
-  m_gtree = (TTree*) GENIEInput->Get(fConfig.tree_info.objname);
+  TFile *GENIEInput = TFile::Open(fConfig.tree_info.filename.data());
+  m_gtree = (TTree*) GENIEInput->Get(fConfig.tree_info.objname.data());
 
   m_gtree->SetBranchAddress("EvtNum",&gVar.EvtNum);
   m_gtree->SetBranchAddress("StdHepN",&gVar.nPart);

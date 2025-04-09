@@ -10,10 +10,15 @@
 #include "G4EventManager.hh"
 #include "G4RunManager.hh"
 
+#include "SLArRootUtilities.hh"
 #include "SLArBaseGenerator.hh"
 #include "SLArBulkVertexGenerator.hh"
 #include "SLArBoxSurfaceVertexGenerator.hh"
 #include "SLArGPSVertexGenerator.hh"
+#include "SLArFixedDirectionGenerator.hh"
+#include "SLArIsotropicDirectionGenerator.hh"
+#include "SLArSunDirectionGenerator.hh"
+#include "SLArGPSDirectionGenerator.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArRunAction.hh"
 #include "SLArRandomExtra.hh"
@@ -24,41 +29,35 @@
 
 namespace gen {
 
-const rapidjson::Document SLArBaseGenerator::ExtSourceInfo_t::ExportConfig() const {
-  rapidjson::Document hist_doc; 
-  hist_doc.SetObject(); 
-
-  char buffer[200];
-  int len = snprintf(buffer, sizeof(buffer), "%s", filename.data());
-  rapidjson::Value jfilename;
-  jfilename.SetString(buffer, len, hist_doc.GetAllocator());
-  hist_doc.AddMember("filename", jfilename, hist_doc.GetAllocator()); 
-
-  rapidjson::Value jobjname(rapidjson::kStringType);
-  len = snprintf(buffer, sizeof(buffer), "%s", objname.data()); 
-  jobjname.SetString(buffer, len, hist_doc.GetAllocator()); 
-  hist_doc.AddMember("objname", jobjname, hist_doc.GetAllocator()); 
-
-  rapidjson::Value jtype(rapidjson::kStringType);
-  len = snprintf(buffer, sizeof(buffer), "%s", type.data()); 
-  jtype.SetString(buffer, len, hist_doc.GetAllocator()); 
-  hist_doc.AddMember("type", jtype, hist_doc.GetAllocator()); 
-  return hist_doc; 
-}
-
+/**
+ * @brief Setup the vertex generator
+ *
+ * @param config The JSON configuration object for the vertex generator
+ *
+ * This method sets up the vertex generator based on the provided configuration.
+ * The "type" of the chosen generator is mandatory. Available types are:
+ * - "point" for `SLArPointVertexGenerator`
+ * - "gps_pos" for `SLArGPSVertexGenerator`
+ * - "bulk" for `SLArBulkVertexGenerator`
+ * - "boxsurface" for `SLArBoxSurfaceVertexGenerator`
+ *
+ * Each one of these generators has its own configuration options, which are
+ * passed in the "config" field of the JSON object. See the respective
+ * generator classes for details.
+ */
 void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
   if (!config.HasMember("type")) {
-    throw std::invalid_argument("vertex genrator missing mandatory \"type\" field\n");
+    throw std::invalid_argument("vertex generator missing mandatory \"type\" field\n");
   }
   
   G4String type = config["type"].GetString(); 
-  EVertexGenerator kGen = getVtxGenIndex( type ); 
+  vertex::EVertexGenerator kGen = vertex::getVtxGenIndex( type ); 
   printf("[gen] Building %s vertex generator (type %i)\n", type.data(), kGen);
 
   switch (kGen) {
-    case (EVertexGenerator::kPoint) : 
+    case (vertex::EVertexGenerator::kPoint) : 
       {
-        fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+        fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
         try { fVtxGen->Config( config["config"] ); }        
         catch (const std::exception& e) {
           std::cerr << "ERROR configuring SLArPointVertexGenerator()" << std::endl;
@@ -68,10 +67,10 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
         break;
       }
     
-    case (EVertexGenerator::kGPSPos) : 
+    case (vertex::EVertexGenerator::kGPSPos) : 
       {
         printf("Building GPS vertex generator\n");
-        fVtxGen = std::make_unique<SLArGPSVertexGenerator>();
+        fVtxGen = std::make_unique<vertex::SLArGPSVertexGenerator>();
         try { fVtxGen->Config( config["config"] ); }
         catch (const std::exception& e) {
           std::cerr << "ERROR configuring SLArGPSPosVertexGenerator()" << std::endl;
@@ -81,9 +80,9 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
         break;
       }
 
-    case (EVertexGenerator::kBulk) : 
+    case (vertex::EVertexGenerator::kBulk) : 
       {
-        fVtxGen = std::make_unique<SLArBulkVertexGenerator>(); 
+        fVtxGen = std::make_unique<vertex::SLArBulkVertexGenerator>(); 
         try {fVtxGen->Config( config["config"] );}
         catch (const std::exception& e) {
           std::cerr << "ERROR configuring SLArBulkVertexGenerator()" << std::endl;
@@ -93,9 +92,9 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
         break;
       }
 
-    case (EVertexGenerator::kBoxVolSurface) : 
+    case (vertex::EVertexGenerator::kBoxVolSurface) : 
       {
-        fVtxGen = std::make_unique<SLArBoxSurfaceVertexGenerator>();
+        fVtxGen = std::make_unique<vertex::SLArBoxSurfaceVertexGenerator>();
         try {fVtxGen->Config( config["config"] );} 
         catch (const std::exception& e) {
           std::cerr << "ERROR configuring SLArBoxSurfaceVertexGenerator" << std::endl;
@@ -108,7 +107,7 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
     default:
       {
         char err_msg[100];
-        gen::printVtxGeneratorType();
+        gen::vertex::printVtxGeneratorType();
         snprintf(err_msg, sizeof(err_msg), "Unable to find %s vertex generator among the available options\n", 
             type.data()); 
         std::cerr << err_msg << std::endl;
@@ -122,6 +121,76 @@ void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
   fVtxGen->Print();
   
   return;
+}
+
+void SLArBaseGenerator::SetupDirectionGenerator(const rapidjson::Value& config) {
+  if (!config.HasMember("type")) {
+    throw std::invalid_argument("direction generator missing mandatory \"type\" field\n");
+  }
+  
+  G4String type = config["type"].GetString(); 
+  direction::EDirectionGenerator kGen = direction::getDirGenIndex( type ); 
+  printf("[gen] Building %s direction generator (type %i)\n", type.data(), kGen);
+
+  if (kGen != direction::kIsotropicDir && config.HasMember("config") == false) {
+    throw std::invalid_argument("direction generator missing mandatory \"config\" field\n");
+  }
+
+  switch (kGen) {
+    case (direction::EDirectionGenerator::kFixedDir) : 
+      {
+        fDirGen = std::make_unique<direction::SLArFixedDirectionGenerator>();
+        try { fDirGen->Config( config["config"] ); }        
+        catch (const std::exception& e) {
+          std::cerr << "ERROR configuring SLArFixedDirectionGenerator()" << std::endl;
+          std::cerr << e.what() << std::endl;
+          exit( EXIT_FAILURE );
+        }
+        break;
+      }
+
+    case (direction::kIsotropicDir) : 
+      {
+        fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
+        break;
+      }
+
+    case (direction::kSunDir) : 
+      {
+        fDirGen = std::make_unique<direction::SLArSunDirectionGenerator>();
+        try { fDirGen->Config( config["config"] ); }        
+        catch (const std::exception& e) {
+          std::cerr << "ERROR configuring SLArSunDirectionGenerator()" << std::endl;
+          std::cerr << e.what() << std::endl;
+          exit( EXIT_FAILURE );
+        }
+        break;
+      }
+
+    case (direction::kGPSDir) : 
+      {
+        fDirGen = std::make_unique<direction::SLArGPSDirectionGenerator>();
+        try { fDirGen->Config( config["config"] ); }        
+        catch (const std::exception& e) {
+          std::cerr << "ERROR configuring SLArGPSDirectionGenerator()" << std::endl;
+          std::cerr << e.what() << std::endl;
+          exit( EXIT_FAILURE );
+        }
+        break;
+      }
+    default:
+      {
+        char err_msg[100];
+        direction::printDirGeneratorType();
+        snprintf(err_msg, sizeof(err_msg), "Unable to find %s direction generator among the available options\n", 
+            type.data()); 
+        std::cerr << err_msg << std::endl;
+        exit( EXIT_FAILURE ); 
+        break;      
+      }
+      break;
+  }
+
 }
 
 void SLArBaseGenerator::CopyConfigurationToString(const rapidjson::Value& config) {
@@ -192,64 +261,55 @@ void SLArBaseGenerator::CopyConfigurationToString(const rapidjson::Value& config
 
 void SLArBaseGenerator::Configure(const GenConfig_t& config) {
 
-  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-        fConfig.dir_config.nadir_hist.filename, 
-        fConfig.dir_config.nadir_hist.objname);
 
-    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-    printf("SLArBaseGenerator::Configure() Sourcing nadir angle distribution\n"); 
-    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
-  }
   printf("SLArBaseGeneratorAction::Configure(): Energy mode: %i\n", fConfig.ene_config.mode);
   if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+    TH1D* hist_spectrum = get_from_rootfile<TH1D>(
         fConfig.ene_config.spectrum_hist.filename , 
         fConfig.ene_config.spectrum_hist.objname );
 
     fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
     printf("SLArBaseGenerator::Configure() Sourcing external energy spectrum\n"); 
-    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
   }
 
   return;
 }
 
-G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) {
-  SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
-  SLArRandom* slar_random = run_action->GetTRandomInterface(); 
+//G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) {
+  //SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
+  //SLArRandom* slar_random = run_action->GetTRandomInterface(); 
 
-  if (dir_config.mode == EDirectionMode::kFixedDir) {
-    dir_config.direction_tmp.set( dir_config.axis.x(), dir_config.axis.y(), dir_config.axis.z() ); 
-  }
-  else if (dir_config.mode == EDirectionMode::kRandomDir) {
-    dir_config.direction_tmp = SLArRandom::SampleRandomDirection();
-  }
-  else if (dir_config.mode == EDirectionMode::kSunDir) {
-    // Select nadir angle
-    const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
-    const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
-    const double theta = 102.5*TMath::DegToRad(); 
-    const double cos_theta = cos( theta ); 
-    const double sin_theta = sin( theta ); 
-    const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
-    const double cos_phi = cos( phi ); 
-    const double sin_phi = sin( phi );
+  //if (dir_config.mode == EDirectionMode::kFixedDir) {
+    //dir_config.direction_tmp.set( dir_config.axis.x(), dir_config.axis.y(), dir_config.axis.z() ); 
+  //}
+  //else if (dir_config.mode == EDirectionMode::kRandomDir) {
+    //dir_config.direction_tmp = SLArRandom::SampleRandomDirection();
+  //}
+  //else if (dir_config.mode == EDirectionMode::kSunDir) {
+    //// Select nadir angle
+    //const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
+    //const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
+    //const double theta = 102.5*TMath::DegToRad(); 
+    //const double cos_theta = cos( theta ); 
+    //const double sin_theta = sin( theta ); 
+    //const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
+    //const double cos_phi = cos( phi ); 
+    //const double sin_phi = sin( phi );
 
-    dir_config.direction_tmp.set(
-      cos_theta*sin_nadir*cos_phi + sin_theta*sin_nadir*sin_phi,
-      -cos_nadir, 
-      -sin_theta*sin_nadir*cos_phi + cos_theta*sin_nadir*sin_phi
-      );
-    dir_config.direction_tmp = dir_config.direction_tmp.unit(); 
-  }
+    //dir_config.direction_tmp.set(
+      //cos_theta*sin_nadir*cos_phi + sin_theta*sin_nadir*sin_phi,
+      //-cos_nadir, 
+      //-sin_theta*sin_nadir*cos_phi + cos_theta*sin_nadir*sin_phi
+      //);
+    //dir_config.direction_tmp = dir_config.direction_tmp.unit(); 
+  //}
 
-  return dir_config.direction_tmp; 
-}
+  //return dir_config.direction_tmp; 
+//}
 
-G4ThreeVector SLArBaseGenerator::SampleDirection() {
-  return SampleDirection( fConfig.dir_config ); 
-}
+//G4ThreeVector SLArBaseGenerator::SampleDirection() {
+  //return SampleDirection( fConfig.dir_config ); 
+//}
 
 G4double SLArBaseGenerator::SampleEnergy(EnergyConfig_t& ene_config) {
   G4double ene = 1.0*CLHEP::MeV;
@@ -271,91 +331,10 @@ G4double SLArBaseGenerator::SampleEnergy() {
   return SampleEnergy(fConfig.ene_config); 
 }
 
-void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config) {
-  SourceDirectionConfig(dir_config, fConfig.dir_config); 
-}
+//void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config) {
+  //SourceDirectionConfig(dir_config, fConfig.dir_config); 
+//}
 
-void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config, DirectionConfig_t& local) {
-  if (dir_config.IsObject() == false) {
-    fprintf(stderr, "ConfigureDirection ERROR: Direction configuration must be an object\n"); 
-    exit(EXIT_FAILURE); 
-  }
-
-  if (dir_config.HasMember("mode") == false) {
-    fprintf(stderr, "ConfigureDirection ERROR: User must specify direction \"mode\" (fixed, isotropic, sun)\n");
-    exit(EXIT_FAILURE);
-  }
-
-  G4String dir_mode = dir_config["mode"].GetString(); 
-
-  if (dir_mode == "isotropic") {
-    local.mode = EDirectionMode::kRandomDir;
-    return;
-  } 
-  else if (dir_mode == "fixed") {
-    local.mode = EDirectionMode::kFixedDir;
-    local.axis.set(0, 0, 1); 
-    if (dir_config.HasMember("axis")) {
-      assert( dir_config["axis"].GetArray().Size() == 3 ); 
-      G4double dir[3] = {0}; 
-      G4int idir = 0; 
-      for (const auto& p : dir_config["axis"].GetArray()) {
-        dir[idir] = p.GetDouble(); idir++; 
-      }
-      local.axis.set(dir[0], dir[1], dir[2]); 
-    }
-  } 
-  else if (dir_mode == "sun") {
-    local.mode = EDirectionMode::kSunDir;
-    //if (dir_config.HasMember("nadir_histogram") == false) {
-    //fprintf(stderr, "ConfigureDirection ERROR: Direction mode set to \"sun\" but no histogram for nadir given\n"); 
-    //exit(EXIT_FAILURE); 
-    //}
-    if (dir_config.HasMember("nadir_histogram")) {
-      local.nadir_hist.Configure( dir_config["nadir_histogram"] ); 
-    }
-  }
-}
-
-const rapidjson::Document SLArBaseGenerator::ExportDirectionConfig() const {
-  rapidjson::Document doc;
-  doc.SetObject(); 
-
-  const auto& dconfig = fConfig.dir_config; 
-  char buffer[100]; 
-  int len = 1; 
-  rapidjson::Value jmode; 
-
-  if (dconfig.mode == EDirectionMode::kFixedDir) {
-    len = snprintf(buffer, sizeof(buffer), "fixed"); 
-    jmode.SetString(buffer, len, doc.GetAllocator()); 
-    doc.AddMember("mode", jmode, doc.GetAllocator()); 
-    rapidjson::Value jaxis(rapidjson::kArrayType); 
-    jaxis.PushBack( dconfig.axis.x(), doc.GetAllocator() ); 
-    jaxis.PushBack( dconfig.axis.y(), doc.GetAllocator() ); 
-    jaxis.PushBack( dconfig.axis.z(), doc.GetAllocator() ); 
-    doc.AddMember("axis", jaxis, doc.GetAllocator()); 
-  }
-  else if (dconfig.mode == EDirectionMode::kRandomDir) {
-    len = snprintf(buffer, sizeof(buffer), "isotropic"); 
-    jmode.SetString(buffer, len, doc.GetAllocator()); 
-    doc.AddMember("mode", jmode, doc.GetAllocator()); 
-  }
-  else if (dconfig.mode == EDirectionMode::kSunDir) {
-    len = snprintf(buffer, sizeof(buffer), "sun_direction"); 
-    jmode.SetString(buffer, len, doc.GetAllocator()); 
-    doc.AddMember("mode", jmode, doc.GetAllocator()); 
-
-    if (dconfig.nadir_hist.filename.empty() == false) {
-      const rapidjson::Document nadir_hist_doc = dconfig.nadir_hist.ExportConfig(); 
-      rapidjson::Value nadir_hist_info; 
-      nadir_hist_info.CopyFrom(nadir_hist_doc, doc.GetAllocator()); 
-      doc.AddMember("nadir_hist", nadir_hist_info, doc.GetAllocator());
-    }
-  }
-
-  return doc;
-}
 
 void SLArBaseGenerator::SourceEnergyConfig(const rapidjson::Value& ene_config) {
   SourceEnergyConfig( ene_config, fConfig.ene_config ); 
@@ -523,7 +502,7 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
           anEvent->GetPrimaryVertex(i)->GetT0()); 
     }
     for (int ip = 0; ip<np; ip++) {
-      //printf("getting particle %i...\n", ip); 
+      printf("getting particle %i...\n", ip); 
       auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
       G4String name = ""; 
 
@@ -540,7 +519,8 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       }
 
       tc_primary.SetTrackID(particle->GetTrackID());
-      tc_primary.SetPosition(anEvent->GetPrimaryVertex(i)->GetX0(),
+      tc_primary.SetPosition(
+          anEvent->GetPrimaryVertex(i)->GetX0(),
           anEvent->GetPrimaryVertex(i)->GetY0(), 
           anEvent->GetPrimaryVertex(i)->GetZ0());
       tc_primary.SetMomentum(
@@ -567,9 +547,9 @@ void SLArBaseGenerator::SetGenRecord(SLArGenRecord& record, const GenConfig_t& c
   auto& status = record.GetGenStatus(); 
   status.resize(4, 0.0); 
   status.at(0) = config.ene_config.energy_tmp;
-  status.at(1) = config.dir_config.direction_tmp.x(); 
-  status.at(2) = config.dir_config.direction_tmp.y(); 
-  status.at(3) = config.dir_config.direction_tmp.z(); 
+  status.at(1) = fDirGen->GetTmpDirection().x(); 
+  status.at(2) = fDirGen->GetTmpDirection().y(); 
+  status.at(3) = fDirGen->GetTmpDirection().z(); 
 
   return; 
 }
@@ -605,36 +585,5 @@ G4String SLArBaseGenerator::WriteConfig() const {
 //template TH1F*   SLArBaseGenerator::GetFromRootfile<TH1F>  (const G4String& filename, const G4String& key); 
 //template TH2D*   SLArBaseGenerator::GetFromRootfile<TH2D>  (const G4String& filename, const G4String& key); 
 //template TH2F*   SLArBaseGenerator::GetFromRootfile<TH2F>  (const G4String& filename, const G4String& key); 
-template<> TGraph* SLArBaseGenerator::GetFromRootfile<TGraph>(const G4String& filename, const G4String& key) {
-  TFile* rootFile = TFile::Open(filename, "READ");
-  if (!rootFile || rootFile->IsZombie()) {
-    std::fprintf(stderr, "GetFromRootfile ERROR: Cannot open file %s", filename.data()); 
-    exit(EXIT_FAILURE);
-  }
-  TGraph* obj = dynamic_cast<TGraph*>(rootFile->Get(key));
-  if (!obj) {
-    rootFile->Close();
-    std::fprintf(stderr, "GetFromRoofile ERROR: Unable to find object with key %s", key.data());
-    exit(EXIT_FAILURE);
-  }
-  rootFile->Close(); 
-  return std::move(obj);
-}
-
-template TH1D*   SLArBaseGenerator::GetFromRootfile<TH1D>  (const rapidjson::Value& file_and_key); 
-template TH1F*   SLArBaseGenerator::GetFromRootfile<TH1F>  (const rapidjson::Value& file_and_key); 
-template TH2D*   SLArBaseGenerator::GetFromRootfile<TH2D>  (const rapidjson::Value& file_and_key); 
-template TH2F*   SLArBaseGenerator::GetFromRootfile<TH2F>  (const rapidjson::Value& file_and_key); 
-template<> TGraph* SLArBaseGenerator::GetFromRootfile<TGraph>(const rapidjson::Value& file_and_key) {
-  if (!file_and_key.HasMember("file") || !file_and_key.HasMember("key")) {
-    std::fprintf(stderr, "GetFromRootfile Error: mandatory 'file' or 'key' field missing."); 
-    exit(EXIT_FAILURE);
-  } 
-  G4String filename = file_and_key["file"].GetString();
-  G4String key = file_and_key["key"].GetString();
-  TGraph* obj = GetFromRootfile<TGraph>(filename, key); 
-  return std::move(obj);
-} 
-
 }
 
