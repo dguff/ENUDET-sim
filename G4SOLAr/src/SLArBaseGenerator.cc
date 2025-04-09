@@ -521,16 +521,17 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
   }
   for (int i=firstVertex; i<total_vertices; i++) {
     //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
-    SLArMCPrimaryInfo tc_primary;
-    G4int np = anEvent->GetPrimaryVertex(i)->GetNumberOfParticle(); 
+    const G4PrimaryVertex* primary_vertex = anEvent->GetPrimaryVertex(i); 
+    const G4int np = primary_vertex->GetNumberOfParticle(); 
     if (fVerbose) {
       printf("vertex %i has %i particles at t = %g\n", i, np, 
-          anEvent->GetPrimaryVertex(i)->GetT0()); 
+          primary_vertex->GetT0()); 
     }
+
     for (int ip = 0; ip<np; ip++) {
-      //printf("getting particle %i...\n", ip); 
-      auto particle = anEvent->GetPrimaryVertex(i)->GetPrimary(ip); 
+      auto particle = primary_vertex->GetPrimary(ip); 
       G4String name = ""; 
+      SLArMCPrimaryInfo tc_primary;
 
       if (!particle->GetParticleDefinition()) {
         tc_primary.SetID  (particle->GetPDGcode()); 
@@ -550,10 +551,11 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       const HepGeom::Point3D<double> posLAr = world2LArVolume * pos;
 
       tc_primary.SetPosition(posLAr.x(), posLAr.y(), posLAr.z());
+
       tc_primary.SetMomentum(
           particle->GetPx(), particle->GetPy(), particle->GetPz(), 
           particle->GetKineticEnergy());
-      tc_primary.SetTime(anEvent->GetPrimaryVertex(i)->GetT0()); 
+      tc_primary.SetTime(primary_vertex->GetT0()); 
       tc_primary.SetGeneratorLabel( fLabel.data() ); 
 
 #ifdef SLAR_DEBUG

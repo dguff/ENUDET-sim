@@ -98,7 +98,7 @@ inline SLArPlaneParameterisation::PlaneReplicationData_t::PlaneReplicationData_t
 {}
 
 inline static SLArPlaneParameterisation::PlaneReplicationData_t  
-get_plane_replication_data(G4PVParameterised* pv) {
+get_plane_replication_data(const G4PVParameterised* pv) {
   SLArPlaneParameterisation::PlaneReplicationData_t data; 
   pv->GetReplicationData(data.fReplicaAxis, data.fNreplica, 
       data.fWidth, data.fOffset, data.fConsuming); 
