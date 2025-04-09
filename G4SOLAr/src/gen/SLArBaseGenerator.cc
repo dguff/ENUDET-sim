@@ -543,7 +543,7 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       tc_primary.PrintParticle(); 
       //getchar();
 #endif
-      SLArAnaMgr->GetEvent().RegisterPrimary( tc_primary );
+      SLArAnaMgr->GetMCTruth().RegisterPrimary( tc_primary );
     }
   }
 

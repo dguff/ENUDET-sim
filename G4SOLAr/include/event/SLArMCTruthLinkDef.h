@@ -17,5 +17,7 @@
 #pragma link C++ class SLArEventTrajectoryLite+;
 #pragma link C++ class std::vector<std::unique_ptr<SLArEventTrajectory>>+;
 #pragma link C++ class SLArMCPrimaryInfo+;
+#pragma link C++ class std::vector<SLArMCPrimaryInfo>+;
+#pragma link C++ class SLArMCTruth+;
 #endif
 

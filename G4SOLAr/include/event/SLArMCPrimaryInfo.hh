@@ -81,6 +81,5 @@ class SLArMCPrimaryInfo : public TNamed
   public:
     ClassDef(SLArMCPrimaryInfo, 3);
 };
-
 #endif /* end of include guard SLArMCTRACKINFO_HH */
 

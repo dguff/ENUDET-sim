@@ -139,7 +139,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
       // Add edep in LAr to the primary 
       SLArMCPrimaryInfo* ancestor = nullptr;
-      auto& primaries = anaMngr->GetEvent().GetPrimaries();
+      auto& primaries = anaMngr->GetMCTruth().GetPrimaries();
       for (auto &p : primaries) {
         if (p.GetTrackID() == ancestor_id) {
           ancestor = &p;
@@ -155,7 +155,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
             postStepPoint->GetGlobalTime(), 
             &anodeCfg, 
-            &anaMngr->GetEvent().GetEventAnodeByTPCID(fTPCID)); 
+            &anaMngr->GetEventAnode().GetEventAnodeByTPCID(fTPCID)); 
       } 
       //else {
         //printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);

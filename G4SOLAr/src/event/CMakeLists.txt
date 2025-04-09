@@ -9,6 +9,7 @@ set(SLAR_EVT_SOURCE_DIR "${SOLARSIM_SRC_DIR}/event")
 set(SLAR_EVT_PRIMARY_HEADERS
   "${SLAR_EVT_INCLUDE_DIR}/SLArEventTrajectory.hh"
   "${SLAR_EVT_INCLUDE_DIR}/SLArMCPrimaryInfo.hh"
+  "${SLAR_EVT_INCLUDE_DIR}/SLArMCTruth.hh"
 )
 
 set(SLAR_EVT_PRIMARY_SOURCES
@@ -19,17 +20,17 @@ set(SLAR_EVT_PRIMARY_SOURCES
 # ---------------------------------------------------------
 # MC truth data library
 # ---------------------------------------------------------
-add_library(SLArMCPrimaryInfo SHARED
+add_library(SLArMCTruth SHARED
   ${SLAR_EVT_PRIMARY_SOURCES} ${SLAR_EVT_PRIMARY_HEADERS} )
-target_include_directories(SLArMCPrimaryInfo 
+target_include_directories(SLArMCTruth 
   PUBLIC 
   $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}>
   $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}>)
-target_link_libraries(SLArMCPrimaryInfo PUBLIC ${ROOT_LIBRARIES})
-root_generate_dictionary(G__SLArMCPrimaryInfo
+target_link_libraries(SLArMCTruth PUBLIC ${ROOT_LIBRARIES})
+root_generate_dictionary(G__SLArMCTruth
   ${SLAR_EVT_PRIMARY_HEADERS}
-  MODULE SLArMCPrimaryInfo
-  LINKDEF ${SLAR_EVT_INCLUDE_DIR}/SLArMCPrimaryInfoLinkDef.h
+  MODULE SLArMCTruth
+  LINKDEF ${SLAR_EVT_INCLUDE_DIR}/SLArMCTruthLinkDef.h
 )
 
 # ---------------------------------------------------------
@@ -76,28 +77,6 @@ ROOT_GENERATE_DICTIONARY(G__SLArMCEventReadout
   )
 
 # ---------------------------------------------------------
-# Master MCEvent library
-# ---------------------------------------------------------
-set( SLAR_MCEVENT_HEADERS "${SLAR_EVT_INCLUDE_DIR}/SLArMCEvent.hh" )
-set( SLAR_MCEVENT_SOURCES "${SLAR_EVT_SOURCE_DIR}/SLArMCEvent.cc" )
-add_library(SLArMCEvent SHARED
-  ${SLAR_MCEVENT_SOURCES} ${SLAR_MCEVENT_HEADERS} )
-target_include_directories(SLArMCEvent 
-  PUBLIC 
-  $<BUILD_INTERFACE:${SOLARSIM_INCLUDE_DIR}>
-  $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}>)
-target_link_libraries(SLArMCEvent PUBLIC
-  ${ROOT_LIBRARIES} 
-  SLArMCPrimaryInfo
-  SLArMCEventReadout)
-root_generate_dictionary(G__SLArMCEvent
-  ${SLAR_MCEVENT_HEADERS}
-  MODULE SLArMCEvent
-  LINKDEF ${SLAR_EVT_INCLUDE_DIR}/SLArMCEventLinkDef.h
-)
-
-
-# ---------------------------------------------------------
 # Generator records library
 # ---------------------------------------------------------
 set( SLAR_GENRECORDS_HEADERS "${SLAR_EVT_INCLUDE_DIR}/SLArGenRecords.hh" )
@@ -121,41 +100,29 @@ root_generate_dictionary(G__SLArGenRecords
 set(solarsim_headers ${solarsim_headers} 
   ${SLAR_EVT_PRIMARY_HEADERS} 
   ${SLAR_EVT_HITS_HEADERS} 
-  ${SLAR_MCEVENT_HEADERS} 
   ${SLAR_GENRECORDS_HEADERS} PARENT_SCOPE)
 set(solarsim_sources ${solarsim_sources} 
   ${SLAR_EVT_PRIMARY_SOURCES}
   ${SLAR_EVT_HITS_SOURCES}
-  ${SLAR_MCEVENT_SOURCES}
   ${SLAR_GENRECORDS_SOURCES} PARENT_SCOPE)
 
 #----------------------------------------------------------------------------
 # Install instructions
 
 set(G4SOLAr_event_libs
-  SLArMCPrimaryInfo
+  SLArMCTruth
   SLArMCEventReadout
-  SLArMCEvent
   SLArGenRecords
   )
 
-set(G4SOLAr_event_resources 
-  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArMCPrimaryInfo.cxx 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCPrimaryInfo.rootmap 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCPrimaryInfo_rdict.pcm
-  #
-  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArMCEvent.cxx 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEvent.rootmap 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEvent_rdict.pcm
-  #
-  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArMCEventReadout.cxx 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadout.rootmap 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArMCEventReadout_rdict.pcm
-  #
-  ${CMAKE_CURRENT_BINARY_DIR}/G__SLArGenRecords.cxx 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArGenRecords.rootmap 
-  ${CMAKE_CURRENT_BINARY_DIR}/libSLArGenRecords_rdict.pcm
+set(G4SOLAr_event_resources)
+foreach(lib IN LISTS G4SOLAr_event_libs)
+  list(APPEND G4SOLAr_event_resources 
+    "${CMAKE_CURRENT_BINARY_DIR}/G__${lib}.cxx"
+    "${CMAKE_CURRENT_BINARY_DIR}/lib${lib}.rootmap"
+    "${CMAKE_CURRENT_BINARY_DIR}/lib${lib}_rdict.pcm"
   )
+endforeach()
 
 foreach(lib IN LISTS G4SOLAr_event_libs)
   set_target_properties(${lib} PROPERTIES 

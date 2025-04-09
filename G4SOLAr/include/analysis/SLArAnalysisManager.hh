@@ -22,7 +22,9 @@
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgMegaTile.hh"
 #include "config/SLArCfgSuperCellArray.hh"
-#include "event/SLArMCEvent.hh"
+#include "event/SLArMCTruth.hh"
+#include "event/SLArEventAnode.hh"
+#include "event/SLArEventSuperCellArray.hh"
 #include "event/SLArGenRecords.hh"
 
 #include "SLArBacktrackerManager.hh"
@@ -59,16 +61,22 @@ class SLArAnalysisManager
     void   ConstructBacktracker(const backtracker::EBkTrkReadoutSystem isys); 
     G4bool CreateEventStructure();
     G4bool CreateFileStructure();
-    G4bool LoadPDSCfg         (SLArCfgSystemSuperCell&  pdsCfg );
-    G4bool LoadAnodeCfg       (SLArCfgAnode&  pixCfg );
-    G4bool FillEvTree         ();
-    G4bool FillGenTree        (); 
-    void   SetOutputPath      (G4String path);
-    void   SetOutputName      (G4String filename);
-    void   WriteSysCfg        ();
-    bool   IsPathValid        (G4String path);
+    G4bool LoadPDSCfg(SLArCfgSystemSuperCell&  pdsCfg );
+    G4bool LoadAnodeCfg(SLArCfgAnode&  pixCfg );
+    G4bool FillTree();
+    G4bool FillGenTree(); 
+    void   SetOutputPath(G4String path);
+    void   SetOutputName(G4String filename);
+    inline void EnableMCTruthOutput(const bool enable) {fEnableMCTruthOutput = enable;}
+    inline void EnableEventAnodeOutput(const bool enable) {fEnableEventAnodeOutput = enable;}
+    inline void EnableEventPDSOutput(const bool enable) {fEnableEventPDSOutput = enable;}
+    inline bool IsMCTruthOutputEnabled() const {return fEnableMCTruthOutput;}
+    inline bool IsAnodeOutputEnabled() const {return fEnableEventAnodeOutput;}
+    inline bool IsPDSOutputEnabled() const {return fEnableEventPDSOutput;}
+    void   WriteSysCfg();
+    bool   IsPathValid(G4String path);
     template<typename T> 
-      inline int WriteVariable (G4String name, T val) {
+      inline int WriteVariable(G4String name, T val) {
         if (!fRootFile) {
           printf("SLArAnalysisManager::WriteVariable WARNING ");
           printf("rootfile not present yet. Cannot write %s variable.\n", 
@@ -81,19 +89,23 @@ class SLArAnalysisManager
         int status = var.Write(); 
         return status; 
     }
-    int    WriteArray         (G4String name, G4int size, G4double* val); 
-    int    WriteCfgFile       (G4String name, const char* path); 
-    int    WriteCfg           (G4String name, const char* cfg); 
-    int    WriteCrossSection  (SLArXSecDumpSpec xsec_spec); 
+    int WriteArray(G4String name, G4int size, G4double* val); 
+    int WriteCfgFile(G4String name, const char* path); 
+    int WriteCfg(G4String name, const char* cfg); 
+    int WriteCrossSection(SLArXSecDumpSpec xsec_spec); 
 
     // Access and I/O methods
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
     void SetupBacktrackerRecords(); 
-    TTree* GetTree() const {return  fEventTree;}
-    TFile* GetFile() const {return   fRootFile;}
-    SLArCfgSystemSuperCell& GetPDSCfg() {return  fPDSysCfg;}
-    std::map<int, SLArCfgAnode>& GetAnodeCfg() {return fAnodeCfg;}
+    inline TTree* GetMCTruthTree() const {return  fMCTruthTree;}
+    inline TTree* GetEventAnodeTree() const {return  fEventAnodeTree;}
+    inline TTree* GetEventPDSTree() const {return  fEventPDSTree;}
+    inline TTree* GetGenRecordsTree() const {return  fGenTree;}
+
+    inline TFile* GetFile() const {return   fRootFile;}
+    inline SLArCfgSystemSuperCell& GetPDSCfg() {return  fPDSysCfg;}
+    inline std::map<int, SLArCfgAnode>& GetAnodeCfg() {return fAnodeCfg;}
     inline SLArCfgAnode& GetAnodeCfgByTPC(const int tpc_id) {
       if ( fAnodeCfg.count(tpc_id) ) return fAnodeCfg[tpc_id];
       else {
@@ -113,9 +125,11 @@ class SLArAnalysisManager
     }
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
-    inline SLArMCEvent& GetEvent()  {return fMCEvent;}
-    inline SLArGenRecordsVector& GetGenRecords() {return fGenRecords;}
-    G4bool Save ();
+    inline SLArMCTruth& GetMCTruth()  {return fListMCPrimary;}
+    inline SLArListEventAnode& GetEventAnode() {return fListEventAnode;}
+    inline SLArListEventPDS& GetEventPDS() {return fListEventPDS;}
+    inline SLArGenRecordsVector& GetGenRecords() {return fListGenRecords;}
+    G4bool Save();
 
     // mock fake access
     G4bool FakeAccess();
@@ -157,11 +171,20 @@ class SLArAnalysisManager
     G4double fXSecEmax = 20;
     G4int fXSecNPoints = 1000;
 
-    TFile* fRootFile;
-    TTree* fEventTree;
-    TTree* fGenTree;
-    SLArMCEvent  fMCEvent;
-    SLArGenRecordsVector fGenRecords; 
+    TFile* fRootFile = {};
+    TTree* fMCTruthTree = {}; 
+    TTree* fEventAnodeTree = {}; 
+    TTree* fEventPDSTree = {};
+    TTree* fGenTree = {};
+    bool   fEnableMCTruthOutput = true; 
+    bool   fEnableEventAnodeOutput = true;
+    bool   fEnableEventPDSOutput = true;
+    bool   fEnableGenTreeOutput = true;
+    SLArMCTruth fListMCPrimary;
+    SLArGenRecordsVector fListGenRecords; 
+    SLArListEventPDS fListEventPDS;
+    SLArListEventAnode fListEventAnode;
+
 #ifdef SLAR_EXTERNAL
     SLArEventTrajectoryLite fExternalRecord;
     TTree* fExternalsTree;

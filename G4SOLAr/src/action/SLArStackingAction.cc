@@ -81,7 +81,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
             //aTrack->GetTrackID(), aTrack->GetParticleDefinition()->GetPDGEncoding());
 
         // fix track ID in primary output object
-        auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
+        auto& primaries = SLArAnaMgr->GetMCTruth().GetPrimaries();
         for (auto &primaryInfo : primaries) {
           G4double match = PositivePrimaryIdentification(aTrack, primaryInfo);
           if (match) break;
@@ -129,7 +129,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
 
       SLArMCPrimaryInfo* ancestor = nullptr; 
-      auto& primaries = SLArAnaMgr->GetEvent().GetPrimaries();
+      auto& primaries = SLArAnaMgr->GetMCTruth().GetPrimaries();
       for (auto &p : primaries) {
         if (p.GetTrackID() == ancestor_id) {
           ancestor = &p; 
@@ -157,7 +157,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
       SLArMCPrimaryInfo* primary = nullptr; 
       //SLArMCPrimaryInfoPtr* primary = nullptr; 
-      auto& primaries = anaMngr->GetEvent().GetPrimaries();
+      auto& primaries = anaMngr->GetMCTruth().GetPrimaries();
 
       int primary_parent_id = fEventAction->FindAncestorID(aTrack->GetParentID()); 
       

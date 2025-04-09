@@ -200,7 +200,8 @@ add_executable(solar_sim solar_sim.cc ${solarsim_sources} ${solarsim_headers})
 target_link_libraries(solar_sim PRIVATE 
   ${Geant4_LIBRARIES} 
   ${ROOT_LIBRARIES}
-  SLArMCEvent
+  SLArMCTruth
+  SLArMCEventReadout
   SLArGenRecords
   SLArReadoutSystemConfig
   BxDecay0::BxDecay0 BxDecay0::BxDecay0_Geant4
