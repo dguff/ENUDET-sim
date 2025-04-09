@@ -24,13 +24,35 @@ SLArMCPrimaryInfo::SLArMCPrimaryInfo() :
 SLArMCPrimaryInfo::SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p) 
   : TNamed(p), 
     fID(p.fID), fTrkID(p.fTrkID), fGeneratorLabel(p.fGeneratorLabel), fEnergy(p.fEnergy), 
-    fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
+    fTime(p.fTime), fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
     fTotalScintPhotons(p.fTotalScintPhotons), fTotalCerenkovPhotons(p.fTotalCerenkovPhotons),
     fVertex(p.fVertex), fMomentum(p.fMomentum) 
 {
   for (const auto& t : p.fTrajectories) {
     fTrajectories.push_back( std::make_unique<SLArEventTrajectory>(*t) ); 
   }
+}
+
+SLArMCPrimaryInfo& SLArMCPrimaryInfo::operator=(const SLArMCPrimaryInfo& p) 
+{
+  if (this != &p) {
+    TNamed::operator=(p);
+    fID = p.fID;
+    fTrkID = p.fTrkID;
+    fGeneratorLabel = p.fGeneratorLabel;
+    fEnergy = p.fEnergy;
+    fTime = p.fTime;
+    fTotalEdep = p.fTotalEdep;
+    fTotalLArEdep = p.fTotalLArEdep;
+    fTotalScintPhotons = p.fTotalScintPhotons;
+    fTotalCerenkovPhotons = p.fTotalCerenkovPhotons;
+    fVertex = p.fVertex;
+    fMomentum = p.fMomentum;
+    for (const auto& t : p.fTrajectories) {
+      fTrajectories.push_back( std::make_unique<SLArEventTrajectory>(*t) ); 
+    }
+  }
+  return *this;
 }
 
 SLArMCPrimaryInfo::~SLArMCPrimaryInfo() {
@@ -85,6 +107,7 @@ void SLArMCPrimaryInfo::PrintParticle() const
   std::cout << "Generator:" << fGeneratorLabel << std::endl;
   std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
+  std::cout << "Time    :" << fTime << " (ns)" << std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 
                          << fVertex[1]<< ", " 
                          << fVertex[2] << " (mm)" << std::endl;

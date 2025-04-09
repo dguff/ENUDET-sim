@@ -19,6 +19,8 @@ namespace unit {
   static inline double Unit2Val(const char* cunit) {
     G4double vunit = 1.0; 
     G4String sunit = cunit;
+    // Removes whitespaces
+    sunit.erase(std::remove_if(sunit.begin(), sunit.end(), ::isspace), sunit.end());
 
     std::regex rgx_unit( "((^|\\*|/)\\w+)" );
     auto unit_begin = std::sregex_iterator(sunit.begin(), sunit.end(), rgx_unit); 

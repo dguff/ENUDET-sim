@@ -22,13 +22,12 @@ enum EBkTrkReadoutSystem {kNoSystem = -1, kCharge = 0, kVUVSiPM = 1, kSuperCell 
 extern const G4String BkTrkReadoutSystemTag[3]; 
 EBkTrkReadoutSystem GetBacktrackerReadoutSystem(const G4String sys);
 
-enum EBacktracker {kNoBacktracker = -1, kTrkID = 0, kAncestorID = 1, kOpticalProc = 2};
-extern const G4String BacktrackerLabel[3];
+enum EBacktracker {kNoBacktracker = -1, kTrkID = 0, kAncestorID = 1, kOpticalProc = 2, kSiPMNr = 3};
+extern const G4String BacktrackerLabel[4];
 EBacktracker GetBacktrackerEnum(const G4String bkt);
 
 class SLArBacktracker {
   public: 
-
     SLArBacktracker(); 
     SLArBacktracker(const G4String name);
     inline ~SLArBacktracker() {}; 
@@ -67,6 +66,16 @@ class SLArBacktrackerOpticalProcess : public SLArBacktracker {
 
     void Eval(SLArEventGenericHit* hit, SLArEventBacktrackerRecord* rec) override;
 };
+
+class SLArBacktrackerSiPMNr : public SLArBacktracker {
+  public: 
+    inline SLArBacktrackerSiPMNr() : SLArBacktracker() {}
+    inline SLArBacktrackerSiPMNr(const G4String name) : SLArBacktracker(name) {}
+    inline ~SLArBacktrackerSiPMNr() {}
+
+    void Eval(SLArEventGenericHit* hit, SLArEventBacktrackerRecord* rec) override;
+};
+
 
 }
 

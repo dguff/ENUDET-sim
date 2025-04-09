@@ -3,30 +3,32 @@
  * @file        SLArExternalGeneratorAction.cc
  * @created     Tua Apr 11, 2023 09:44:12 CEST
  */
-
-#include <SLArAnalysisManager.hh>
-#include <SLArExternalGeneratorAction.hh>
-#include <SLArBoxSurfaceVertexGenerator.hh>
-#include <SLArBulkVertexGenerator.hh>
-#include <SLArRunAction.hh>
-#include <SLArRandomExtra.hh>
-
 #include <stdio.h>
 #include <memory>
 
-#include <rapidjson/document.h>
-#include <rapidjson/allocators.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include "SLArAnalysisManager.hh"
+#include "SLArRootUtilities.hh"
+#include "SLArExternalGeneratorAction.hh"
+#include "SLArBoxSurfaceVertexGenerator.hh"
+#include "SLArIsotropicDirectionGenerator.hh"
+#include "SLArBulkVertexGenerator.hh"
+#include "SLArRunAction.hh"
+#include "SLArRandomExtra.hh"
 
-#include <TFile.h>
+#include "rapidjson/document.h"
+#include "rapidjson/allocators.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
+
+#include "TFile.h"
 
 #include "G4RandomTools.hh"
 #include "G4Poisson.hh"
-#include <G4RunManager.hh>
-#include <G4Event.hh>
-#include <G4RunManager.hh>
+#include "G4RunManager.hh"
+#include "G4Event.hh"
+#include "G4RunManager.hh"
+#include "CLHEP/Random/RandPoisson.h"
 
 namespace gen {
 
@@ -104,19 +106,41 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction();
   const auto slar_random = run_action->GetTRandomInterface();
   
-  for (size_t iev = 0; iev < fConfig.n_particles; iev++) {
+  G4int expected_particles = 0;
+  G4int total_particles = 0;
+  G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
+  //G4cout << "Total time: " << total_time << G4endl;
+  G4double face_area = 0;
+  if (auto ptr = dynamic_cast<const vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
+    face_area = ptr->GetSurfaceGenerator();
+    //G4cout << "Face Area: " << face_area << G4endl;
+  }
+  //G4cout << "Flux: " << fConfig.flux << G4endl;
+
+  if (fConfig.flux != 0) {
+    expected_particles = fConfig.flux * total_time * face_area;
+    total_particles = CLHEP::RandPoisson::shoot(expected_particles);
+    //G4cout << "Expected particles: " << expected_particles << G4endl;
+    //G4cout << "Total Particles: " << total_particles << G4endl;
+  }
+  if (fConfig.n_particles != 1) {
+    total_particles = fConfig.n_particles;
+  }
+
+  for (size_t iev = 0; iev < total_particles; iev++) {
     G4ThreeVector vtx_pos(0, 0, 0); 
+    G4ThreeVector dir(0, 0, 0);
     fVtxGen->ShootVertex(vtx_pos);
-    //G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
+    G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
+    //G4cout << "Vtx time: " << vtx_time << G4endl;
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
     fConfig.ene_config.energy_tmp = SampleEnergy(fConfig.ene_config); 
 
-    G4ThreeVector dir = SampleDirection(fConfig.dir_config); 
 
-    if (dynamic_cast<SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
-      auto face = static_cast<SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())->GetVertexFace(); 
+    if (dynamic_cast<vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
+      auto face = static_cast<vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())->GetVertexFace(); 
       const auto& face_normal = geo::BoxFaceNormal[face]; 
       //printf("SLArExternalGeneratorAction: vtx face is %i\n", face);
       //printf("SLArExternalGeneratorAction: face normal is [%.1f, %.1f, %.1f]\n", 
@@ -127,13 +151,13 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
       }
     }
 
-    fConfig.dir_config.direction_tmp = dir;
+    fDirGen->SetTmpDirection(dir);
     //G4cout << "Momentum direction is: " << dir << G4endl; 
     fParticleGun->SetParticleDefinition(fParticleDef); 
-    fParticleGun->SetParticleMomentumDirection(fConfig.dir_config.direction_tmp); 
+    fParticleGun->SetParticleMomentumDirection( dir ); 
     fParticleGun->SetParticlePosition(vtx_pos); 
     fParticleGun->SetParticleEnergy(fConfig.ene_config.energy_tmp); 
-    //fParticleGun->SetParticleTime(vtx_time); 
+    fParticleGun->SetParticleTime(vtx_time); 
 
     fParticleGun->GeneratePrimaryVertex(ev); 
 
@@ -144,23 +168,14 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
 }
 
 void SLArExternalGeneratorAction::Configure() {
-  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-        fConfig.dir_config.nadir_hist.filename, 
-        fConfig.dir_config.nadir_hist.objname);
-
-    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-    printf("SLArExternalGenerator::Configure() Sourcing nadir angle distribution\n"); 
-    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
-  }
   if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+    TH1D* hist_spectrum = get_from_rootfile<TH1D>( 
         fConfig.ene_config.spectrum_hist.filename , 
         fConfig.ene_config.spectrum_hist.objname );
 
     fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
     printf("SLArExternalGenerator::Configure() Sourcing external energy spectrum\n"); 
-    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+    printf("fEnergySpectrum ptr: %p\n", fEnergySpectrum.get());
   }
 
   fParticleDef = G4ParticleTable::GetParticleTable()->FindParticle( fConfig.ext_primary_particle ); 
@@ -173,11 +188,13 @@ void SLArExternalGeneratorAction::SourceConfiguration(const rapidjson::Value& co
   if (config.HasMember("energy")) {
     SourceEnergyConfig(config["energy"], fConfig.ene_config);
   }
-  if (config.HasMember("direction")) {
-    SourceDirectionConfig(config["direction"], fConfig.dir_config);
-  }
+
   if (config.HasMember("n_particles")) {
     fConfig.n_particles = config["n_particles"].GetInt();
+  }
+
+  if (config.HasMember("flux")) {
+    fConfig.flux = unit::ParseJsonVal(config["flux"]);
   }
 
   if (config.HasMember("particle")) {
@@ -190,9 +207,15 @@ void SLArExternalGeneratorAction::SourceConfiguration(const rapidjson::Value& co
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
-    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
   }
 
+  if (config.HasMember("direction")) {
+    SetupDirectionGenerator( config["direction"] );
+  }
+  else {
+    fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
+  }
   return;
 }
 

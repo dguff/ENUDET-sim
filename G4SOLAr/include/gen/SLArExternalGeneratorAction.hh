@@ -26,6 +26,7 @@ class SLArExternalGeneratorAction : public SLArBaseGenerator
   public: 
     struct ExtGenConfig_t : public GenConfig_t {
       G4String ext_primary_particle {};
+      G4double flux {};
     };
     SLArExternalGeneratorAction(const G4String label = "");
     virtual ~SLArExternalGeneratorAction(); 

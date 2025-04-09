@@ -4,16 +4,16 @@
  * @created     Mon Jan 02, 2023 15:52:56 CET
  */
 
-#include <SLArPGunGeneratorAction.hh>
-#include <SLArAnalysisManager.hh>
-#include <SLArRandomExtra.hh>
-#include <G4ParticlePropertyTable.hh>
+#include "SLArPGunGeneratorAction.hh"
+#include "SLArAnalysisManager.hh"
+#include "SLArRandomExtra.hh"
+#include "SLArRootUtilities.hh"
+#include "G4ParticlePropertyTable.hh"
+#include "SLArFixedDirectionGenerator.hh"
 
 
-#include <G4Types.hh>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include "G4Types.hh"
+#include "rapidjson/document.h"
 
 namespace gen {
 SLArPGunGeneratorAction::SLArPGunGeneratorAction(const G4String label)  
@@ -24,21 +24,13 @@ SLArPGunGeneratorAction::SLArPGunGeneratorAction(const G4String label)
 }
 
 void SLArPGunGeneratorAction::Configure() {
-  if (fConfig.dir_config.mode == EDirectionMode::kSunDir) {
-    TH1D* hist_nadir = this->GetFromRootfile<TH1D>(
-        fConfig.dir_config.nadir_hist.filename, 
-        fConfig.dir_config.nadir_hist.objname);
-
-    fNadirDistribution = std::unique_ptr<TH1D>( std::move(hist_nadir) ); 
-    printf("fNadirDistribution ptr: %p\n", fNadirDistribution.get());
-  }
   if (fConfig.ene_config.mode == EEnergyMode::kExtSpectrum) {
-    TH1D* hist_spectrum = this->GetFromRootfile<TH1D>( 
+    TH1D* hist_spectrum = get_from_rootfile<TH1D>( 
         fConfig.ene_config.spectrum_hist.filename , 
         fConfig.ene_config.spectrum_hist.objname );
 
     fEnergySpectrum = std::unique_ptr<TH1D>( std::move(hist_spectrum) ); 
-    printf("fEnergySpectrum ptr: %p\n", fNadirDistribution.get());
+    printf("fEnergySpectrum ptr: %p\n", fEnergySpectrum.get());
   }
   SetParticle( fConfig.particle_name.data() ); 
 }
@@ -68,20 +60,18 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   for (size_t i = 0; i < fConfig.n_particles; i++) {
     G4ThreeVector vtx(0, 0, 0); 
+    G4ThreeVector dir(0, 0, 0);
     
-    fVtxGen->ShootVertex( vtx ); 
+    fVtxGen->ShootVertex( vtx );
+    fDirGen->ShootDirection( dir );
     const G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
     fParticleGun->SetParticlePosition( vtx ); 
-    fParticleGun->SetParticleMomentumDirection( SampleDirection(fConfig.dir_config) );
+    fParticleGun->SetParticleMomentumDirection( dir );
     fParticleGun->SetParticleEnergy( SampleEnergy(fConfig.ene_config) ); 
     fParticleGun->SetParticleTime( vtx_time ); 
     fParticleGun->GeneratePrimaryVertex(anEvent);
 
     fConfig.ene_config.energy_tmp = fParticleGun->GetParticleEnergy();
-    fConfig.dir_config.direction_tmp.set(
-        fParticleGun->GetParticleMomentumDirection().x(), 
-        fParticleGun->GetParticleMomentumDirection().y(), 
-        fParticleGun->GetParticleMomentumDirection().z());
     
     auto& record = gen_status_vec.AddRecord(GetGeneratorEnum(), GetLabel());
   }
@@ -89,9 +79,7 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 SLArPGunGeneratorAction::~SLArPGunGeneratorAction()
 {
-  printf("deleting PGun generator action... ");
-  //if (fParticleGun) {delete fParticleGun; fParticleGun = nullptr;} 
-  printf("DONE\n");
+  printf("deleting PGun generator action...\n");
 }
 
 void SLArPGunGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
@@ -100,10 +88,6 @@ void SLArPGunGeneratorAction::SourceConfiguration(const rapidjson::Value& config
 
   if (config.HasMember("n_particles")) {
     fConfig.n_particles = config["n_particles"].GetInt();
-  }
-
-  if (config.HasMember("direction")) {
-    SourceDirectionConfig( config["direction"], fConfig.dir_config );
   }
 
   if (config.HasMember("energy")) {
@@ -119,7 +103,21 @@ void SLArPGunGeneratorAction::SourceConfiguration(const rapidjson::Value& config
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
-    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
+  }
+  
+  if (config.HasMember("direction")) {
+    try {
+      SetupDirectionGenerator( config["direction"] );
+    }
+    catch (const std::exception& e) {
+      std::cerr << "ERROR setting up direction generator" << std::endl;
+      std::cerr << e.what() << std::endl;
+      exit( EXIT_FAILURE );
+    }
+  }
+  else{
+    fDirGen = std::make_unique<direction::SLArFixedDirectionGenerator>();
   }
 
   return;

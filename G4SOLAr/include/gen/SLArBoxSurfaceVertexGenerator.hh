@@ -1,6 +1,6 @@
 /**
  * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        SLArBoxSurfaceVertexGenerator
+ * @file        SLArBoxSurfaceVertexGenerator.hh
  * @created     Tue Apr 11, 2023 09:58:25 CEST
  */
 
@@ -18,6 +18,21 @@
 #include "SLArVertextGenerator.hh"
 
 namespace gen {
+namespace vertex {
+
+/**
+ * @class SLArBoxSurfaceVertexGenerator
+ * @brief Generates vertexes on the surface of a box volume
+ *
+ * This class generates vertexes on the surface of a box volume as defined by a G4VPhysicalVolume.
+ *
+ * The generator is configured using a JSON object, which should contain the following fields:
+ * - `volume`: the name of the physical volume on which surface the vertexes are generated
+ * - `origin_face`: the face of the box where the vertexes are generated. The face is specified
+ *   using the `geo::EBoxFace` enum, which uses the following convention: 
+ *   {kXplus=0, kXminus=1, kYplus=2, kYminus=3, kZplus=4, kZminus=5}.
+ * - `time`: the time generator configuration. This is passed to the `SLArTimeGenerator` class.
+ */
 class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
 {
   public: 
@@ -42,6 +57,12 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     void SetTolerance(double tolerance_);
     void SetRandomSeed(unsigned int seed_);
     void SetNoDaughters(bool no_daughters_);
+
+
+    /**
+     * @brief Get the surface area used for vertex generation
+     * @return The surface area of the box volume in mm^2
+     */
     G4double GetSurfaceGenerator() const; 
 
     void ShootVertex(G4ThreeVector & vertex_) override;
@@ -62,6 +83,7 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     const G4LogicalVolume * fLogVol = nullptr; ///< Reference to the logical volume
     G4ThreeVector fBulkTranslation; ///< The box position in world coordinate frame
     G4RotationMatrix fBulkRotation; ///< The box rotation in world coordinate frame
+    G4Transform3D fBulkTransform; ///< The box transformation in world coordinate frame
     double fTolerance{1.0 * CLHEP::um}; ///< Geometrical tolerance (length)
     unsigned int fRandomSeed{0}; ///< Seed for the random number generator
     bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes
@@ -72,8 +94,10 @@ class SLArBoxSurfaceVertexGenerator : public SLArVertexGenerator
     const G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
     G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
     G4double fSurface = 0.0; 
+    std::array <G4double, 6> fSurfaceFaces = {};
     unsigned int fCounter = 0.0; // Internal vertex counter
 }; 
+}
 }
 #endif /* end of include guard SLARBOXSURFACEVERTEXGENERATOR_HH */
 

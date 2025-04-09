@@ -65,6 +65,7 @@ class SLArCRYGeneratorAction : public SLArBaseGenerator
       G4String cry_mess_input {}; 
       void activate_particle(const G4String); 
       void to_input(); 
+      G4String volume_crossing = {};
     }; 
     SLArCRYGeneratorAction(const G4String label); 
     virtual ~SLArCRYGeneratorAction() {} 

@@ -51,6 +51,13 @@ G4bool SLArBacktrackerManager::RegisterBacktracker(const EBacktracker id, const 
         status = true;
         break;
       }
+    case kSiPMNr:
+      {
+        if (name.empty()) bkt_name = BacktrackerLabel[id];
+        fBacktrackers.push_back( new SLArBacktrackerSiPMNr( bkt_name ));
+        status = true;
+        break;
+      }
     default:
       {
         break;

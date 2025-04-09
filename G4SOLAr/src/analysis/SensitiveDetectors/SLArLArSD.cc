@@ -84,7 +84,8 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
       ->GetDefinition() != G4OpticalPhoton::OpticalPhotonDefinition()) {
 
 #ifdef SLAR_DEBUG
-    printf("SLArLArSD::ProcessHits(): processing %s [%i] TPC hit\n", 
+    printf("SLArLArSD::ProcessHits() in TPC %i: processing %s [%i] TPC hit\n", 
+        fTPCID,
         step->GetTrack()->GetParticleDefinition()->GetParticleName().data(), 
         step->GetTrack()->GetTrackID());
     //getchar(); 

@@ -1,6 +1,6 @@
 /**
  * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        SLArBoxSurfaceVertexGenerator
+ * @file        SLArBoxSurfaceVertexGenerator.cc
  * @created     Tue Apr 11, 2023 09:58:41 CEST
  */
 
@@ -11,6 +11,7 @@
 #include "G4Box.hh"
 
 namespace gen {
+namespace vertex {
 SLArBoxSurfaceVertexGenerator::SLArBoxSurfaceVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse(); 
@@ -105,51 +106,15 @@ void SLArBoxSurfaceVertexGenerator::SetNoDaughters(bool no_daughters_)
 G4double SLArBoxSurfaceVertexGenerator::GetSurfaceGenerator() const {
   if (fFixFace == false) {
     return geo::get_bounding_volume_surface(fSolid); 
-    //if (dynamic_cast<const G4Box*>(fSolid)) {
-      //const auto box = (G4Box*)fSolid;
-      //return box->GetSurfaceArea(); 
-    //}
-    //else {
-      //printf("SLArBoxSurfaceVertexGenerator WARNING: "); 
-      //printf("GetSurfaceGenerator() is only implemented for G4Box solids. "); 
-      //printf("Feel free to work on your solid's implementation and let me know!\n");
-      //printf("Using a box approximation.\n");
-
-      //G4ThreeVector lo; 
-      //G4ThreeVector hi;
-      //G4ThreeVector dim; 
-      //fSolid->BoundingLimits(lo, hi);
-
-      //for (int i=0; i<3; i++) dim[i] = fabs(hi[i] - lo[i]); 
-
-      //G4double half_area = dim[0]*dim[1] + dim[0]*dim[2] + dim[1]*dim[2];
-
-      //return 2*half_area; 
-    //}
   }
   else {
-    if (dynamic_cast<const G4Box*>(fSolid)) {
-      const auto box = (G4Box*)fSolid;
-      if (fVtxFace == geo::kXplus || fVtxFace == geo::kXminus) {
-        return box->GetYHalfLength()*box->GetZHalfLength()*4;
-      }
-      else if (fVtxFace == geo::kYplus || fVtxFace == geo::kYminus) {
-        return box->GetYHalfLength()*box->GetZHalfLength()*4;
-      }
-      else if (fVtxFace == geo::kZplus || fVtxFace == geo::kZminus) {
-        return box->GetYHalfLength()*box->GetXHalfLength()*4;
-      }
-      else {
-        return 0.;
-      }
-    }
-    else {
+    //G4cout << "fSolid name: " << fSolid->GetName().data() << G4endl;
+    if (dynamic_cast<const G4Box*>(fSolid) == nullptr) {
       printf("SLArBoxSurfaceVertexGenerator WARNING: "); 
       printf("GetSurfaceGenerator() is only implemented for G4Box solids. "); 
-      printf("Feel free to work on your solid's implementation and let me know!\n"); 
-      return 0; 
+      printf("Feel free to work on your solid's implementation and let me know!\n");  
     }
-
+    return fSurfaceFaces[fVtxFace];
   }
 }
  
@@ -168,15 +133,10 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   if (fFixFace == false) {
     G4double total_area = 2*(dim.x()*dim.y() + dim.x()*dim.z() + dim.y()*dim.z()); 
     std::map<geo::EBoxFace, G4double> area_fraction; 
-
+ 
     for (int i=0; i<6; i++) {
-      geo::EBoxFace kFace = geo::EBoxFace(i); 
-      G4double area = 1; 
-      for (int  j=0; j < 3; j++) {
-        if (geo::BoxFaceNormal[kFace].dot(axis[j]) == 0) area *= dim[j]; 
-      }
-
-      area_fraction.insert( std::make_pair(kFace, area / total_area)); 
+      geo::EBoxFace kFace = geo::EBoxFace(i);
+      area_fraction.insert( std::make_pair(kFace, fSurfaceFaces[i] / total_area)); 
     }
 
     G4double face_sample = G4UniformRand(); 
@@ -212,8 +172,9 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   }
   //G4cout << "local_displacement: " << local_displacement << G4endl;
 
-  G4ThreeVector localVertex = face_center_local + local_displacement;
-  G4ThreeVector finalVertex = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  HepGeom::Point3D<G4double> localVertex = face_center_local + local_displacement;
+  HepGeom::Point3D<G4double> finalVertex = fBulkTransform * localVertex;
+  //G4ThreeVector finalVertex = fBulkInverseRotation(localVertex) + fBulkTranslation;
 
   vertex_.set(finalVertex.x(), finalVertex.y(), finalVertex.z()); 
   //G4cout << "vertex = " << vertex_ << G4endl;
@@ -224,6 +185,7 @@ void SLArBoxSurfaceVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
 void SLArBoxSurfaceVertexGenerator::Config( const rapidjson::Value& config) {
 if ( config.HasMember("time") ) {
+    G4cout << "Source time configuration:" << G4endl;
     fTimeGen.SourceConfiguration( config["time"] );
   }
   if ( !config.HasMember("volume") ) {
@@ -234,13 +196,36 @@ if ( config.HasMember("time") ) {
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
   if (volume == nullptr) {
     char err_msg[200]; 
-    sprintf(err_msg, "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
+    snprintf(err_msg, sizeof(err_msg),
+	    "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
     throw std::runtime_error(err_msg);
   }
 
   SetBoxLogicalVolume(volume->GetLogicalVolume()); 
   SetSolidTranslation(volume->GetTranslation()); 
   SetSolidRotation(volume->GetRotation()); 
+
+  fBulkTransform = geo::GetTransformToGlobal(volume);
+
+  if (const auto& box = dynamic_cast<G4Box*>(volume->GetLogicalVolume()->GetSolid())) {
+    fSurface = box->GetSurfaceArea(); 
+  }
+
+  G4ThreeVector lo, hi, dim;
+  fSolid->BoundingLimits(lo, hi);
+  for (int i=0; i<3; i++) dim[i] = fabs(hi[i] - lo[i]); 
+  std::vector<G4ThreeVector> axis = 
+  {G4ThreeVector(1, 0, 0), G4ThreeVector(0, 1, 0), G4ThreeVector(0, 0, 1)}; 
+  for (int i = 0; i < 6; i++) {
+    geo::EBoxFace kFace = geo::EBoxFace(i); 
+    G4double area = 1; 
+    for (int  j=0; j < 3; j++) {
+    if (geo::BoxFaceNormal[kFace].dot(axis[j]) == 0) area *= dim[j]; 
+    }
+    fSurfaceFaces[i] = area;
+    //G4cout << "Face " << i << ": " << area << G4endl;
+  }
+  //getchar();
 
   if (config.HasMember("origin_face")) {
       FixVertexFace(true); 
@@ -262,7 +247,8 @@ void SLArBoxSurfaceVertexGenerator::Config( const G4String& config ) {
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
   if (volume == nullptr) {
     char err_msg[200];
-    sprintf(err_msg, "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
+    snprintf(err_msg, sizeof(err_msg),
+	     "SLArBoxSurfaceVertexGenerator::Config ERROR\nUnable to find %s in physical volume store.\n", volumeName.data());
     throw std::runtime_error(err_msg); 
   }
 
@@ -295,19 +281,19 @@ const rapidjson::Document SLArBoxSurfaceVertexGenerator::ExportConfig() const {
 
   rapidjson::Value str_gen_type;
   char buffer[50];
-  int len = sprintf(buffer, "%s", gen_type.data());
+  int len = snprintf(buffer, sizeof(buffer),"%s", gen_type.data());
   str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
   vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
   memset(buffer, 0, sizeof(buffer));
 
   rapidjson::Value str_solid_vol;
-  len = sprintf(buffer, "%s", solid_name.data());
+  len = snprintf(buffer, sizeof(buffer), "%s", solid_name.data());
   str_solid_vol.SetString(buffer, len, vtx_info.GetAllocator());
   vtx_info.AddMember("solid_volume", str_solid_vol, vtx_info.GetAllocator()); 
   memset(buffer, 0, sizeof(buffer));
 
   rapidjson::Value str_logic_vol; 
-  len = sprintf(buffer, "%s", logic_name.data());
+  len = snprintf(buffer, sizeof(buffer), "%s", logic_name.data());
   str_logic_vol.SetString(buffer, len, vtx_info.GetAllocator());
   memset(buffer, 0, sizeof(buffer));
   vtx_info.AddMember("logical_volume", str_logic_vol, vtx_info.GetAllocator()); 
@@ -327,5 +313,6 @@ const rapidjson::Document SLArBoxSurfaceVertexGenerator::ExportConfig() const {
   vtx_info.AddMember("time", jtime, vtx_info.GetAllocator());
 
   return vtx_info;
+}
 }
 }

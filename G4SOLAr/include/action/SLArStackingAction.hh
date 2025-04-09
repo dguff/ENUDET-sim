@@ -37,6 +37,8 @@
 #include "G4UserStackingAction.hh"
 
 class SLArEventAction;
+class G4Track;
+class SLArMCPrimaryInfo;
 
 class SLArStackingAction : public G4UserStackingAction
 {
@@ -51,6 +53,7 @@ class SLArStackingAction : public G4UserStackingAction
 
   private:
     SLArEventAction* fEventAction;
+    bool PositivePrimaryIdentification(const G4Track*, SLArMCPrimaryInfo&) const;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

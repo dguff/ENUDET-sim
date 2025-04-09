@@ -8,7 +8,7 @@
 
 #define SLARDETREADOUTTILE_HH
 
-#include "detector/SLArBaseDetModule.hh"
+#include "geo/detector/SLArBaseDetModule.hh"
 #include "G4LogicalSkinSurface.hh"
 
 class TH2Poly; 
@@ -62,6 +62,8 @@ public:
   virtual void Init(const rapidjson::Value&) override {}
   const std::vector<SUnitCellComponent>& GetUnitCellStructure() {return fCellStructure;}
   const std::vector<SUnitCellPixelArea>& GetUnitCellPixelMap() {return fCellPixelMap;}
+  G4int GetNumberOfCellRows() const; 
+  G4int GetNumberOfCellCols() const;
 protected:
 
 private:

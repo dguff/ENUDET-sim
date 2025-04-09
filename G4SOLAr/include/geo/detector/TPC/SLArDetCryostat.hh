@@ -50,6 +50,7 @@ class SLArDetCryostat : public SLArBaseDetModule {
     inline SLArBaseDetModule* GetWaffleUnit() {return fWaffleUnit;}
     inline SLArBaseDetModule* GetWaffleCornerUnit() {return fWaffleEdgeUnit;}
     virtual void Init(const rapidjson::Value&) override {}
+    bool HasSupportStructure() const {return fBuildSupport;}
     void SetWorldMaterial(SLArMaterial* mat) {fMatWorld = mat;}
     void SetVisAttributes();
 

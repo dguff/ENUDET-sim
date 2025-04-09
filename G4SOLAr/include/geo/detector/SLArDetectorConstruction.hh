@@ -68,6 +68,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     G4VIStore* CreateImportanceStore();
     //! Return SLArDetectorConstruction::fTPCs map
     inline std::map<G4int, SLArDetTPC*>& GetDetTPCs() {return fTPC;}
+    //! Return ReadoutTile detector object
+    inline SLArDetReadoutTile* GetReadoutTile() {return fReadoutTile;}
+    //! Return ReadoutTile detector object
+    inline SLArDetReadoutTile* GetReadoutTile() const {return fReadoutTile;}
     //! Return TPC with given id
     SLArDetTPC* GetDetTPC(G4int tpcid);
     //! Build SuperCell object and place the SuperCells according to the given configuration

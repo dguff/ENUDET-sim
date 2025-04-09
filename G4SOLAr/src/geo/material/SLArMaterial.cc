@@ -5,6 +5,7 @@
  */
 
 #include "SLArUserPath.hh"
+#include "SLArUnit.hpp"
 #include "material/SLArMaterial.hh"
 
 #include "rapidjson/document.h"
@@ -140,27 +141,21 @@ G4Material* SLArMaterial::BuildFromAtoms(const rapidjson::Value& jmaterial) {
   assert(jmaterial.HasMember("density"));
   assert(jmaterial["atomic_components"].IsArray());
 
-  auto components = jmaterial["atomic_components"].GetArray();
-  auto density = jmaterial["density"].GetObj(); 
-  double vunit = 1.0; 
-  if (density.HasMember("unit")) 
-    vunit = G4UIcommand::ValueOf(density["unit"].GetString()); 
+  const auto& components = jmaterial["atomic_components"].GetArray();
+  const auto& jdensity = jmaterial["density"].GetObj(); 
 
   if (jmaterial.HasMember("temperature")) {
-    auto temperature = jmaterial["temperature"].GetObj();
-    G4double tunit = 1.0; 
-    if (temperature.HasMember("unit")) 
-      tunit = G4UIcommand::ValueOf(temperature["unit"].GetString()); 
+    const auto& jtemperature = jmaterial["temperature"].GetObj();
 
     material = new G4Material(
         jmaterial["name"].GetString(), 
-        density["val"].GetDouble()*vunit, 
+        unit::ParseJsonVal(jdensity),
         components.Size(), G4State::kStateLiquid, 
-        temperature["val"].GetDouble()*tunit);
+        unit::ParseJsonVal(jtemperature));
   } else {
     material = new G4Material(
         jmaterial["name"].GetString(), 
-        density["val"].GetDouble()*vunit, 
+        unit::ParseJsonVal( jdensity ), 
         components.Size()); 
   }
 
@@ -194,16 +189,14 @@ G4Material* SLArMaterial::BuildFromMixture(const rapidjson::Value& jmaterial) {
   assert(jmaterial.HasMember("density"));
   assert(jmaterial["mixture_components"].IsArray()); 
 
-  auto components = jmaterial["mixture_components"].GetArray(); 
-  auto density = jmaterial["density"].GetObj(); 
+  const auto& jcomponents = jmaterial["mixture_components"].GetArray(); 
+  const auto& jdensity = jmaterial["density"].GetObj(); 
   double vunit = 1.0; 
-  if (density.HasMember("unit")) 
-    vunit = G4UIcommand::ValueOf(density["unit"].GetString()); 
 
   material = new G4Material(jmaterial["name"].GetString(), 
-      density["val"].GetDouble()*vunit, components.Size()); 
+      unit::ParseJsonVal(jdensity), jcomponents.Size()); 
 
-  for (const auto& comp : components) {
+  for (const auto& comp : jcomponents) {
     assert(comp.HasMember("name")); 
     assert(comp.HasMember("massFraction")); 
     G4String comp_name = comp["name"].GetString(); 
@@ -287,7 +280,7 @@ void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertie
         G4double vunit = 1.0; 
         if (v.HasMember("unit")) {
           //vunit = G4UIcommand::ValueOf(v["unit"].GetString());
-          vunit = ParseUnit(v["unit"]); 
+          vunit = unit::Unit2Val(v["unit"]); 
         }
         if (strcmp("Energy", v["var"].GetString()) == 0) {
           for (const auto &val : v["val"].GetArray()) {
@@ -306,7 +299,7 @@ void SLArMaterial::ParseMPT(const rapidjson::Value& jptable, G4MaterialPropertie
       G4double punit = 1.0; 
       if (p.HasMember("unit")) {
         //punit = G4UIcommand::ValueOf(p["unit"].GetString()); 
-        punit = ParseUnit(p["unit"]); 
+        punit = unit::Unit2Val(p["unit"]); 
       }
       G4double pvalue = p["value"].GetDouble(); 
       G4bool is_custom = false; 
@@ -371,37 +364,5 @@ void SLArMaterial::ParseSurfaceProperties(const rapidjson::Value& jptable) {
   }
 
   return;
-}
-
-G4double SLArMaterial::ParseUnit(const rapidjson::Value& junit) {
-  G4double vunit = 1.0; 
-  assert(junit.IsString()); 
-  G4String sunit = junit.GetString(); 
-
-  std::regex rgx_unit( "((^|\\*|/)\\w+)" );
-  auto unit_begin = std::sregex_iterator(sunit.begin(), sunit.end(), rgx_unit); 
-  auto unit_end   = std::sregex_iterator(); 
-
-  for (std::sregex_iterator i = unit_begin; i!=unit_end; ++i) {
-    std::smatch match = *(i); 
-    G4String unit_match = match.str(); 
-    char front = unit_match.front(); 
-    if (front == '*') {
-      unit_match.erase(0, 1); 
-      //printf("Multiply %s\n", unit_match.c_str());
-      vunit *= G4UIcommand::ValueOf(unit_match); 
-    } else if (front == '/') {
-      unit_match.erase(0, 1); 
-      //printf("Divide %s\n", unit_match.c_str());
-      vunit /= G4UIcommand::ValueOf(unit_match);  
-    } else {
-      //printf("Multiply %s\n", unit_match.c_str());
-      vunit *= G4UIcommand::ValueOf(unit_match); 
-    }
-  }
-
-  //printf("vunit is %g\n", vunit);
-
-  return vunit; 
 }
 

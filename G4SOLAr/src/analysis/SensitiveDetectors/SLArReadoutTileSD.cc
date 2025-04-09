@@ -116,10 +116,11 @@ G4bool SLArReadoutTileSD::ProcessHits_constStep(const G4Step* step,
   hit->SetMegaTileReplicaNr(touchable->GetCopyNumber(7));
   hit->SetRowTileReplicaNr(touchable->GetCopyNumber(6));
   hit->SetTileReplicaNr(touchable->GetCopyNumber(5));
-  hit->SetRowCellNr(touchable->GetCopyNumber(4)); 
-  hit->SetCellNr(touchable->GetCopyNumber(3)); 
+  hit->SetRowCellNr(touchable->GetCopyNumber(3)); 
+  hit->SetCellNr(touchable->GetCopyNumber(2)); 
   hit->SetPhotonProcess(procName);
   hit->SetProducerID( track->GetParentID() ); 
+
 
 #ifdef SLAR_DEBUG
   printf("SLArReadoutTileSD::ProcessHits_constStep\n");

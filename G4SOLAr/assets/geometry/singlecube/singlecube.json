@@ -21,7 +21,7 @@
   ,
   #include "singlecube_cryostat.json"
   ,
-  #include "tile_bern_v2.json"
+  #include "../tile_design/tile_bern_v2.json"
   ,
   #include "singlecube_pds.json"
 }

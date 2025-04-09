@@ -11,7 +11,8 @@
 /SLAr/phys/positronCut 1.5 mm
 /SLAr/phys/gammaCut 2.5 mm
 /SLAr/phys/stepMax 2.5 mm
-/SLAr/scint/enablePhGeneration false
+/SLAr/scint/enablePhGeneration true
+/SLAr/gen/verbose 1
 
 # Fire!
 /run/beamOn 1

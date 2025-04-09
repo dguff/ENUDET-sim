@@ -13,6 +13,7 @@
 #include <TMath.h>
 
 namespace gen {
+namespace vertex {
 SLArBulkVertexGenerator::SLArBulkVertexGenerator()
 {
   fBulkInverseRotation = fBulkRotation.inverse();
@@ -47,6 +48,7 @@ void SLArBulkVertexGenerator::SetBulkLogicalVolume(G4LogicalVolume * logvol_)
 {
   fSolid = logvol_->GetSolid();
   fLogVol = logvol_;
+  fMass = GetMassVolumeGenerator();
   std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: solid=" << fSolid << "\n";
 }
 
@@ -127,7 +129,8 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
   auto navigator = G4TransportationManager::GetTransportationManager()->GetNavigator("World"); 
 
-  G4ThreeVector localVertex;
+  //G4ThreeVector localVertex;
+  G4Point3D localVertex;
   G4String localMaterial; 
   G4int maxtries=100000, itry=1;
   do {
@@ -140,7 +143,9 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
     localMaterial = vol->GetLogicalVolume()->GetMaterial()->GetName();
   } while (!fSolid->Inside(localVertex) && ++itry < maxtries && strcmp(fMaterial, localMaterial) != 0) ;
 
-  G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
+  HepGeom::Point3D<G4double> vtx(localVertex.x(), localVertex.y(), localVertex.z());
+  vtx = fBulkTransform * vtx;
+  //G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
   fCounter++;
 }
@@ -193,13 +198,16 @@ void SLArBulkVertexGenerator::Config(const G4String& volumeName) {
   auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
   if (volume == nullptr) {
     char err_msg[200]; 
-    sprintf(err_msg, "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", volumeName.c_str());
+    snprintf(err_msg, sizeof(err_msg),
+	    "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", volumeName.c_str());
     throw std::runtime_error(err_msg);
   }
 
   SetBulkLogicalVolume(volume->GetLogicalVolume()); 
   SetSolidTranslation(volume->GetTranslation()); 
   SetSolidRotation(volume->GetRotation()); 
+  
+  fBulkTransform = geo::GetTransformToGlobal(volume);
   return;
 }
 
@@ -235,19 +243,19 @@ const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
 
   rapidjson::Value str_gen_type;
   char buffer[50];
-  int len = sprintf(buffer, "%s", gen_type.data());
+  int len = snprintf(buffer, sizeof(buffer), "%s", gen_type.data());
   str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
   vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
   memset(buffer, 0, sizeof(buffer));
 
   rapidjson::Value str_solid_vol;
-  len = sprintf(buffer, "%s", solid_name.data());
+  len = snprintf(buffer, sizeof(buffer), "%s", solid_name.data());
   str_solid_vol.SetString(buffer, len, vtx_info.GetAllocator());
   vtx_info.AddMember("solid_volume", str_solid_vol, vtx_info.GetAllocator()); 
   memset(buffer, 0, sizeof(buffer));
 
   rapidjson::Value str_logic_vol; 
-  len = sprintf(buffer, "%s", logic_name.data());
+  len = snprintf(buffer, sizeof(buffer), "%s", logic_name.data());
   str_logic_vol.SetString(buffer, len, vtx_info.GetAllocator());
   memset(buffer, 0, sizeof(buffer));
   vtx_info.AddMember("logical_volume", str_logic_vol, vtx_info.GetAllocator()); 
@@ -270,5 +278,6 @@ const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {
 
 
   return vtx_info;
+}
 }
 }

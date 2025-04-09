@@ -3,10 +3,18 @@ set(SLAR_GEN_SOURCE_DIR "${SOLARSIM_SRC_DIR}/gen")
 
 set(SLAR_GEN_HEADERS
   "${SLAR_GEN_INCLUDE_DIR}/SLArRandomExtra.hh"
+  # vertex generators
   "${SLAR_GEN_INCLUDE_DIR}/SLArVertextGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArGPSVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArBulkVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArBoxSurfaceVertexGenerator.hh"
+  # direction generators
+  "${SLAR_GEN_INCLUDE_DIR}/SLArDirectionGenerator.hh"
+  "${SLAR_GEN_INCLUDE_DIR}/SLArFixedDirectionGenerator.hh"
+  "${SLAR_GEN_INCLUDE_DIR}/SLArGPSDirectionGenerator.hh"
+  "${SLAR_GEN_INCLUDE_DIR}/SLArIsotropicDirectionGenerator.hh"
+  "${SLAR_GEN_INCLUDE_DIR}/SLArSunDirectionGenerator.hh"
+  # primary generators
   "${SLAR_GEN_INCLUDE_DIR}/SLArBaseGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArPGunGeneratorAction.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArPBombGeneratorAction.hh"
@@ -24,6 +32,8 @@ set(SLAR_GEN_SRC
   "${SLAR_GEN_SOURCE_DIR}/SLArBulkVertexGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArGPSVertexGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArBoxSurfaceVertexGenerator.cc"
+  "${SLAR_GEN_SOURCE_DIR}/SLArGPSDirectionGenerator.cc"
+  "${SLAR_GEN_SOURCE_DIR}/SLArSunDirectionGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArBaseGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArPGunGeneratorAction.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArPBombGeneratorAction.cc"

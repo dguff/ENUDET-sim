@@ -8,6 +8,7 @@
 
 #define SLAREVENTHITSCOLLECTION_HH
 
+#include <RtypesCore.h>
 #include <iostream>
 #include <map>
 
@@ -15,8 +16,8 @@
 #include "event/SLArEventGenericHit.hh"
 #include "event/SLArEventBacktrackerRecord.hh"
 
-typedef std::map<UShort_t, UShort_t> HitsCollection_t; 
-typedef std::map<UShort_t, SLArEventBacktrackerVector> BacktrackerVectorCollection_t;
+typedef std::map<Int_t, UShort_t> HitsCollection_t; 
+typedef std::map<Int_t, SLArEventBacktrackerVector> BacktrackerVectorCollection_t;
 
 template<class T>
 class SLArEventHitsCollection : public TNamed {
@@ -30,7 +31,7 @@ class SLArEventHitsCollection : public TNamed {
     void Copy(SLArEventHitsCollection& record) const;
 
     template<typename TT>
-    UShort_t ConvertToClock(const TT& val) {return static_cast<UShort_t>(val / fClockUnit);}
+    Int_t ConvertToClock(const TT& val) {return static_cast<Int_t>(val / fClockUnit);}
     inline UShort_t GetClockUnit() const {return fClockUnit;}
     inline int GetIdx() const {return fIdx;}
     inline int GetNhits() const {return fNhits;}

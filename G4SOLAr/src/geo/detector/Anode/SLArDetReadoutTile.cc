@@ -5,9 +5,10 @@
  */
 
 
-#include "detector/Anode/SLArDetReadoutTile.hh"
+#include "geo/detector/Anode/SLArDetReadoutTile.hh"
+#include "geo/detector/SLArPlaneParameterisation.hpp"
+#include "geo/SLArGeoUtils.hh"
 #include "detector/SLArPlaneParameterisation.hpp"
-#include "SLArGeoUtils.hh"
 #include "config/SLArCfgReadoutTile.hh"
 
 #include "G4VSolid.hh"
@@ -496,8 +497,6 @@ void SLArDetReadoutTile::BuildUnitCellPixMap(const rapidjson::Value& pixblueprin
   }
 }
 
-
-
 G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
   fSkinSurface = 
     new G4LogicalSkinSurface(
@@ -507,7 +506,6 @@ G4LogicalSkinSurface* SLArDetReadoutTile::BuildLogicalSkinSurface() {
 
   return fSkinSurface;
 }
-
 
 TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
     const G4ThreeVector& xAxis, const G4ThreeVector& yAxis, 
@@ -627,4 +625,82 @@ TH2Poly* SLArDetReadoutTile::BuildTileChgPixelMap(
   }
 
   return h2;
+}
+
+G4int SLArDetReadoutTile::GetNumberOfCellRows() const {
+  if (fModLV == nullptr) {
+    fprintf(stdout, "SLArDetReadoutTile::GetNumberOfCellRows: WARNING fModLV is null\n");
+  }
+
+  G4VPhysicalVolume* pv = nullptr; 
+  // get cell plane from daughter volumes
+  for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
+    auto pv_tmp = fModLV->GetDaughter(ii);
+    G4cout << pv_tmp->GetName() << G4endl;
+    if ( pv_tmp->GetName() == "ReadoutTileSensors") {
+      pv = pv_tmp;
+      break; 
+    }
+  }
+  if (pv == nullptr) {
+    fprintf(stdout, "SLArDetReadoutTile::GetNumberOfCellRows: ERROR ReadoutTileSensors not found\n");
+    exit(EXIT_FAILURE);
+  }
+
+  G4int n_row = 0;
+  pv = pv->GetLogicalVolume()->GetDaughter(0); // access cell_plane
+  if (pv->IsParameterised()) {
+    const G4PVParameterised* parpv = static_cast<const G4PVParameterised*>(pv);
+    auto rep_data = get_plane_replication_data(parpv);
+    n_row = rep_data.fNreplica;
+  }
+
+  return n_row;
+}
+
+G4int SLArDetReadoutTile::GetNumberOfCellCols() const {
+  if (fModLV == nullptr) {
+    fprintf(stdout, "SLArDetReadoutTile::GetNumberOfCellCols: WARNING fModLV is null\n");
+  }
+
+  G4VPhysicalVolume* plane_pv = nullptr; 
+  // get plane pv from daughter volumes
+  for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
+    auto pv_tmp = fModLV->GetDaughter(ii);
+    if ( pv_tmp->GetName() == "ReadoutTileSensors") {
+      plane_pv = pv_tmp;
+      break; 
+    }
+  }
+  if (plane_pv == nullptr) {
+    fprintf(stdout, "SLArDetReadoutTile::GetNumberOfCellCols: ERROR ReadoutTileSensors not found\n");
+    exit(EXIT_FAILURE);
+  }
+
+  G4int n_col = 0;
+  const auto plane_lv = plane_pv->GetLogicalVolume()->GetDaughter(0)->GetLogicalVolume(); 
+
+  G4VPhysicalVolume* row_pv = nullptr;
+  printf("looking for daughters in %s\n", plane_lv->GetName().data());
+  for (size_t ii=0; ii < plane_lv->GetNoDaughters(); ii++) {
+    auto pv_tmp = plane_lv->GetDaughter(ii);
+    G4cout << pv_tmp->GetName() << G4endl;
+    if ( pv_tmp->GetName() == "cell_row") {
+      row_pv = pv_tmp;
+      break; 
+    }
+  }
+  if (row_pv == nullptr) {
+    fprintf(stdout, "SLArDetReadoutTile::GetNumberOfCellCols: ERROR cell_row not found\n");
+    exit(EXIT_FAILURE);
+  }
+
+
+  if (row_pv->IsParameterised()) {
+    const G4PVParameterised* parpv = static_cast<const G4PVParameterised*>(row_pv);
+    auto rep_data = get_plane_replication_data(parpv);
+    n_col = rep_data.fNreplica;
+  }
+
+  return n_col;
 }

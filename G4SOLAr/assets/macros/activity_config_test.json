@@ -1,0 +1,26 @@
+{
+    "generator": [
+        {
+            "type" : "decay0", 
+            "label" : "Ar39_test", 
+            "config" : {
+              "decay0_type" : "background",
+              "nuclide" : "Ar39", 
+              "specific_activity" : {"val": 1.1, "unit": "Bq/kg"},
+              "vertex_gen" : {
+                "type" : "bulk", 
+                "config" : {
+                  "volume" : "TPC10", 
+                  "fiducial_fraction" : 0.20,
+                  "time" : {
+                    "mode" : "window", 
+                    "event_window_limits" : {
+                      "t0" : {"val": 0, "unit" : "ns"}, "t1" : {"val" : 2, "unit" : "ms"}
+                    }
+                  }
+                } 
+              }
+            }
+          }
+    ]
+}
