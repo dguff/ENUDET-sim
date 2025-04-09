@@ -615,6 +615,10 @@ void SLArDetectorConstruction::AddExternalScorer(const G4String phys_volume_name
     printf("SLArDetectorConstruction::AddExternalScorer(): "); 
     printf("Making %s a scorer volume (%s)\n", phys_volume_name.data(), ext_scorer_name.data()); 
 
+    const G4double surface = 
+      geo::get_bounding_volume_surface(external_scorer_pv->GetLogicalVolume()->GetSolid());
+    printf("external scorer surface: %g cm^2\n", surface/(CLHEP::cm2));
+
     auto ext_scorer_sd = 
       new SLArExtScorerSD(ext_scorer_name); 
     SDman->AddNewDetector(ext_scorer_sd); 

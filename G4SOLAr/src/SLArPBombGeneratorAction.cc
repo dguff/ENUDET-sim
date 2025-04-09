@@ -93,7 +93,10 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
     if (fParticleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()) {
       G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( dir ); 
-      //printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
+      //printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z());  
+      // #ifdef SLAR_DEBUG
+        // printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
+      // #endif
       particle->SetPolarization(polarization.x(), polarization.y(), polarization.z()); 
     }
 
