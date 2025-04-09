@@ -13,6 +13,16 @@
 namespace gen{
   namespace direction {
 
+  /**
+   * @class SLArFixedDirectionGenerator
+   * @brief Generates a fixed direction for primary particles
+   *
+   * This class generates a fixed direction for primary particles. The direction is
+   * specified in the configuration JSON object using the "axis" field, 
+   * which can be a three-dimensional array or an object with a "val" field
+   * set to a three-dimensional array. 
+   * One can also specify a reference physical volume using the "volume" field.
+   */
   class SLArFixedDirectionGenerator : public SLArDirectionGenerator {
     public: 
       inline SLArFixedDirectionGenerator() : fDirection(0.0, 0.0, 0.0) {}

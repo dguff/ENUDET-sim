@@ -13,6 +13,13 @@
 
 namespace gen{
 namespace direction{
+  /**
+   * @class SLArIsotropicDirectionGenerator
+   * @brief Generates isotropic directions for primary particles
+   *
+   * This class generates isotropic directions for primary particles. The direction is
+   * sampled uniformly from a sphere.
+   */
   class SLArIsotropicDirectionGenerator : public SLArDirectionGenerator {
     public: 
       inline SLArIsotropicDirectionGenerator() {}

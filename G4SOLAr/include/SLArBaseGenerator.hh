@@ -20,6 +20,16 @@
 #include "TH1D.h"
 
 namespace gen{
+
+  /**
+   * @class SLArBaseGenerator
+   * @brief Base class for all SoLAr's generators
+   *
+   * This class is the base class for all generators in SoLAr. It provides
+   * methods to configure the generator, including the setup the vertex and direction
+   * generators.
+   *
+   */
   class SLArBaseGenerator : public G4VUserPrimaryGeneratorAction {
     public: 
       inline SLArBaseGenerator(const G4String label="") 

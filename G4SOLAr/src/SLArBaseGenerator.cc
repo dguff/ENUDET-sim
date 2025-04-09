@@ -29,6 +29,22 @@
 
 namespace gen {
 
+/**
+ * @brief Setup the vertex generator
+ *
+ * @param config The JSON configuration object for the vertex generator
+ *
+ * This method sets up the vertex generator based on the provided configuration.
+ * The "type" of the chosen generator is mandatory. Available types are:
+ * - "point" for `SLArPointVertexGenerator`
+ * - "gps_pos" for `SLArGPSVertexGenerator`
+ * - "bulk" for `SLArBulkVertexGenerator`
+ * - "boxsurface" for `SLArBoxSurfaceVertexGenerator`
+ *
+ * Each one of these generators has its own configuration options, which are
+ * passed in the "config" field of the JSON object. See the respective
+ * generator classes for details.
+ */
 void SLArBaseGenerator::SetupVertexGenerator(const rapidjson::Value& config) {
   if (!config.HasMember("type")) {
     throw std::invalid_argument("vertex generator missing mandatory \"type\" field\n");

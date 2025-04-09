@@ -1,3 +1,4 @@
+/*
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArGPSDirectionGenerator.hh
  * @created     : Wednesday Feb 12, 2025 11:40:20 CET
@@ -46,6 +47,8 @@ namespace direction{
    *   angles in radians. The configuration is done using a JSON object with the
    *   `type` field set to "user", and the `filename` and `objname` fields.
    */
+
+
   class SLArGPSDirectionGenerator : public SLArDirectionGenerator {
     public: 
       struct GPSAngConfig_t {
@@ -63,7 +66,7 @@ namespace direction{
         ExtSourceInfo_t phi_hist = {};
       };
 
-      inline SLArGPSDirectionGenerator() {
+      inline SLArGPSDirectionGenerator() : SLArDirectionGenerator() {
         fAngDist = std::make_unique<G4SPSAngDistribution>();
         fRandGen = std::make_unique<G4SPSRandomGenerator>();
       }

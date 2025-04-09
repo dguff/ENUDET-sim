@@ -1,6 +1,6 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArDirectionGenerator
+ * @file        : SLArDirectionGenerator.hh
  * @created     : Wednesday Feb 12, 2025 11:52:11 CET
  */
 
@@ -27,6 +27,15 @@ namespace gen {
     kUndefinedDirGen = 99
   };
 
+  /**
+   * @brief Get the direction generator mode from its label string
+   *
+   * @param str The string representing the direction generator mode (e.g., "fixed", "isotropic")
+   * @return The corresponding `EDirectionGenerator` value
+   *
+   * This function checks if the provided string matches any of the known
+   * direction generator modes and returns the corresponding enum value.
+   */
   static const std::map<G4String, EDirectionGenerator> dirGenMap = {
     {"fixed", EDirectionGenerator::kFixedDir}, 
     {"isotropic", EDirectionGenerator::kIsotropicDir}, 
@@ -34,6 +43,12 @@ namespace gen {
     {"gps_dir", EDirectionGenerator::kGPSDir}
   };
 
+  /**
+   * @brief Get the string label of a direction generator given its mode enumerator
+   *
+   * @param kGen The direction generator mode enumerator (e.g., kFixedDir, kIsotropicDir)
+   * @return The corresponding string label (e.g., "fixed", "isotropic")
+   */
   static inline EDirectionGenerator getDirGenIndex(G4String str) {
     EDirectionGenerator kGen = EDirectionGenerator::kUndefinedDirGen;
     if (dirGenMap.find(str) != dirGenMap.end()) {
@@ -42,6 +57,9 @@ namespace gen {
     return kGen;
   }
 
+  /**
+   * @brief Print the direction generator types available
+   */
   static inline void printDirGeneratorType() {
     printf("Available direction generators:\n");
     for (const auto& vgen : dirGenMap) {
@@ -50,6 +68,14 @@ namespace gen {
     return;
   }
 
+  /**
+   * @class SLArDirectionGenerator
+   * @brief Base class for direction generators
+   *
+   * This class is the base class for all direction generators in SoLAr. It provides
+   * methods to configure the generator, including the setup of the direction
+   * generator.
+   */
   class SLArDirectionGenerator {
     public:
       SLArDirectionGenerator() = default;

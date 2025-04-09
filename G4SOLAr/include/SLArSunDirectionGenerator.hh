@@ -19,6 +19,16 @@
 
 namespace gen{
 namespace direction{
+  /**
+   * @class SLArSunDirectionGenerator
+   * @brief Samples the direction of primary particles from the nadir distribution of the Sun
+   *
+   * This class generates the direction of primary particles based on the
+   * Sun's nadir exposure at SURF. The exposure is passed as a TH1D histogram 
+   * through the `nadir_hist` field in the configuration JSON object, 
+   * where one must specify the `filename` and `objname` fields.
+   *
+   */
   class SLArSunDirectionGenerator : public SLArDirectionGenerator {
     public: 
       inline SLArSunDirectionGenerator() : SLArDirectionGenerator() {}

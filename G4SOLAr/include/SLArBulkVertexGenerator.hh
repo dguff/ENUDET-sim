@@ -19,6 +19,27 @@
 
 namespace gen {
 namespace vertex {
+
+
+/**
+ * @class SLArBulkVertexGenerator
+ * @brief Generates vertexes in a bulk volume
+ *
+ * This class generates vertexes in a bulk volume as defined by a G4VPhysicalVolume.
+ *
+ * The generator is configured using a JSON object, which should contain the following fields:
+ * - `volume`: the name of the physical volume where the vertexes are generated
+ * - `fiducial_fraction`: the fraction of the volume that is used for vertex generation. 
+ *   (only works for box-shape volumes). Setting this value to 1.0 means that the whole 
+ *   volume is used. If smaller than 1, the volume is shrinked by the same amount 
+ *   in all directions until reaching the requested volume fraction.
+ * - `avoid_daughters`: if set to true, the generator will avoid generating vertexes
+ *   inside daughter volumes of the specified volume.
+ * - `material`: the material of the volume. If set, the generator will only generate vertexes
+ *   where the material matches the specified one.
+ * - `time`: the time generator configuration. This is passed to the `SLArTimeGenerator` class.
+ *
+ */
 class SLArBulkVertexGenerator: public SLArVertexGenerator
 {
 public:
