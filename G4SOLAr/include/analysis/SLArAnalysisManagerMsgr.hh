@@ -46,6 +46,9 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithAString*         fCmdPlotXSec      ; 
     G4UIcmdWithAnInteger*       fCmdGeoAnodeDepth ; 
     G4UIcmdWithABool*           fCmdGeoFieldCageVis;
+    G4UIcmdWithABool*           fCmdEnableMCTruthOutput;
+    G4UIcmdWithABool*           fCmdEnableAnodeOutput; 
+    G4UIcmdWithABool*           fCmdEnablePDSOutput;
     G4UIcmdWithABool*           fCmdStoreFullTrajectory;
     G4UIcmdWithAString*         fCmdEnableBacktracker;
     G4UIcmdWithAString*         fCmdRegisterBacktracker;

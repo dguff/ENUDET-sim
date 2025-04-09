@@ -11,15 +11,11 @@
 
 #include "G4RunManager.hh"
 
-//#include "G4UImessenger.hh"
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
-//#include "G4UIcmdWithADouble.hh"
-//#include "G4UIcmdWith3Vector.hh"
-//#include "G4UIcmdWith3VectorAndUnit.hh"
 
 #ifdef SLAR_GDML
 #include "G4GDMLParser.hh"
@@ -31,6 +27,9 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
   fCmdGeoAnodeDepth(nullptr), 
   fCmdGeoFieldCageVis(nullptr),
+  fCmdEnableMCTruthOutput(nullptr),
+  fCmdEnableAnodeOutput(nullptr),
+  fCmdEnablePDSOutput(nullptr),
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr), 
@@ -81,6 +80,18 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdStoreFullTrajectory = 
     new G4UIcmdWithABool(UIManagerPath+"storeFullTrajectory", this);
   fCmdStoreFullTrajectory->SetGuidance("Store full track trajectory");
+
+  fCmdEnableMCTruthOutput = 
+    new G4UIcmdWithABool(UIManagerPath+"enableMCTruthOutput", this);
+  fCmdEnableMCTruthOutput->SetGuidance("Enable MC truth output");
+
+  fCmdEnableAnodeOutput = 
+    new G4UIcmdWithABool(UIManagerPath+"enableAnodeOutput", this);
+  fCmdEnableAnodeOutput->SetGuidance("Enable anode output");
+
+  fCmdEnablePDSOutput = 
+    new G4UIcmdWithABool(UIManagerPath+"enablePDSOutput", this);
+  fCmdEnablePDSOutput->SetGuidance("Enable PDS output");
 
   fCmdEnableBacktracker = 
     new G4UIcmdWithAString(UIManagerPath+"enableBacktracker", this);
@@ -161,6 +172,9 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
   if (fCmdGeoFieldCageVis    ) delete fCmdGeoFieldCageVis    ; 
   if (fCmdStoreFullTrajectory) delete fCmdStoreFullTrajectory;
+  if (fCmdEnableMCTruthOutput) delete fCmdEnableMCTruthOutput;
+  if (fCmdEnableAnodeOutput  ) delete fCmdEnableAnodeOutput  ;
+  if (fCmdEnablePDSOutput    ) delete fCmdEnablePDSOutput    ;
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
@@ -233,6 +247,15 @@ void SLArAnalysisManagerMsgr::SetNewValue
   else if (cmd == fCmdStoreFullTrajectory) {
     SLArAnaMgr->SetStoreTrajectoryFull( G4UIcmdWithABool::GetNewBoolValue(newVal) );
   }
+  else if (cmd == fCmdEnableMCTruthOutput) {
+    SLArAnaMgr->EnableMCTruthOutput( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
+  else if (cmd == fCmdEnableAnodeOutput) {
+    SLArAnaMgr->EnableEventAnodeOutput( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
+  else if (cmd == fCmdEnablePDSOutput) {
+    SLArAnaMgr->EnableEventPDSOutput( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
   else if (cmd == fCmdEnableBacktracker) {
     SLArAnaMgr->ConstructBacktracker( newVal );
   }
@@ -290,7 +313,7 @@ void SLArAnalysisManagerMsgr::SetNewValue
 
   else if (cmd == fCmdSetZeroSuppressionThrs) {
     int thrs = std::atoi( newVal ); 
-    for (auto& anode_itr : SLArAnaMgr->GetEvent().GetEventAnode()) {
+    for (auto& anode_itr : SLArAnaMgr->GetEventAnode().GetAnodeMap()) {
       anode_itr.second.SetZeroSuppressionThreshold( thrs ); 
     }
   }
