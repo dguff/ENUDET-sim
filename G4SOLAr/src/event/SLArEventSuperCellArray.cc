@@ -39,18 +39,6 @@ SLArEventSuperCellArray::~SLArEventSuperCellArray() {
   fSuperCellMap.clear(); 
 }
 
-//int SLArEventSuperCellArray::ConfigSystem(const SLArCfgSuperCellArray& cfg) {
-  //int nsc = 0; 
-  //for (const auto &sc : cfg.GetConstMap()) {
-      //if (fSuperCellMap.count(sc.GetID()) == 0) {
-        //fSuperCellMap.insert( std::make_pair(sc.GetID(), SLArEventSuperCell(sc.GetID())) ); 
-        //nsc++;
-    //}
-  //}
-
-  //return nsc; 
-//}
-
 SLArEventSuperCell& SLArEventSuperCellArray::GetOrCreateEventSuperCell(const int scIdx) {
   auto it = fSuperCellMap.find(scIdx); 
 
@@ -100,12 +88,4 @@ void SLArEventSuperCellArray::SetActive(bool is_active) {
     sc.second.SetActive(is_active); 
   }
 }
-
-//bool SLArEventSuperCellArray::SortHits() {
-  //int isort = true;
-  //for (auto &sc : fSuperCellMap) {
-    //isort *= sc.second->SortHits(); 
-  //}
-  //return isort;
-//}
 

@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventSuperCell
- * @created     : giovedì ott 20, 2022 15:40:04 CEST
+ * @file        : SLArEventSuperCell.cc
+ * @created     : Thur Oct 20, 2022 15:40:04 CEST
  */
 
 #include "event/SLArEventSuperCell.hh"
@@ -28,22 +28,8 @@ double SLArEventSuperCell::GetTime() const {
 }
 
 double SLArEventSuperCell::GetTime(EPhProcess proc) const {
-  double t = -1; 
-  printf("TO BE IMPLEMENTED\n");
-  //if (proc == kCher)
-  //{
-    //for (auto &hit : fHits)
-      //{if (hit->GetProcess()==kCher) t = hit->GetTime(); break;}
-  //}
-  //else if (proc == kScnt){
-    //for (auto &hit : fHits) 
-      //{if (hit->GetProcess()==kScnt) t = hit->GetTime(); break;}
-  //}
-  //else if (proc == kAll && fHits.size() > 0)
-    //t = fHits.at(0)->GetTime();
-
-  return t;
-
+  printf("WARNING: SLArEventSuperCell::GetTime(EPhProcess) not implemented\n");
+  return GetTime();
 }
 
 void SLArEventSuperCell::PrintHits() const
