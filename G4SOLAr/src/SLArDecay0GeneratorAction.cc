@@ -740,7 +740,7 @@ namespace bxdecay0_g4{
     }
 
     else if  (fConfig.spec_activity) {
-      if (auto ptr = dynamic_cast<const SLArBulkVertexGenerator*>(fVtxGen.get())) {
+      if (auto ptr = dynamic_cast<const vertex::SLArBulkVertexGenerator*>(fVtxGen.get())) {
         vol_mass = ptr->GetMassVolumeGenerator();
         //G4cout << "Total volume mass: " << vol_mass/CLHEP::kg << G4endl;
         exp_num_decays = fConfig.spec_activity * vol_mass * total_time;

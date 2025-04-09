@@ -111,7 +111,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
   //G4cout << "Total time: " << total_time << G4endl;
   G4double face_area = 0;
-  if (auto ptr = dynamic_cast<const SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
+  if (auto ptr = dynamic_cast<const vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
     face_area = ptr->GetSurfaceGenerator();
     //G4cout << "Face Area: " << face_area << G4endl;
   }
