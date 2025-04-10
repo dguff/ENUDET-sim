@@ -14,9 +14,6 @@ set_and_check(SOLARSIM_EXT_DIR "@PACKAGE_SOLARSIM_EXT_DIR@")
 # Our library dependencies (contains definitions for IMPORTED targets)
 include("@PACKAGE_SOLARSIM_INSTALL_CMAKE_DIR@/@PROJECT_NAME@Targets.cmake")
 
-# These are IMPORTED targets created by G4SOLArTargets.cmake
-set(SOLARSIM_LIBRARIES SLArMCEvent SLArMCPrimaryInfo)
-
 check_required_components(@PROJECT_NAME@)
 
 
