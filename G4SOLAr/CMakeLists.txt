@@ -272,8 +272,7 @@ install(DIRECTORY ${SOLARSIM_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
 # Copy all assets (geometry, materials, cfg) to the install directory.
 # This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
-
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${SOLARSIM_BIN_DIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/assets DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 #----------------------------------------------------------------------------
 # configure package config
