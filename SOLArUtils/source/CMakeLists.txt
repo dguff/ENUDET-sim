@@ -13,7 +13,6 @@ SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug") 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
   message(STATUS "DEBUG: Adding '-g' option for gdb debugging")
@@ -48,11 +47,12 @@ endif()
 # Define path variables
 
 list(APPEND CMAKE_LIBRARY_PATH ${SOLARSIM_LIB_DIR})
-set(SOLAR_UTILS_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib")
-set(SOLAR_UTILS_BIN_DIR "${CMAKE_INSTALL_PREFIX}")
-set(SOLAR_UTILS_INC_DIR "${PROJECT_SOURCE_DIR}/include")
-set(SOLAR_UTILS_SRC_DIR "${PROJECT_SOURCE_DIR}/src")
+set(SOLAR_UTILS_INC_DIR    "${PROJECT_SOURCE_DIR}/include")
+set(SOLAR_UTILS_SRC_DIR    "${PROJECT_SOURCE_DIR}/src")
 set(SOLAR_UTILS_SCRIPT_DIR "${PROJECT_SOURCE_DIR}/script")
+set(SOLAR_UTILS_BIN_DIR  "${CMAKE_INSTALL_PREFIX}/bin")
+set(SOLAR_UTILS_LIB_DIR  "${CMAKE_INSTALL_PREFIX}/lib")
+set(SOLAR_UTILS_INC_DEST "${CMAKE_INSTALL_PREFIX}/include")
 set(SOLAR_UTILS_INSTALL_CMAKE_DIR "${SOLAR_UTILS_LIB_DIR}/cmake/${PROJECT_NAME}")
 
 include(ExternalProject)
@@ -80,12 +80,13 @@ endif()
 #----------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------
-# configure rootlogon and setup script
-configure_file(
-  ${PROJECT_SOURCE_DIR}/rootlogon.C.in 
-  ${PROJECT_SOURCE_DIR}/rootlogon.C @ONLY)
-#----------------------------------------------------------------------------
-# Build executables
+# Build project
 add_subdirectory(${SOLAR_UTILS_SRC_DIR})
 add_subdirectory(${SOLAR_UTILS_SCRIPT_DIR})
 
+#----------------------------------------------------------------------------
+# Install instructions
+install(DIRECTORY ${SOLAR_UTILS_INC_DIR}
+  DESTINATION ${SOLAR_UTILS_INC_DEST}
+  FILES_MATCHING PATTERN "*.hh" PATTERN "*.h" PATTERN "*.hpp"
+  )

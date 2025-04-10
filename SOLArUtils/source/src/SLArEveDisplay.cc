@@ -120,21 +120,43 @@ namespace display {
     return 0;
   }
 
-  int SLArEveDisplay::LoadMCTruthFile(const TString file_path, const TString tree_key) {
-    if (fMCTruthFile) {
-      fMCTruthFile->Close();
-      fMCTruthTree = nullptr;
-    }
-    fMCTruthFile = new TFile( file_path ); 
-    fMCTruthTree = fMCTruthFile->Get<TTree>( tree_key ); 
-    if (fHitTree) {
-      fMCTruthTree->SetBranchAddress("MCEvent"  , &fMCEvent); 
+  int SLArEveDisplay::LoadMCEventFile(const TString file_path, const TString tree_key) {
+    if (fMCEventFile) {
+      fMCEventFile->Close();
+      fMCEventTree = nullptr;
     }
 
-    for (const auto &itr : *fMCTruthFile->GetListOfKeys()) {
+    fMCEventFile = TFile::Open( file_path ); 
+    fMCEventTree = fMCEventFile->Get<TTree>( tree_key ); 
+
+    if (fHitTree) {
+      if (fMCEventTree->GetBranch("MCTruth") == nullptr) {
+        printf("WARNING: branch MCTruth not found in %s\n", file_path.Data());
+      }
+      else {
+        fMCEventTree->SetBranchAddress("MCTruth"  , &fEvMCTruth);
+      }
+
+      if (fMCEventTree->GetBranch("EventAnode") == nullptr) {
+        printf("WARNING: branch EventAnode not found in %s\n", file_path.Data());
+        return -1;
+      }
+      else {
+        fMCEventTree->SetBranchAddress("EventAnode", &fEvAnodeList);
+      }
+
+      if (fMCEventTree->GetBranch("EventPDS") == nullptr) {
+        printf("WARNING: branch EventPDS not found in %s\n", file_path.Data());
+        return -1;
+      }
+      else {
+        fMCEventTree->SetBranchAddress("EventPDS"  , &fEvPDSList);
+      }
+    }
+
+    for (const auto &itr : *fMCEventFile->GetListOfKeys()) {
       TKey* key = static_cast<TKey*>(itr); 
       
-      printf("obj_name: %s - obj_class: %s\n", key->GetName(), key->GetClassName()); 
       if (strcmp(key->GetClassName(), "SLArCfgAnode") == 0) 
       {
         SLArCfgAnode* cfg_anode = dynamic_cast<SLArCfgAnode*>(key->ReadObj()); 
@@ -312,8 +334,10 @@ namespace display {
   }
 
   int SLArEveDisplay::ReadMCTruth() {
-    fMCEvent->Reset(); 
-    fMCTruthTree->GetEntry( fCurEvent ); 
+    fEvMCTruth->Reset(); 
+    fEvAnodeList->Reset();
+    fEvPDSList->Reset();
+    fMCEventTree->GetEntry( fCurEvent ); 
 
     ReadTracks();
 
@@ -322,96 +346,115 @@ namespace display {
     return 0;
   }
 
-  int SLArEveDisplay::ReadOpHits() {
-    const auto& ev_anodes = fMCEvent->GetEventAnode(); 
-    const auto& ev_pds = fMCEvent->GetEventSuperCellArray(); 
+  int SLArEveDisplay::ReadOpHitsFromOpDetArray(const int idx_array, const SLArEventSuperCellArray& ev_opdet_array)
+  {
+    const auto& cfg_wall = fCfgPDS->GetBaseElement(idx_array); 
+    const ROOT::Math::EulerAngles rot( cfg_wall.GetPhi(), cfg_wall.GetTheta(), cfg_wall.GetPsi() ); 
+    const ROOT::Math::EulerAngles rrot = rot.Inverse();
 
-    int nhit_max = 0; 
+    auto& hitset = fPhotonDetectors.at(idx_array);
 
-    for (const auto& ev_wall_itr : ev_pds) {
-      const auto& idx_wall = ev_wall_itr.first;
-      const auto& ev_wall = ev_wall_itr.second;
-      if (ev_wall.GetNhits() == 0) continue;
+    int nhit_max = 0;
 
-      const auto& cfg_wall = fCfgPDS->GetBaseElement(idx_wall); 
-      const ROOT::Math::EulerAngles rot( cfg_wall.GetPhi(), cfg_wall.GetTheta(), cfg_wall.GetPsi() ); 
-      const ROOT::Math::EulerAngles rrot = rot.Inverse();
+    for (const auto& ev_xa_itr : ev_opdet_array.GetConstSuperCellMap()) {
+      const auto& idx_xa = ev_xa_itr.first; 
+      const auto& ev_xa = ev_xa_itr.second;
 
-      auto& hitset = fPhotonDetectors.at(idx_wall);
+      const auto& cfg_xa = cfg_wall.GetBaseElement(idx_xa); 
 
-      for (const auto& ev_xa_itr : ev_wall.GetConstSuperCellMap()) {
-        const auto& idx_xa = ev_xa_itr.first; 
-        const auto& ev_xa = ev_xa_itr.second;
+      int nhit = ev_xa.GetNhits();
+      if (nhit > nhit_max) nhit_max = nhit;
 
-        const auto& cfg_xa = cfg_wall.GetBaseElement(idx_xa); 
+      const ROOT::Math::XYZVectorD pos = {cfg_xa.GetPhysX(), cfg_xa.GetPhysY(), cfg_xa.GetPhysZ() }; 
+      const ROOT::Math::XYZVectorD size = {cfg_xa.GetSizeX(), cfg_xa.GetSizeY(), cfg_xa.GetSizeZ()}; 
+      ROOT::Math::XYZVectorD size_rot = rrot*size;
+      size_rot.SetXYZ( fabs(size_rot.x()), fabs(size_rot.y()), fabs(size_rot.z()) ); 
+      const ROOT::Math::XYZVectorD pos_center = pos - 0.5*size_rot;
+      printf("[%i] Adding box at (%.0f, %.0f, %.0f) with size [%.0f, %.0f, %.0f]: digi val: %i\n", idx_array,
+          pos.x(), pos.y(), pos.z(), size_rot.x(), size_rot.y(), size_rot.z(), nhit);
 
-        int nhit = ev_xa.GetNhits();
+      hitset->AddBox(pos_center.x(), pos_center.y(), pos_center.z(), size_rot.x(), size_rot.y(), size_rot.z());
+      hitset->DigitValue( nhit );
+    }
+    hitset->RefitPlex(); 
+    hitset->SetPickable(1);
+    hitset->SetAlwaysSecSelect(1);
+
+    return nhit_max;
+  }
+
+  int SLArEveDisplay::ReadOpHitsFromAnode(const int tpc_id, const SLArEventAnode& ev_anode) 
+  {
+    int nhit_max = 0;
+    auto& cfg_anode = fCfgAnodes.at(tpc_id);
+    const auto tpc_index = GetTPCindex(tpc_id);
+
+    const ROOT::Math::EulerAngles rot(cfg_anode->GetPhi(), cfg_anode->GetTheta(), cfg_anode->GetPsi()); 
+    const ROOT::Math::EulerAngles rrot = rot.Inverse();
+
+    for (const auto& ev_mt_itr : ev_anode.GetConstMegaTilesMap()) {
+      const auto& idx_mt = ev_mt_itr.first;
+      const auto& ev_mt = ev_mt_itr.second;
+
+      if (ev_mt.GetNPhotonHits() == 0) continue;
+
+      auto& cfg_mt = cfg_anode->GetBaseElement(idx_mt);
+
+      auto& hitset = fPhotonDetectors.at(tpc_id);
+
+      for (const auto& ev_t_itr : ev_mt.GetConstTileMap()) {
+        const auto& idx_t = ev_t_itr.first;
+        const auto& ev_t = ev_t_itr.second;
+
+        if (ev_t.GetNhits() == 0) continue;
+
+        auto& cfg_t = cfg_mt.GetBaseElement(idx_t); 
+
+        int nhit = ev_t.GetNhits();
         if (nhit > nhit_max) nhit_max = nhit;
 
-        const ROOT::Math::XYZVectorD pos = {cfg_xa.GetPhysX(), cfg_xa.GetPhysY(), cfg_xa.GetPhysZ() }; 
-        const ROOT::Math::XYZVectorD size = {cfg_xa.GetSizeX(), cfg_xa.GetSizeY(), cfg_xa.GetSizeZ()}; 
-        ROOT::Math::XYZVectorD size_rot = rrot*size;
+        const ROOT::Math::XYZVectorD t_pos = {cfg_t.GetPhysX(), cfg_t.GetPhysY(), cfg_t.GetPhysZ() }; 
+        const ROOT::Math::XYZVectorD& tpc_pos = fTPCs[tpc_index].fPosition;
+        const ROOT::Math::XYZVectorD t_size = {cfg_t.GetSizeX(), cfg_t.GetSizeY(), cfg_t.GetSizeZ()}; 
+        ROOT::Math::XYZVectorD size_rot = rrot*t_size;
         size_rot.SetXYZ( fabs(size_rot.x()), fabs(size_rot.y()), fabs(size_rot.z()) ); 
-        const ROOT::Math::XYZVectorD pos_center = pos - 0.5*size_rot;
-        printf("[%i] Adding box at (%.0f, %.0f, %.0f) with size [%.0f, %.0f, %.0f]: digi val: %i\n", idx_wall,
-            pos.x(), pos.y(), pos.z(), size_rot.x(), size_rot.y(), size_rot.z(), nhit);
-
-        hitset->AddBox(pos_center.x(), pos_center.y(), pos_center.z(), size_rot.x(), size_rot.y(), size_rot.z());
-        hitset->DigitValue( nhit );
+        const ROOT::Math::XYZVectorD world_pos = tpc_pos + t_pos - 0.5*size_rot;
+        //printf("[%i] Adding box at (%.0f, %.0f, %.0f) with size [%.0f, %.0f, %.0f]: digi val: %i\n", tpc_id,
+            //world_pos.x(), world_pos.y(), world_pos.z(), size_rot.x(), size_rot.y(), size_rot.z(), nhit);
+        size_rot *= 0.95;
+        hitset->AddBox(world_pos.x(), world_pos.y(), world_pos.z(), size_rot.x(), size_rot.y(), size_rot.z() );
+        hitset->DigitValue( nhit); 
       }
       hitset->RefitPlex(); 
       hitset->SetPickable(1);
       hitset->SetAlwaysSecSelect(1);
     }
 
-    for(const auto& ev_anode_itr : ev_anodes) {
-      const auto& tpc_id = ev_anode_itr.first;
-      const auto& ev_anode = ev_anode_itr.second;
+    return nhit_max;
+  }
 
-      auto& cfg_anode = fCfgAnodes.at(tpc_id);
-      const auto tpc_index = GetTPCindex(tpc_id);
+  int SLArEveDisplay::ReadOpHits() {
+    int nhit_max = 0; 
 
-      const ROOT::Math::EulerAngles rot(cfg_anode->GetPhi(), cfg_anode->GetTheta(), cfg_anode->GetPsi()); 
-      const ROOT::Math::EulerAngles rrot = rot.Inverse();
-
-      for (const auto& ev_mt_itr : ev_anode.GetConstMegaTilesMap()) {
-        const auto& idx_mt = ev_mt_itr.first;
-        const auto& ev_mt = ev_mt_itr.second;
-        if (ev_mt.GetNPhotonHits() == 0) continue;
-
-        auto& cfg_mt = cfg_anode->GetBaseElement(idx_mt);
-        
-        auto& hitset = fPhotonDetectors.at(tpc_id);
-
-        for (const auto& ev_t_itr : ev_mt.GetConstTileMap()) {
-          const auto& idx_t = ev_t_itr.first;
-          const auto& ev_t = ev_t_itr.second;
-
-          if (ev_t.GetNhits() == 0) continue;
-
-          auto& cfg_t = cfg_mt.GetBaseElement(idx_t); 
-
-          int nhit = ev_t.GetNhits();
-          if (nhit > nhit_max) nhit_max = nhit;
-
-          const ROOT::Math::XYZVectorD t_pos = {cfg_t.GetPhysX(), cfg_t.GetPhysY(), cfg_t.GetPhysZ() }; 
-          const ROOT::Math::XYZVectorD& tpc_pos = fTPCs[tpc_index].fPosition;
-          const ROOT::Math::XYZVectorD t_size = {cfg_t.GetSizeX(), cfg_t.GetSizeY(), cfg_t.GetSizeZ()}; 
-          ROOT::Math::XYZVectorD size_rot = rrot*t_size;
-          size_rot.SetXYZ( fabs(size_rot.x()), fabs(size_rot.y()), fabs(size_rot.z()) ); 
-          const ROOT::Math::XYZVectorD world_pos = tpc_pos + t_pos - 0.5*size_rot;
-          printf("[%i] Adding box at (%.0f, %.0f, %.0f) with size [%.0f, %.0f, %.0f]: digi val: %i\n", tpc_id,
-              world_pos.x(), world_pos.y(), world_pos.z(), size_rot.x(), size_rot.y(), size_rot.z(), nhit);
-          size_rot *= 0.95;
-          hitset->AddBox(world_pos.x(), world_pos.y(), world_pos.z(), size_rot.x(), size_rot.y(), size_rot.z() );
-          hitset->DigitValue( nhit); 
-        }
-        hitset->RefitPlex(); 
-        hitset->SetPickable(1);
-        hitset->SetAlwaysSecSelect(1);
+    if (fEvAnodeList != nullptr) 
+    {
+      const auto& ev_anodes = fEvAnodeList->GetAnodeMap(); 
+      for (const auto& ev_anode_itr : ev_anodes) {
+        int nhit = ReadOpHitsFromAnode( ev_anode_itr.first, ev_anode_itr.second );
+        if (nhit > nhit_max) nhit_max = nhit;
       }
     }
-    
+
+    if (fEvPDSList != nullptr) 
+    {
+      const auto& ev_pds = fEvPDSList->GetOpDetArrayMap(); 
+      for (const auto& ev_wall_itr : ev_pds) {
+        if (ev_wall_itr.second.GetNhits() == 0) continue;
+        int nhit = ReadOpHitsFromOpDetArray( ev_wall_itr.first, ev_wall_itr.second );
+        if (nhit > nhit_max) nhit_max = nhit;
+      }
+    }
+
     fPaletteOpHits->SetLimitsScaleMinMax(0, 1.2*nhit_max);
     for (auto& ophitset_itr : fPhotonDetectors) {
       ophitset_itr.second->SetPalette( fPaletteOpHits.get() ); 
@@ -421,7 +464,7 @@ namespace display {
   }
 
   int SLArEveDisplay::ReadTracks() {
-    const auto& primaries = fMCEvent->GetPrimaries();
+    const auto& primaries = fEvMCTruth->GetPrimaries();
 
     for (const auto& p : primaries) {
       auto track_list = std::unique_ptr<TEveTrackList>( 
@@ -433,10 +476,10 @@ namespace display {
       double p_tot = 0.0; 
       for (const auto& p_ : p.GetMomentum()) p_tot += TMath::Sq( p_ ); 
       p_tot = sqrt(p_tot); 
-      printf("%s - vertex @ [%.2f, %.2f, %.2f] m, t = %g ns, direction = [%.2f, %.2f, %.2f]\n", 
-          p.GetName(),
-          p.GetVertex().at(0), p.GetVertex().at(1), p.GetVertex().at(2), p.GetTime(),
-          p.GetMomentum().at(0) / p_tot,  p.GetMomentum().at(1) / p_tot,  p.GetMomentum().at(2) / p_tot); 
+      //printf("%s - vertex @ [%.2f, %.2f, %.2f] m, t = %g ns, direction = [%.2f, %.2f, %.2f]\n", 
+          //p.GetName(),
+          //p.GetVertex().at(0), p.GetVertex().at(1), p.GetVertex().at(2), p.GetTime(),
+          //p.GetMomentum().at(0) / p_tot,  p.GetMomentum().at(1) / p_tot,  p.GetMomentum().at(2) / p_tot); 
 
       for (const auto& t : trajectories) {
         const int pdg_code = t->GetPDGID();

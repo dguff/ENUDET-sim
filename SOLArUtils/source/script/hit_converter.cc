@@ -23,10 +23,11 @@
 #include "physics/SLArElectronDrift.hh"
 
 // event
-#include "event/SLArMCEvent.hh"
 #include "event/SLArEventAnode.hh"
 #include "event/SLArEventMegatile.hh"
 #include "event/SLArEventTile.hh"
+#include "event/SLArEventSuperCell.hh"
+#include "event/SLArEventSuperCellArray.hh"
 
 // hits
 #include "TChannelAnalyzer.hh"
@@ -122,8 +123,10 @@ int main (int argc, char *argv[]) {
         input_file_path.Data()); 
     exit( EXIT_FAILURE ); 
   }
-  SLArMCEvent* mc_ev = nullptr; 
-  mc_tree->SetBranchAddress("MCEvent", &mc_ev); 
+  SLArListEventAnode* anode_list_ev = nullptr; 
+  SLArListEventPDS* pds_list_ev = nullptr;
+  mc_tree->SetBranchAddress("EventAnode", &anode_list_ev); 
+  mc_tree->SetBranchAddress("EventPDS", &pds_list_ev);
   // Setup anode configuration
   std::map<Int_t, SLArCfgAnode*> anodeConfig; 
   std::map<Int_t, TVector3> tpcCenterPos;
@@ -175,10 +178,10 @@ int main (int argc, char *argv[]) {
     hitvars.reset(); 
 
     mc_tree->GetEntry( entry ); 
-    iev = mc_ev->GetEvNumber(); 
+    iev = anode_list_ev->GetEventNumber(); 
 
-    const auto& anodes_map = mc_ev->GetEventAnode(); 
-    const auto& pds_map = mc_ev->GetEventSuperCellArray(); 
+    const auto& anodes_map = anode_list_ev->GetAnodeMap(); 
+    const auto& pds_map = pds_list_ev->GetOpDetArrayMap(); 
 
     for (const auto& anode_itr : anodes_map) {
       itpc = anode_itr.first;
