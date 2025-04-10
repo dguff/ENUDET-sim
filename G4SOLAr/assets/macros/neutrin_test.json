@@ -56,7 +56,7 @@
           "objname" : "bl_h_lar_n"
         },
         "direction" : {
-          "mode" : "isotropic"
+          "type" : "isotropic"
         },
         "vertex_gen" : {
           "type" : "boxsurface", 
@@ -85,7 +85,7 @@
           "objname" : "bl_h_lar_g"
         },
         "direction" : {
-          "mode" : "isotropic"
+          "type" : "isotropic"
         },
         "vertex_gen" : {
           "type" : "boxsurface", 
@@ -115,7 +115,7 @@
           "objname" : "bl_h_lar_g"
         },
         "direction" : {
-          "mode" : "isotropic"
+          "type" : "isotropic"
         },
         "vertex_gen" : {
           "type" : "boxsurface", 
@@ -145,7 +145,7 @@
           "objname" : "bl_h_lar_g"
         },
         "direction" : {
-          "mode" : "isotropic"
+          "type" : "isotropic"
         },
         "vertex_gen" : {
           "type" : "boxsurface", 
@@ -171,7 +171,7 @@
         "target" : {"nuclides" : [1000180400], "atom_fractions" : [1.0]}, 
         "reactions" : ["ve40ArCC_Bhattacharya2009.react"], 
         "direction" : {
-          "mode" : "isotropic"
+          "type" : "isotropic"
         },
         "energy" : {
           "mode" : "mono", 
