@@ -147,10 +147,8 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     auto& slar_ev_anode = SLArAnaMgr->GetEventAnode();
     auto& slar_ev_pds = SLArAnaMgr->GetEventPDS();
     auto& slar_gen_records = SLArAnaMgr->GetGenRecords();
-    slar_ev_mctruth.SetEventNumber(event->GetEventID());
-    slar_ev_anode.SetEventNumber(event->GetEventID());
-    slar_ev_pds.SetEventNumber(event->GetEventID());
-    slar_gen_records.SetEventNumber( event->GetEventID() ); 
+
+    SLArAnaMgr->SetEventNumber(event->GetEventID());
 
     // set global edep, electrons and photon counts per primary
     auto& primaries = slar_ev_mctruth.GetPrimaries(); 
@@ -227,10 +225,7 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
     fParentIDMap.clear(); 
     fExtraProcessInfo.clear(); 
 
-    slar_ev_mctruth.Reset();
-    slar_ev_anode.Reset();
-    slar_ev_pds.Reset();
-    slar_gen_records.Reset();
+    SLArAnaMgr->ResetEvent();
 }
 
 G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& verbose)

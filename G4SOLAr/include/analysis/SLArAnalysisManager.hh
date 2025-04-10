@@ -98,9 +98,7 @@ class SLArAnalysisManager
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const G4String sys);
     backtracker::SLArBacktrackerManager* GetBacktrackerManager(const backtracker::EBkTrkReadoutSystem isys);
     void SetupBacktrackerRecords(); 
-    inline TTree* GetMCTruthTree() const {return  fMCTruthTree;}
-    inline TTree* GetEventAnodeTree() const {return  fEventAnodeTree;}
-    inline TTree* GetEventPDSTree() const {return  fEventPDSTree;}
+    inline TTree* GetEventTree() const {return  fEventTree;}
     inline TTree* GetGenRecordsTree() const {return  fGenTree;}
 
     inline TFile* GetFile() const {return   fRootFile;}
@@ -125,11 +123,26 @@ class SLArAnalysisManager
     }
     inline const std::map<G4String, G4double>& GetPhysicsBiasingMap() {return fBiasing;}
     inline const std::vector<SLArXSecDumpSpec>& GetXSecDumpVector() {return fXSecDump;}
+    inline void SetEventNumber(Int_t event_number) {
+      fEventNumber = event_number;
+      fListMCPrimary.SetEventNumber(event_number);
+      fListEventAnode.SetEventNumber(event_number);
+      fListEventPDS.SetEventNumber(event_number);
+      fListGenRecords.SetEventNumber(event_number);
+    }
+    inline Int_t GetEventNumber() const {return fEventNumber;}
     inline SLArMCTruth& GetMCTruth()  {return fListMCPrimary;}
     inline SLArListEventAnode& GetEventAnode() {return fListEventAnode;}
     inline SLArListEventPDS& GetEventPDS() {return fListEventPDS;}
     inline SLArGenRecordsVector& GetGenRecords() {return fListGenRecords;}
     G4bool Save();
+    inline void ResetEvent() {
+      fListMCPrimary.Reset();
+      fListEventAnode.Reset();
+      fListEventPDS.Reset();
+      fListGenRecords.Reset();
+      fEventNumber = -1;
+    }
 
     // mock fake access
     G4bool FakeAccess();
@@ -172,14 +185,13 @@ class SLArAnalysisManager
     G4int fXSecNPoints = 1000;
 
     TFile* fRootFile = {};
-    TTree* fMCTruthTree = {}; 
-    TTree* fEventAnodeTree = {}; 
-    TTree* fEventPDSTree = {};
+    TTree* fEventTree = {}; 
     TTree* fGenTree = {};
     bool   fEnableMCTruthOutput = true; 
     bool   fEnableEventAnodeOutput = true;
     bool   fEnableEventPDSOutput = true;
     bool   fEnableGenTreeOutput = true;
+    Int_t  fEventNumber = 0;
     SLArMCTruth fListMCPrimary;
     SLArGenRecordsVector fListGenRecords; 
     SLArListEventPDS fListEventPDS;

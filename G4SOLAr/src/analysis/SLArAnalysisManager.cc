@@ -56,9 +56,7 @@ SLArAnalysisManager::SLArAnalysisManager(G4bool isMaster)
   fOutputFileName("solarsim_output.root"), 
   fTrajectoryFull( true ),
   fRootFile(nullptr), 
-  fMCTruthTree(nullptr), 
-  fEventAnodeTree(nullptr),
-  fEventPDSTree(nullptr),
+  fEventTree(nullptr), 
   fGenTree(nullptr),
   fSuperCellBacktrackerManager(nullptr), 
   fVUVSiPMBacktrackerManager(nullptr), 
@@ -88,9 +86,7 @@ SLArAnalysisManager::~SLArAnalysisManager()
   if (fRootFile) {
     if (fRootFile->IsOpen()) {
       fRootFile->cd();
-      if (fMCTruthTree) fMCTruthTree->Write();
-      if (fEventAnodeTree) fEventAnodeTree->Write();
-      if (fEventPDSTree) fEventPDSTree->Write();
+      if (fEventTree) fEventTree->Write();
       if (fGenTree) fGenTree->Write();
 #ifdef SLAR_EXTERNAL
       if (fExternalsTree) fExternalsTree->Write(); 
@@ -120,26 +116,22 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     G4cout << "rootfile not created! Quit."              << G4endl;
     return false;
   }
+  fEventTree = new TTree("EventTree", "SoLAr-sim Event Tree");
+  fEventTree->SetDirectory(fRootFile);
+  printf("EventTree created with AutoFlush set to %lld\n", fEventTree->GetAutoFlush());
+
+  fEventTree->Branch("EvNumber", &fEventNumber, "EvNumber/I");
 
   if (fEnableMCTruthOutput) {
-    fMCTruthTree = new TTree("MCTruthTree", "SoLAr-sim MC Truth");
-    fMCTruthTree->SetDirectory(fRootFile);
-    fMCTruthTree->Branch("MCPrimaries", &fListMCPrimary);
-    printf("MCTruthTree created with AutoFlush set to %lld\n", fMCTruthTree->GetAutoFlush());
+    fEventTree->Branch("MCPrimaries", &fListMCPrimary);
   }
 
   if (fEnableEventAnodeOutput) {
-    fEventAnodeTree = new TTree("EventAnodeTree", "SoLAr-sim Anode Event");
-    fEventAnodeTree->SetDirectory(fRootFile);
-    fEventAnodeTree->Branch("EventAnode", &fListEventAnode);
-    printf("EventAnodeTree created with AutoFlush set to %lld\n", fEventAnodeTree->GetAutoFlush());
+    fEventTree->Branch("EventAnode", &fListEventAnode);
   }
 
   if (fEnableEventPDSOutput) {
-    fEventPDSTree = new TTree("EventPDSTree", "SoLAr-sim PDS Event");
-    fEventPDSTree->SetDirectory(fRootFile);
-    fEventPDSTree->Branch("EventPDS", &fListEventPDS);
-    printf("EventPDSTree created with AutoFlush set to %lld\n", fEventPDSTree->GetAutoFlush());
+    fEventTree->Branch("EventPDS", &fListEventPDS);
   }
 
   if (fEnableGenTreeOutput) {
@@ -199,9 +191,7 @@ G4bool SLArAnalysisManager::Save()
     }
   };
 
-  write_tree(fMCTruthTree);
-  write_tree(fEventAnodeTree);
-  write_tree(fEventPDSTree);
+  write_tree(fEventTree);
   write_tree(fGenTree);
 #ifdef SLAR_EXTERNAL
   write_tree(fExternalsTree);
@@ -263,20 +253,15 @@ G4bool SLArAnalysisManager::FillTree() {
   printf("SLArAnalysisManager::FillTree...");
 #endif
 
-  auto fill_tree = [&](TTree* t) {
-    if (t) {
-      if (t->IsZombie()) {
-        printf("%s is a zombie, RUN!\n", t->GetName());
-      }
-      else {
-        t->Fill();
-      }
+  if (fEventTree) {
+    if (fEventTree->IsZombie()) {
+      printf("%s is a zombie, RUN!\n", fEventTree->GetName());
+      return false;
     }
-  };
-
-  fill_tree(fMCTruthTree);
-  fill_tree(fEventAnodeTree);
-  fill_tree(fEventPDSTree);
+    else {
+      fEventTree->Fill();
+    }
+  }
 
   return true;
 }
