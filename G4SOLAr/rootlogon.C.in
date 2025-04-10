@@ -14,8 +14,7 @@ void rootlogon()
 
   gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArReadoutSystemConfig@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
   gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEventReadout@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
-  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCPrimaryInfo@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
-  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEvent@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCTruth@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
   gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArGenRecords@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
 }
 

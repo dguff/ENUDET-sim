@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
 project(SOLAr-sim LANGUAGES CXX VERSION 0.3.0)
 
-message(STATUS "Building SOLAr-sim version ${PROJECT_VERSION}")
+message(STATUS "Building ${PROJECT_NAME} version ${PROJECT_VERSION}")
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}
   CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -155,7 +155,8 @@ configure_file(SLArUserPath.hh.in ${SOLARSIM_INCLUDE_DIR}/SLArUserPath.hh @ONLY)
 
 #----------------------------------------------------------------------------
 # Configure rootlogon
-configure_file(${SOLARSIM_INCLUDE_DIR}/rootlogon.C.in ${SOLARSIM_ANALSYS_DIR}/rootlogon.C @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/rootlogon.C.in ${SOLARSIM_BIN_DIR}/rootlogon.C @ONLY)
+configure_file(${PROJECT_SOURCE_DIR}/rootrc.in ${CMAKE_INSTALL_PREFIX}/.rootrc @ONLY)
 
 #----------------------------------------------------------------------------
 # Generate SLArEvent and SLArConfig libraries and dictionaries
