@@ -275,42 +275,6 @@ void SLArBaseGenerator::Configure(const GenConfig_t& config) {
   return;
 }
 
-//G4ThreeVector SLArBaseGenerator::SampleDirection(DirectionConfig_t& dir_config) {
-  //SLArRunAction* run_action = (SLArRunAction*)G4RunManager::GetRunManager()->GetUserRunAction(); 
-  //SLArRandom* slar_random = run_action->GetTRandomInterface(); 
-
-  //if (dir_config.mode == EDirectionMode::kFixedDir) {
-    //dir_config.direction_tmp.set( dir_config.axis.x(), dir_config.axis.y(), dir_config.axis.z() ); 
-  //}
-  //else if (dir_config.mode == EDirectionMode::kRandomDir) {
-    //dir_config.direction_tmp = SLArRandom::SampleRandomDirection();
-  //}
-  //else if (dir_config.mode == EDirectionMode::kSunDir) {
-    //// Select nadir angle
-    //const double cos_nadir = fNadirDistribution->GetRandom( slar_random->GetEngine().get() );
-    //const double sin_nadir = sqrt(1-cos_nadir*cos_nadir); 
-    //const double theta = 102.5*TMath::DegToRad(); 
-    //const double cos_theta = cos( theta ); 
-    //const double sin_theta = sin( theta ); 
-    //const double phi = -slar_random->GetEngine()->Uniform(0, M_PI);
-    //const double cos_phi = cos( phi ); 
-    //const double sin_phi = sin( phi );
-
-    //dir_config.direction_tmp.set(
-      //cos_theta*sin_nadir*cos_phi + sin_theta*sin_nadir*sin_phi,
-      //-cos_nadir, 
-      //-sin_theta*sin_nadir*cos_phi + cos_theta*sin_nadir*sin_phi
-      //);
-    //dir_config.direction_tmp = dir_config.direction_tmp.unit(); 
-  //}
-
-  //return dir_config.direction_tmp; 
-//}
-
-//G4ThreeVector SLArBaseGenerator::SampleDirection() {
-  //return SampleDirection( fConfig.dir_config ); 
-//}
-
 G4double SLArBaseGenerator::SampleEnergy(EnergyConfig_t& ene_config) {
   G4double ene = 1.0*CLHEP::MeV;
 
@@ -330,11 +294,6 @@ G4double SLArBaseGenerator::SampleEnergy(EnergyConfig_t& ene_config) {
 G4double SLArBaseGenerator::SampleEnergy() {
   return SampleEnergy(fConfig.ene_config); 
 }
-
-//void SLArBaseGenerator::SourceDirectionConfig(const rapidjson::Value& dir_config) {
-  //SourceDirectionConfig(dir_config, fConfig.dir_config); 
-//}
-
 
 void SLArBaseGenerator::SourceEnergyConfig(const rapidjson::Value& ene_config) {
   SourceEnergyConfig( ene_config, fConfig.ene_config ); 
@@ -499,7 +458,6 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
         fLabel.data(), total_vertices - firstVertex); 
   }
   for (int i=firstVertex; i<total_vertices; i++) {
-    //std::unique_ptr<SLArMCPrimaryInfoUniquePtr> tc_primary = std::make_unique<SLArMCPrimaryInfoUniquePtr>();
     const G4PrimaryVertex* primary_vertex = anEvent->GetPrimaryVertex(i); 
     const G4int np = primary_vertex->GetNumberOfParticle(); 
     if (fVerbose) {
@@ -514,12 +472,12 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       SLArMCPrimaryInfo tc_primary;
 
       if (!particle->GetParticleDefinition()) {
-        tc_primary.SetID  (particle->GetPDGcode()); 
+        tc_primary.SetPDG  (particle->GetPDGcode()); 
         name = ionTable->GetIon( particle->GetPDGcode() )->GetParticleName(); 
         tc_primary.SetName(name);
         tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 
       } else {
-        tc_primary.SetID  (particle->GetPDGcode());
+        tc_primary.SetPDG  (particle->GetPDGcode());
         name = particle->GetParticleDefinition()->GetParticleName(); 
         tc_primary.SetName(name);
         tc_primary.SetTitle(name + " [" + particle->GetTrackID() +"]"); 

@@ -14,7 +14,7 @@ ClassImp(SLArMCPrimaryInfo)
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
   TNamed(),
-  fID(0), fTrkID(0), fGeneratorLabel(), fEnergy(0.),
+  fPDG(0), fTrkID(0), fGeneratorLabel(), fEnergy(0.),
   fTotalEdep(0.), fTotalLArEdep(0), fTotalScintPhotons(0), fTotalCerenkovPhotons(0),
   fVertex(3, 0.), fMomentum(3, 0.)
 {
@@ -23,7 +23,7 @@ SLArMCPrimaryInfo::SLArMCPrimaryInfo() :
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p) 
   : TNamed(p), 
-    fID(p.fID), fTrkID(p.fTrkID), fGeneratorLabel(p.fGeneratorLabel), fEnergy(p.fEnergy), 
+    fPDG(p.fPDG), fTrkID(p.fTrkID), fGeneratorLabel(p.fGeneratorLabel), fEnergy(p.fEnergy), 
     fTime(p.fTime), fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
     fTotalScintPhotons(p.fTotalScintPhotons), fTotalCerenkovPhotons(p.fTotalCerenkovPhotons),
     fVertex(p.fVertex), fMomentum(p.fMomentum) 
@@ -37,7 +37,7 @@ SLArMCPrimaryInfo& SLArMCPrimaryInfo::operator=(const SLArMCPrimaryInfo& p)
 {
   if (this != &p) {
     TNamed::operator=(p);
-    fID = p.fID;
+    fPDG = p.fPDG;
     fTrkID = p.fTrkID;
     fGeneratorLabel = p.fGeneratorLabel;
     fEnergy = p.fEnergy;
@@ -80,7 +80,7 @@ void SLArMCPrimaryInfo::SetMomentum(const double& px, const double& py, const do
 
 void SLArMCPrimaryInfo::ResetParticle()
 {
-  fID           = 0;
+  fPDG           = 0;
   fTrkID        = 0; 
   fGeneratorLabel = "";
   fName         = "";
@@ -92,9 +92,6 @@ void SLArMCPrimaryInfo::ResetParticle()
   fTotalScintPhotons = 0; 
   fTotalCerenkovPhotons = 0; 
 
-  //for (auto &t :fTrajectories) {
-    //delete t;
-  //}
   fTrajectories.clear();
   std::fill(fVertex.begin(), fVertex.end(), 0.); 
   std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
@@ -105,7 +102,7 @@ void SLArMCPrimaryInfo::PrintParticle() const
 {
   std::cout << "SLAr Primary Info: " << std::endl;
   std::cout << "Generator:" << fGeneratorLabel << std::endl;
-  std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
+  std::cout << "Particle:" << fName << ", pdg: " << fPDG <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
   std::cout << "Time    :" << fTime << " (ns)" << std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 
@@ -124,15 +121,6 @@ int SLArMCPrimaryInfo::RegisterTrajectory(std::unique_ptr<SLArEventTrajectory> t
   //printf("Added trj %i to primary register\n", trj->GetTrackID());
   return (int)fTrajectories.size();
 }
-
-//template<>
-//int SLArMCPrimaryInfoPtr::RegisterTrajectory(SLArEventTrajectory* trj)
-//{
-  //fTotalEdep += trj->GetTotalEdep(); 
-  //fTrajectories.push_back( std::move(trj) );
-  ////printf("Added trj %i to primary register\n", trj->GetTrackID());
-  //return (int)fTrajectories.size();
-//}
 
 
 
