@@ -123,7 +123,7 @@ G4bool SLArAnalysisManager::CreateFileStructure()
   fEventTree->Branch("EvNumber", &fEventNumber, "EvNumber/I");
 
   if (fEnableMCTruthOutput) {
-    fEventTree->Branch("MCPrimaries", &fListMCPrimary);
+    fEventTree->Branch("MCTruth", &fListMCPrimary);
   }
 
   if (fEnableEventAnodeOutput) {
