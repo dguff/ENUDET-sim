@@ -4,7 +4,7 @@
 # @created     : Monday Apr 08, 2024 14:11:35 CEST
 ######################################################################
 
-list(APPEND CMAKE_INSTALL_RPATH "${G4SOLAR_LIB_DIR}" "${SOLAR_UTILS_LIB_DIR}" )
+list(APPEND CMAKE_INSTALL_RPATH "${SOLARSIM_LIB_DIR}" "${SOLAR_UTILS_LIB_DIR}" )
 message(STATUS "CMAKE_INSTALL_RPATH: ${CMAKE_INSTALL_RPATH}")
 
 add_executable(hit_converter hit_converter.cc)

@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
-project(SOLArUtils LANGUAGES CXX VERSION 0.1.0)
+project(SOLArUtils LANGUAGES CXX VERSION 0.3.0)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS}
   CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -87,6 +87,6 @@ add_subdirectory(${SOLAR_UTILS_SCRIPT_DIR})
 #----------------------------------------------------------------------------
 # Install instructions
 install(DIRECTORY ${SOLAR_UTILS_INC_DIR}
-  DESTINATION ${SOLAR_UTILS_INC_DEST}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}
   FILES_MATCHING PATTERN "*.hh" PATTERN "*.h" PATTERN "*.hpp"
   )

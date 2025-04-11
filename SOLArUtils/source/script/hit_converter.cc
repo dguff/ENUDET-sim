@@ -125,6 +125,9 @@ int main (int argc, char *argv[]) {
   }
   SLArListEventAnode* anode_list_ev = nullptr; 
   SLArListEventPDS* pds_list_ev = nullptr;
+  mc_tree->SetBranchStatus("*", 0);
+  mc_tree->SetBranchStatus("EventAnode", 1);
+  mc_tree->SetBranchStatus("EventPDS", 1);
   mc_tree->SetBranchAddress("EventAnode", &anode_list_ev); 
   mc_tree->SetBranchAddress("EventPDS", &pds_list_ev);
   // Setup anode configuration
