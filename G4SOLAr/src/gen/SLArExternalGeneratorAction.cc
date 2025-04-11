@@ -132,7 +132,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     G4ThreeVector dir(0, 0, 0);
     fVtxGen->ShootVertex(vtx_pos);
     G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
-    //G4cout << "Vtx time: " << vtx_time << G4endl;
+    G4cout << "Vtx time: " << vtx_time << G4endl;
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
@@ -146,7 +146,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
       //printf("SLArExternalGeneratorAction: face normal is [%.1f, %.1f, %.1f]\n", 
       //face_normal.x(), face_normal.y(), face_normal.z()); 
 
-      while ( dir.dot(face_normal) < 0 ) {
+      while ( dir.dot(face_normal) <= 0 ) {
         dir = SLArRandom::SampleRandomDirection(); 
       }
     }
@@ -154,10 +154,10 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     fDirGen->SetTmpDirection(dir);
     //G4cout << "Momentum direction is: " << dir << G4endl; 
     fParticleGun->SetParticleDefinition(fParticleDef); 
-    fParticleGun->SetParticleMomentumDirection( dir ); 
     fParticleGun->SetParticlePosition(vtx_pos); 
-    fParticleGun->SetParticleEnergy(fConfig.ene_config.energy_tmp); 
     fParticleGun->SetParticleTime(vtx_time); 
+    fParticleGun->SetParticleEnergy(fConfig.ene_config.energy_tmp); 
+    fParticleGun->SetParticleMomentumDirection( dir ); 
 
     fParticleGun->GeneratePrimaryVertex(ev); 
 
