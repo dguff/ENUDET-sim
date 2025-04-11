@@ -137,7 +137,7 @@ int main (int argc, char *argv[]) {
 
   auto geometry_str = input_file->Get<TObjString>("geometry"); 
   rapidjson::Document d; 
-  d.Parse( geometry_str->GetString() ); 
+  d.Parse<rapidjson::kParseCommentsFlag>( geometry_str->GetString() ); 
   if (d.HasMember("TPC")) {
     for (const auto& jtpc : d["TPC"].GetArray()) {
       printf("found tpc with id %i\n", jtpc["copyID"].GetInt()); 
