@@ -299,7 +299,6 @@ G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ve
       const int tIdx = tCfg.GetIdx();
 
       // Compute unique identifier of SiPM replacing cell nr
-      dstHit.DumpInfo();
       const int sipm_nr = n_cell_row * dstHit.GetRowCellNr() + dstHit.GetCellNr();
       dstHit.SetCellNr( sipm_nr );
 
@@ -331,17 +330,6 @@ G4int SLArEventAction::RecordEventReadoutTile(const G4Event* ev, const G4int& ve
       
       n_hits++;
     }
-
-    // Sort hits on PMTs
-    //for (auto &evAnode : SLArAnaMgr->GetEvent()->GetEventAnode()) {
-      //evAnode.second->SortHits();
-    //}
-    
-
-    // Print diagnostics
-    //G4int printModulo = 
-      //G4RunManager::GetRunManager()->GetPrintProgress();
-    //if ( printModulo==0 || ev->GetEventID() % printModulo != 0) return n_hits;
   }
 
   if (verbose > 1) printf("SLArEventAction::RecordEventReadoutTile() DONE\n");

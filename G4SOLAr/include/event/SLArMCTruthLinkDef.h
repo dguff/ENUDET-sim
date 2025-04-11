@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArMCPrimaryInfoLinkDef
- * @created     : venerdì feb 14, 2020 17:28:47 CET
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArMCTruthLinkDef.h
+ * @created     : Fri Feb 14, 2020 17:28:47 CET
  */
 
 
