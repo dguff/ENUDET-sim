@@ -50,14 +50,14 @@ find_package(ROOT REQUIRED COMPONENTS RIO Core)
 if (DEFINED ENV{CRYHOME}) 
   set(SLAR_CRY_INTERFACE "ON")
   message(STATUS "Found CRY package at $ENV{CRYHOME}. Building CRY interface classes")
-  set(CRY_INCLUDE_DIRS $ENV{CRYHOME}/src)
+  set(CRY_INCLUDE_DIR $ENV{CRYHOME}/src)
   set(CRY_LIBRARIES $ENV{CRYHOME}/lib/libCRY.a)
 endif()
 
 if (DEFINED ENV{RADSRC_HOME})
   set(SLAR_RADSRC_INTERFACE "ON")
   message(STATUS "Found RadSrc package at $ENV{RADSRC_HOME}. Building RadSrc interface classes")
-  set(RADSRC_INCLUDE_DIRS $ENV{RADSRC_HOME}/src/libradsrc)
+  set(RADSRC_INCLUDE_DIR $ENV{RADSRC_HOME}/src/libradsrc)
   set(RADSRC_LIBRARIES $ENV{RADSRC_HOME}/lib/libradsrc.a)
 endif()
 
@@ -235,6 +235,12 @@ target_include_directories(solar_sim PUBLIC
   $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}/gen>
   $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}/physics>
 )
+if (SLAR_CRY_INTERFACE)
+  target_include_directories(solar_sim PRIVATE ${CRY_INCLUDE_DIR})
+endif()
+if (SLAR_RADSRC_INTERFACE)
+  target_include_directories(solar_sim PRIVATE ${RADSRC_INCLUDE_DIR})
+endif()
 
 # Add definitions
 target_compile_definitions(solar_sim 

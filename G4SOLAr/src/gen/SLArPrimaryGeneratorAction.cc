@@ -19,10 +19,10 @@
 //#include "SLArBackgroundGeneratorAction.hh"
 #include "SLArGENIEGeneratorAction.hh"
 #ifdef SLAR_CRY
-#include "cry/SLArCRYGeneratorAction.hh"
+#include "SLArCRYGeneratorAction.hh"
 #endif
 #ifdef SLAR_RADSRC
-#include "radsrc/SLArRadSrcGeneratorAction.hh"
+#include "SLArRadSrcGeneratorAction.hh"
 #endif
 
 #include "Randomize.hh"

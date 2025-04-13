@@ -5,19 +5,24 @@
  */
 
 
-#include <radsrc/SLArRadSrcGeneratorAction.hh>
-#include <G4RandomTools.hh>
-#include <G4EventManager.hh>
-#include <G4Event.hh>
-#include <G4ParticleTable.hh>
-#include <G4Geantino.hh>
-#include <G4RandomTools.hh>
+#include "gen/SLArRadSrcGeneratorAction.hh"
+#include "gen/SLArIsotropicDirectionGenerator.hh"
+#include "gen/SLArBulkVertexGenerator.hh"
+#include "gen/SLArBoxSurfaceVertexGenerator.hh"
+#include "gen/SLArGPSVertexGenerator.hh"
+#include "analysis/SLArAnalysisManager.hh"
+#include "G4RandomTools.hh"
+#include "G4EventManager.hh"
+#include "G4Event.hh"
+#include "G4ParticleTable.hh"
+#include "G4Geantino.hh"
+#include "G4RandomTools.hh"
 
 #include <cstdio>
 #include <fstream>
-#include <rapidjson/document.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/prettywriter.h>
+#include "rapidjson/document.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 
 //----------------------------------------------------------------------------//
 namespace gen {
@@ -87,23 +92,63 @@ void SLArRadSrcGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 		"RADSRC has not been defined",RunMustBeAborted,
 		" see the interface manual to insure that your input is formatted correctly");
   }
+  SLArAnalysisManager* mngr = SLArAnalysisManager::Instance();
+  auto& gen_status_vec = mngr->GetGenRecords();
 
-  G4double energy = ::radsrc::CApi::getPhoton(gen.get(), local_rand)  * CLHEP::keV;
-  particleGun->SetParticleEnergy(energy);
-  //
-  G4double phi = 2.0*CLHEP::pi*G4UniformRand();
-  G4double costheta = 2.0*G4UniformRand()-1.0;
-  G4double sintheta = pow(1.0-pow(costheta,2.0),0.5);
-  G4ThreeVector vtx;
-  fVtxGen->ShootVertex( vtx );
-  particleGun->SetParticlePosition( vtx );
-  
-  phi = 2.0*CLHEP::pi*G4UniformRand();
-  costheta = 2.0*G4UniformRand()-1.0;
-  sintheta = sqrt(1.0-costheta*costheta);
-  particleGun->SetParticleMomentumDirection(G4ThreeVector(costheta,sintheta*cos(phi),sintheta*sin(phi)));
-  particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
-  particleGun->GeneratePrimaryVertex(anEvent);
+  int num_decays = 0;
+
+  if (fConfig.n_decays != 0) {
+    num_decays = fConfig.n_decays;
+  }
+  else if  (fConfig.spec_activity) {
+    G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
+    if (auto ptr = dynamic_cast<const vertex::SLArBulkVertexGenerator*>(fVtxGen.get())) {
+      G4double vol_mass = ptr->GetMassVolumeGenerator();
+      //G4cout << "Total volume mass: " << vol_mass/CLHEP::kg << G4endl;
+      G4int exp_num_decays = fConfig.spec_activity * vol_mass * total_time;
+      //G4cout << "Expected number of decays: " << exp_num_decays << G4endl;
+      num_decays = CLHEP::RandPoisson::shoot(exp_num_decays);
+      //G4cout << "Number of decays: " << num_decays << G4endl;
+    }
+    else {
+      std::cerr << "ERROR: Activity set but no bulk generator employed!" << '\n';
+      exit(EXIT_FAILURE);
+    }
+  }
+  else if (fConfig.flux > 0.0) {
+    G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
+    G4double face_area = 0;
+    if (auto ptr = dynamic_cast<const vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
+      face_area = ptr->GetSurfaceGenerator();
+    }
+    else {
+      std::cerr << "ERROR: flux set but no box generator employed!" << '\n';
+      exit(EXIT_FAILURE);
+    }
+    G4double expected_particles = fConfig.flux * total_time * face_area;
+    num_decays = CLHEP::RandPoisson::shoot(expected_particles);
+  }
+  else {
+    std::cerr << "ERROR: number decays nor activity nor flux not set!" << '\n';
+    exit(EXIT_FAILURE);
+  }
+
+  for (size_t i = 0; i < num_decays; i++ ) {
+    G4double energy = ::radsrc::CApi::getPhoton(gen.get(), local_rand)  * CLHEP::keV;
+    particleGun->SetParticleEnergy(energy);
+    //
+    G4ThreeVector vtx;
+    fVtxGen->ShootVertex( vtx );
+    particleGun->SetParticlePosition( vtx );
+
+    G4ThreeVector dir;
+    fDirGen->ShootDirection( dir );
+    particleGun->SetParticleMomentumDirection( dir );
+    particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
+    particleGun->GeneratePrimaryVertex(anEvent);
+
+    gen_status_vec.AddRecord(GetGeneratorEnum(), fLabel);
+  }
 }
 
 void SLArRadSrcGeneratorAction::RadSrcConfig_t::to_input() {
@@ -135,6 +180,23 @@ void SLArRadSrcGeneratorAction::RadSrcConfig_t::to_input() {
  }
 
 void SLArRadSrcGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
+  if (config.HasMember("n_decays")) {
+    fConfig.n_particles = config["n_decays"].GetInt(); 
+    fConfig.n_decays = fConfig.n_particles;
+  }
+  else if (config.HasMember("n_particles")) {
+    fConfig.n_particles = config["n_particles"].GetInt(); 
+    fConfig.n_decays = fConfig.n_particles;
+  }
+
+  if (config.HasMember("specific_activity")) {
+    fConfig.spec_activity = unit::ParseJsonVal(config["specific_activity"]); 
+  }
+
+  if (config.HasMember("flux")) {
+    fConfig.flux = unit::ParseJsonVal(config["flux"]);
+  }
+
   if ( !config.HasMember("isotopes")) {
     throw std::invalid_argument("radsrc configuration missing mandatory \"isotopes\" field\n");
   } else {
@@ -157,7 +219,6 @@ void SLArRadSrcGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
       return;
     }
   }
-
   if (config.HasMember("age")) {
     fConfig.age = config["age"].GetDouble();
   }
@@ -184,7 +245,14 @@ void SLArRadSrcGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
-    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
+  }
+
+  if (config.HasMember("direction")) {
+    SetupDirectionGenerator( config["direction"] );
+  }
+  else {
+    fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
   }
   
   return;

@@ -4,16 +4,18 @@
  * @created     : Wednesday Mar 13, 2024 17:49:49 CET
  */
 
-#include "cry/SLArCRYGeneratorAction.hh"
-#include "detector/SLArGeoUtils.hh"
+#include "gen/SLArCRYGeneratorAction.hh"
+#include "gen/SLArIsotropicDirectionGenerator.hh"
+#include "analysis/SLArAnalysisManager.hh"
+#include "geo/SLArGeoUtils.hh"
 #include "G4RandomTools.hh"
 #include "G4EventManager.hh"
 #include "G4Event.hh"
 #include "G4ParticleTable.hh"
 #include "G4RandomTools.hh"
 
-#include "cstdio"
-#include "fstream"
+#include <cstdio>
+#include <fstream>
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
@@ -118,13 +120,18 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   bool target_hit = false;
   bool track_hit = false;
 
-  while (target_hit == false) {
+  int cosmics_counter = 0; 
+
+  SLArAnalysisManager* slar_ana_mgr = SLArAnalysisManager::Instance();
+  auto& gen_status_vec = slar_ana_mgr->GetGenRecords();
+
+  while (cosmics_counter < fConfig.n_particles) {
     vect->clear();
     gen->genEvent(vect);
     for ( unsigned j=0; j<vect->size(); j++) {
       particleName=CRYUtils::partName((*vect)[j]->id());
 
-      if (verbose) {
+      //if (verbose) {
         G4cout << "  "          << particleName << " "
           << "charge="      << (*vect)[j]->charge() << " "
           << std::setprecision(4)
@@ -134,7 +141,7 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
           << " " << "direction cosines "
           << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v())
           << " " << G4endl;
-      }
+      //}
 
       fVtxGen->ShootVertex(vertex);
       direction.set((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v());
@@ -159,6 +166,17 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
         particleGun->SetParticleTime( fVtxGen->GetTimeGenerator().SampleTime() );
         particleGun->GeneratePrimaryVertex(anEvent);
         delete (*vect)[j];
+
+        // Store CRY direction in direction generator variable
+        fDirGen->SetTmpDirection(direction);
+        fConfig.ene_config.energy_tmp = particleGun->GetParticleEnergy();
+
+        // Export energy and direction in gen record
+        gen_status_vec.AddRecord(GetGeneratorEnum(), fLabel);
+
+        cosmics_counter++;
+        printf("[gen] %s primary generator action produced %i vertex(ices)\n", 
+            fLabel.data(), cosmics_counter);
       }
     }
   }
@@ -249,12 +267,14 @@ void SLArCRYGeneratorAction::SourceConfiguration(const rapidjson::Value& config)
     fConfig.altitude = altitude;
   }
 
+  if (config.HasMember("n_particles")) {
+    fConfig.n_particles = config["n_particles"].GetInt();
+  }
   if (config.HasMember("n_particles_min")) {
     fConfig.n_particles_min = config["n_particles_min"].GetInt(); 
   }
-
   if (config.HasMember("n_particles_max")) {
-    fConfig.n_particles_min = config["n_particles_max"].GetInt(); 
+    fConfig.n_particles_max = config["n_particles_max"].GetInt(); 
   }
 
   if (config.HasMember("box_length")) {
@@ -273,8 +293,10 @@ void SLArCRYGeneratorAction::SourceConfiguration(const rapidjson::Value& config)
     SetupVertexGenerator( config["vertex_gen"] ); 
   }
   else {
-    fVtxGen = std::make_unique<SLArPointVertexGenerator>();
+    fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
   }
+
+  fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
 
   return;
 }

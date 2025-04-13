@@ -25,11 +25,14 @@ class SLArRadSrcGeneratorAction : public SLArBaseGenerator
 {
   public: 
     struct RadSrcConfig_t : public GenConfig_t {
+      G4int n_decays = 0; //!< Number of decays to simulate
+      G4double flux = 0.0; //!< Flux in particles per unit area per unit time
       std::map<G4String, G4double> isotopes;
-      G4double age = 10000; 
-      G4bool add_brem = true;
-      G4double min_energy = 0;
-      G4double max_energy = 0;
+      G4double age = 4.9e9; //!< Age in years
+      G4bool add_brem = true; //!< Add bremsstrahlung
+      G4double min_energy = 0; //!< Min energy in MeV
+      G4double max_energy = 0; //!< Max energy in MeV
+      G4double  spec_activity = 0; //!< Decaying isotope specific activity (Bq/kg) 
       G4String radsrc_mess_input = {}; 
       void to_input();
     }; 
