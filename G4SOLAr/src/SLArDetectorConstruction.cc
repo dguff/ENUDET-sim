@@ -152,6 +152,17 @@ void SLArDetectorConstruction::Init() {
   InitExpHall(*jhall);
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // Initialise CRTs
+  // --JM
+
+  if (d.HasMember("CRT"))
+  {
+    G4cout << "SLArDetectorConstruction::Init CRT" << G4endl; 
+    InitCRT(d["CRT"]);
+  }
+
+
+  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // Initialize TPC objects
   G4cout << "SLArDetectorConstruction::Init TPC" << G4endl;
   InitTPC(d["TPC"]); 
@@ -206,6 +217,18 @@ void SLArDetectorConstruction::InitTPC(const rapidjson::Value& jtpc) {
   }
 
 }
+
+// --JM
+void SLArDetectorConstruction::InitCRT(const rapidjson::Value &jCRT) 
+{
+  assert(jCRT.IsArray());
+
+  for (auto &crt : jCRT.GetArray()) {
+    SLArDetCRT *detCRT = new SLArDetCRT();
+    detCRT->Init(crt);
+    fCRT.insert( std::make_pair(detCRT->GetID(), detCRT) );
+  }
+} 
 
 void SLArDetectorConstruction::InitCathode(const rapidjson::Value& jcathode) {
   assert(jcathode.IsArray()); 
@@ -437,6 +460,25 @@ void SLArDetectorConstruction::ConstructCathode() {
   }
 }
 
+void SLArDetectorConstruction::ConstructCRT() // --JM
+{
+
+  for (auto &crt : fCRT) {
+    crt.second->BuildMaterial(fMaterialDBFile);
+    crt.second->BuildCRT();
+ 
+    auto geoinfo = crt.second->GetGeoInfo();
+    crt.second->GetModPV(
+        "CRT_pv", 0,
+        G4ThreeVector(geoinfo->GetGeoPar("crt_pos_x"),
+                      geoinfo->GetGeoPar("crt_pos_y"),
+                      geoinfo->GetGeoPar("crt_pos_z")),
+        fWorldLog, 0);
+    crt.second->SetVisAttributes();
+  }
+
+}
+
 /**
  * @details Construct the world volume, build and place the 
  * SLArDetectorConstruction::fTPC object. 
@@ -518,6 +560,9 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
         fDetector->GetModLV(), false, tpc.first);
     tpc.second->SetVisAttributes(); 
   }
+
+  G4cout << "\nSLArDetectorConstruction: Building the CRT" << G4endl;
+  ConstructCRT();
 
   // 3. Build and place the "conventional" Photon Detection System 
   if (fSuperCell) BuildAndPlaceSuperCells();

@@ -147,6 +147,7 @@ include_directories(${G4SOLAR_INCLUDE_DIR}
                     ${G4SOLAR_INCLUDE_DIR}/detector/TPC
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode
+		    ${G4SOLAR_INCLUDE_DIR}/detector/CRT
                     ${G4SOLAR_INCLUDE_DIR}/config
                     ${G4SOLAR_INCLUDE_DIR}/event
                     ${G4SOLAR_INCLUDE_DIR}/physics
@@ -173,6 +174,7 @@ file(GLOB sources   ${G4SOLAR_SRC_DIR}/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/Hall/*.cc 
                     ${G4SOLAR_SRC_DIR}/detector/TPC/*.cc
+		    ${G4SOLAR_SRC_DIR}/detector/CRT/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/SuperCell/*.cc
                     ${G4SOLAR_SRC_DIR}/detector/Anode/*.cc
 )
@@ -186,6 +188,7 @@ file(GLOB headers   ${G4SOLAR_INCLUDE_DIR}/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Hall/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/TPC/*.hh
+                    ${G4SOLAR_INCLUDE_DIR}/detector/CRT/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/SuperCell/*.hh
                     ${G4SOLAR_INCLUDE_DIR}/detector/Anode/*.hh
                     )

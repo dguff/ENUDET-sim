@@ -19,6 +19,43 @@
     {"name" : "inner_size_z", "val" : 15.0, "unit" : "m"}
   ]
   },
+    "CRT" : [
+	{"copyID" : 60,
+	 "position": {"xyz" : [0, 5.5, 0], "unit" : "m"},
+	 "dimensions" : [
+             {"name" : "crt_x"  , "val" : 12, "unit" :  "m"},
+             {"name" : "crt_y"  , "val" : 0.25, "unit" :  "m"},
+             {"name" : "crt_z"  , "val" : 12, "unit" :  "m"}
+	 ]},
+	{"copyID" : 61,
+	 "position": {"xyz" : [6, 0, 0], "unit" : "m"},
+	 "dimensions" : [
+             {"name" : "crt_x"  , "val" : 0.25, "unit" :  "m"},
+             {"name" : "crt_y"  , "val" : 9, "unit" :  "m"},
+             {"name" : "crt_z"  , "val" : 10, "unit" :  "m"}
+	 ]},
+	{"copyID" : 62,
+	 "position": {"xyz" : [-6, 0, 0], "unit" : "m"},
+	 "dimensions" : [
+             {"name" : "crt_x"  , "val" : 0.25, "unit" :  "m"},
+             {"name" : "crt_y"  , "val" : 9, "unit" :  "m"},
+             {"name" : "crt_z"  , "val" : 10, "unit" :  "m"}
+	 ]},
+	{"copyID" : 63,
+	 "position": {"xyz" : [0, 0, 6], "unit" : "m"},
+	 "dimensions" : [
+             {"name" : "crt_x"  , "val" : 12, "unit" :  "m"},
+             {"name" : "crt_y"  , "val" : 9, "unit" :  "m"},
+             {"name" : "crt_z"  , "val" : 0.25, "unit" :  "m"}
+	 ]},
+	{"copyID" : 64,
+	 "position": {"xyz" : [0, 0, -6], "unit" : "m"},
+	 "dimensions" : [
+             {"name" : "crt_x"  , "val" : 12, "unit" :  "m"},
+             {"name" : "crt_y"  , "val" : 9, "unit" :  "m"},
+             {"name" : "crt_z"  , "val" : 0.25, "unit" :  "m"}
+	 ]}
+    ],
   "TPC" : [
     {"copyID" : 10, 
       "position": {"xyz" : [-180.05, 0, 0], "unit" : "cm"},
