@@ -852,6 +852,11 @@ namespace bxdecay0_g4{
 
     if (config.HasMember("n_decays")) {
       fConfig.n_decays = config["n_decays"].GetInt(); 
+      fConfig.n_particles = fConfig.n_decays;
+    }
+    else if (config.HasMember("n_particles")) {
+      fConfig.n_particles = config["n_particles"].GetInt();
+      fConfig.n_decays = fConfig.n_particles;
     }
 
     if (config.HasMember("specific_activity")) {

@@ -349,6 +349,14 @@ const rapidjson::Document SLArGPSVertexGenerator::ExportConfig() const {
     jsrc.CopyFrom( src_info, dalloc );
     vtx_info.AddMember("source", jsrc, dalloc);
   }
+  else if ( gen_type == "Surface" )
+  {
+    rapidjson::Document src_info = ExportConfigPlaneSource();
+    rapidjson::Value jsrc; jsrc.SetObject();
+    jsrc.CopyFrom( src_info, dalloc );
+    vtx_info.AddMember("source", jsrc, dalloc);
+  }
+
   else if ( gen_type == "Volume" )
   {
     rapidjson::Document src_info = ExportConfigVolumeSource();
@@ -380,6 +388,7 @@ void SLArGPSVertexGenerator::Print() const
   if (gen_type == "Point") PrintConfigPointSource();
   else if (gen_type == "Beam") PrintConfigBeamSource();
   else if (gen_type == "Plane") PrintConfigPlaneSource();
+  else if (gen_type == "Surface") PrintConfigPlaneSource();
   else if (gen_type == "Volume") PrintConfigVolumeSource();
   else {
     G4String msg = "SLArGPSVertexGenerator::Print: ";

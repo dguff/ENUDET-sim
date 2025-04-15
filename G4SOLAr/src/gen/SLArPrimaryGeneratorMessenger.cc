@@ -6,24 +6,24 @@
 
 
 #include <cstdlib>
-#include <SLArPrimaryGeneratorMessenger.hh>
+#include "SLArPrimaryGeneratorMessenger.hh"
 
-#include <SLArPrimaryGeneratorAction.hh>
+#include "SLArPrimaryGeneratorAction.hh"
 #ifdef SLAR_CRY
-#include <cry/SLArCRYGeneratorAction.hh>
+#include "SLArCRYGeneratorAction.hh"
 #endif
-#include <SLArBulkVertexGenerator.hh>
-#include <CLHEP/Units/SystemOfUnits.h>
-#include <G4UIdirectory.hh>
-#include <G4UIcmdWithADoubleAndUnit.hh>
-#include <G4UIcmdWith3VectorAndUnit.hh>
-#include <G4UIcmdWith3Vector.hh>
-#include <G4UIcmdWithAString.hh>
-#include <G4UIcmdWithADouble.hh>
-#include <G4UIcmdWithAnInteger.hh>
-#include <G4UIcmdWithABool.hh>
-#include <G4UIcmdWithAnInteger.hh>
-#include <G4UIcmdWithoutParameter.hh>
+#include "SLArBulkVertexGenerator.hh"
+#include "CLHEP/Units/SystemOfUnits.h"
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4UIcmdWith3VectorAndUnit.hh"
+#include "G4UIcmdWith3Vector.hh"
+#include "G4UIcmdWithAString.hh"
+#include "G4UIcmdWithADouble.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithABool.hh"
+#include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithoutParameter.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
