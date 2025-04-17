@@ -631,7 +631,8 @@ WARN_LOGFILE           =
 INPUT                  = "./../G4SOLAr/include/" \
                          "./../G4SOLAr/src" \
                          "./../README.md" \ 
-                         "./SOLAr-output.md"
+                         "./SOLAr-output.md" \
+                         "./SOLAr-generators.md"
 
 FILE_PATTERNS          = *.c \
                          *.cc \

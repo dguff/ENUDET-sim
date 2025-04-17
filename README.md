@@ -114,6 +114,18 @@ their number, the output file, etc. A collection of examples can
 be found in the `macros/` folder. The commands defined in the messenger
 classes are briefly commented in the macro files. 
 
+## Documentation
+
+You can locally build the `SOLAr-sim` documentation using `doxygen`.
+By running the following command in the `docs` folder, you will generate
+the documentation in the `html` format, available in the `docs/html` folder.
+```bash
+$ cd docs
+$ doxygen solar-sim-doc.doxy
+```
+You can open the `index.html` file in your browser to navigate the documentation.
+
+
 ## Using SOLAr-sim
 
 SOLAr-sim is distributed under MIT license. If you use it for your research, please
