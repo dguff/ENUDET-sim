@@ -50,7 +50,7 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     void SetGENIEEvntExt(G4int evntID);  
     void Initialize();
 
-    G4String WriteConfig() const override;
+    //G4String WriteConfig() const override;
 
     virtual void GeneratePrimaries(G4Event* evnt) override;
 

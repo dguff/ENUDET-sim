@@ -59,27 +59,29 @@ void SLArGENIEGeneratorAction::Configure() {
   m_gtree->SetBranchAddress("EvtVtx",&gVar.vtx);
 }
 
-G4String SLArGENIEGeneratorAction::WriteConfig() const {
-  G4String config_str = "";
-
-  rapidjson::Document d; 
-  d.SetObject();
-  rapidjson::StringBuffer buffer;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-  G4String gen_type = GetGeneratorType();
-
-  d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator()); 
-  d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
-
-  rapidjson::Document dtree = fConfig.tree_info.ExportConfig(); 
-  rapidjson::Value jtree; jtree.CopyFrom(dtree, d.GetAllocator()); 
-  d.AddMember("genie_tree_info", jtree, d.GetAllocator());
-  d.AddMember("tree_first_entry", fConfig.tree_first_entry, d.GetAllocator()); 
-
-  d.Accept(writer);
-  config_str = buffer.GetString();
-  return config_str;
-}
+/*
+ *G4String SLArGENIEGeneratorAction::WriteConfig() const {
+ *  G4String config_str = "";
+ *
+ *  rapidjson::Document d; 
+ *  d.SetObject();
+ *  rapidjson::StringBuffer buffer;
+ *  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+ *  G4String gen_type = GetGeneratorType();
+ *
+ *  d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator()); 
+ *  d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
+ *
+ *  rapidjson::Document dtree = fConfig.tree_info.ExportConfig(); 
+ *  rapidjson::Value jtree; jtree.CopyFrom(dtree, d.GetAllocator()); 
+ *  d.AddMember("genie_tree_info", jtree, d.GetAllocator());
+ *  d.AddMember("tree_first_entry", fConfig.tree_first_entry, d.GetAllocator()); 
+ *
+ *  d.Accept(writer);
+ *  config_str = buffer.GetString();
+ *  return config_str;
+ *}
+ */
 
 
 //***********************************************************************
@@ -101,6 +103,8 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
   vtx.set(gVar.vtx[0]*CLHEP::m, gVar.vtx[1]*CLHEP::m, gVar.vtx[2]*CLHEP::m);
   std::vector<G4PrimaryVertex*> primary_vertices;
 
+  const double gen_time = fVtxGen->GetTimeGenerator().SampleTime();
+
   for (int i=0; i<gVar.nPart; i++){
 
     G4bool pdg_valid = SLArBaseGenerator::PDGCodeIsValid( gVar.pdg[i] ); 
@@ -115,7 +119,11 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
           gVar.p4[i][1]*CLHEP::GeV,
           gVar.p4[i][2]*CLHEP::GeV,
           gVar.p4[i][3]*CLHEP::GeV);
-      auto vertex = new G4PrimaryVertex(vtx, 0.); // Not sure which is better here
+
+      // Set the time of the primary particle
+      double time = gen_time;
+
+      auto vertex = new G4PrimaryVertex(vtx, time); // Not sure which is better here
       //    auto vertex = new G4PrimaryVertex(vtx, gVar.vtx[3]); 
       vertex->SetPrimary(particle);
       primary_vertices.push_back(vertex);
