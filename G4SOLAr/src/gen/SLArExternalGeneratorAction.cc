@@ -138,7 +138,6 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
     fConfig.ene_config.energy_tmp = SampleEnergy(fConfig.ene_config); 
 
-
     if (dynamic_cast<vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())) {
       auto face = static_cast<vertex::SLArBoxSurfaceVertexGenerator*>(fVtxGen.get())->GetVertexFace(); 
       const auto& face_normal = geo::BoxFaceNormal[face]; 
@@ -149,6 +148,9 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
       while ( dir.dot(face_normal) <= 0 ) {
         dir = SLArRandom::SampleRandomDirection(); 
       }
+    }
+    else {
+      fDirGen->ShootDirection(dir);
     }
 
     fDirGen->SetTmpDirection(dir);
