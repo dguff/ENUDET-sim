@@ -1,16 +1,12 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArEventChargePixel
- * @created     : venerdì nov 11, 2022 13:51:31 CET
+ * @file        : SLArEventChargePixel.hh
+ * @created     : Fri Nov 11, 2022 13:51:31 CET
  */
 
 #ifndef SLAREVENTCHARGEPIXEL_HH
 
 #define SLAREVENTCHARGEPIXEL_HH
-
-#include <iostream>
-#include <map>
-#include "TNamed.h"
 
 #include "event/SLArEventHitsCollection.hh"
 #include "event/SLArEventChargeHit.hh"

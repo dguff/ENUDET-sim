@@ -137,7 +137,7 @@ endif()
 include_directories(
   ${BxDecay0_INCLUDE_DIR}
   ${MARLEY_DIR}/include
-  ${RapidJSON_INCLUDE_DIR}/..
+  ${RapidJSON_INCLUDE_DIR}
   ${Geant4_INCLUDE_DIR}
   ${ROOT_INCLUDE_DIRS}
 )
