@@ -5,13 +5,13 @@
     "config" : {
       "particle" : "opticalphoton", 
       "energy" : {"mode" : "mono", "value" : {"val" : 9.68, "unit" : "eV"}}, 
-      "n_particles" : 5000, 
-      "direction" : {"mode":"isotropic"}, 
+      "n_particles" : 100000, 
+      "direction" : {"type":"isotropic"}, 
       "vertex_gen" : {
         "type" : "point", 
         "config" : {
           "volume" : "TPC10",
-          "xyz" : {"val" : [15, -30, -60], "unit" : "cm"}
+          "xyz" : {"val" : [0, 0, 0], "unit" : "cm"}
         }
       }
     }

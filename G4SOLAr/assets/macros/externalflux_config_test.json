@@ -1,0 +1,31 @@
+{
+    "generator" : [
+        {
+            "type" : "external", 
+            "label" : "cryostat_box", 
+            "config" : {
+                "particle" : "geantino", 
+                "flux" : {"val": 10, "unit": "Hz/cm2"}, 
+                "energy" : { "mode": "mono", "value" : {"val": 3.5, "unit": "MeV"} },
+                "direction" : {
+                "mode" : "isotropic"
+                },
+                "vertex_gen" : {
+                "type" : "boxsurface", 
+                "config" : {
+                    "volume" : "target_lar_pv",
+                    "origin_face" : 0,
+                    "time" : {
+                        "mode" : "window",
+                        "event_window_limits": {
+                            "t0" : {"val" : 0, "unit": "s"},
+                            "t1" : {"val" : 5, "unit": "ms"}
+                        }
+                }
+                }
+                }
+            }
+        }
+    ]
+}
+         

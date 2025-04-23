@@ -14,7 +14,7 @@
 #include "rapidjson/document.h"
 
 // SOLAr-sim unit utility
-#include "SLArUnit.hpp"
+#include "geo/SLArUnit.hpp"
 
 // config
 #include "config/SLArCfgAnode.hh"
@@ -23,10 +23,11 @@
 #include "physics/SLArElectronDrift.hh"
 
 // event
-#include "event/SLArMCEvent.hh"
 #include "event/SLArEventAnode.hh"
 #include "event/SLArEventMegatile.hh"
 #include "event/SLArEventTile.hh"
+#include "event/SLArEventSuperCell.hh"
+#include "event/SLArEventSuperCellArray.hh"
 
 // hits
 #include "TChannelAnalyzer.hh"
@@ -35,6 +36,8 @@
 // root
 #include "TFile.h"
 #include "TTree.h"
+#include "TTreeReader.h"
+#include "TTreeReaderValue.h"
 #include "TObjString.h"
 
 
@@ -122,8 +125,10 @@ int main (int argc, char *argv[]) {
         input_file_path.Data()); 
     exit( EXIT_FAILURE ); 
   }
-  SLArMCEvent* mc_ev = nullptr; 
-  mc_tree->SetBranchAddress("MCEvent", &mc_ev); 
+
+  TTreeReader mc_tree_reader(mc_tree);
+  TTreeReaderValue<SLArListEventAnode> anode_list_ev(mc_tree_reader, "EventAnode");
+  
   // Setup anode configuration
   std::map<Int_t, SLArCfgAnode*> anodeConfig; 
   std::map<Int_t, TVector3> tpcCenterPos;
@@ -132,7 +137,7 @@ int main (int argc, char *argv[]) {
 
   auto geometry_str = input_file->Get<TObjString>("geometry"); 
   rapidjson::Document d; 
-  d.Parse( geometry_str->GetString() ); 
+  d.Parse<rapidjson::kParseCommentsFlag>( geometry_str->GetString() ); 
   if (d.HasMember("TPC")) {
     for (const auto& jtpc : d["TPC"].GetArray()) {
       printf("found tpc with id %i\n", jtpc["copyID"].GetInt()); 
@@ -171,14 +176,11 @@ int main (int argc, char *argv[]) {
   ch_analyzer.set_hit_threshold( threshold_eeV );
   ch_analyzer.set_channel_rms( noise_rms_eeV ); 
   
-  for (Long64_t entry = 0; entry < mc_tree->GetEntries(); entry++) {
+  while( mc_tree_reader.Next() ) {
     hitvars.reset(); 
+    iev = anode_list_ev->GetEventNumber();
 
-    mc_tree->GetEntry( entry ); 
-    iev = mc_ev->GetEvNumber(); 
-
-    const auto& anodes_map = mc_ev->GetEventAnode(); 
-    const auto& pds_map = mc_ev->GetEventSuperCellArray(); 
+    const auto& anodes_map = anode_list_ev->GetAnodeMap(); 
 
     for (const auto& anode_itr : anodes_map) {
       itpc = anode_itr.first;
@@ -214,20 +216,6 @@ int main (int argc, char *argv[]) {
         } // end of loop over tiles
       } // end of loop over megatiles
     } // end of loop over anodes
-
-    for (const auto& pds_wall_itr : pds_map) {
-      const int& pds_wall_id = pds_wall_itr.first; 
-      const SLArEventSuperCellArray& pds_wall_ev = pds_wall_itr.second;
-
-      for (const auto& xa_itr : pds_wall_ev.GetConstSuperCellMap()) {
-        const int& xa_id = xa_itr.first;
-        const SLArEventSuperCell& xa_ev = xa_itr.first;
-
-
-      }
-
-    }
-
 
     hit_tree->Fill(); 
 

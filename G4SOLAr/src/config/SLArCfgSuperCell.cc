@@ -1,7 +1,7 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
  * @file        : SLArCfgSuperCell.cc
- * @created     : martedì lug 19, 2022 10:59:27 CEST
+ * @created     : Tue Jul 19, 2022 10:59:27 CEST
  */
 
 #include <iostream>

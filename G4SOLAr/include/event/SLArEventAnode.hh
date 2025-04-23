@@ -60,5 +60,58 @@ class SLArEventAnode : public TNamed {
     ClassDef(SLArEventAnode, 2)
 };
 
+class SLArListEventAnode: public TObject {
+  public:
+    inline SLArListEventAnode() : TObject() {}
+
+    inline SLArListEventAnode(const SLArListEventAnode& ev) : 
+      fEvNumber(ev.fEvNumber), TObject(ev) {
+        for (const auto& anode : ev.fAnodeMap) {
+          fAnodeMap[anode.first] = SLArEventAnode(anode.second);
+        }
+      }
+
+    inline ~SLArListEventAnode() { fAnodeMap.clear(); }
+    
+    void SetEventNumber(const int& evNumber) {fEvNumber = evNumber;}
+    
+    inline int GetEventNumber() const {return fEvNumber;}
+    
+    inline std::map<int, SLArEventAnode>& GetAnodeMap() {return fAnodeMap;}
+    
+    inline const std::map<int, SLArEventAnode>& GetConstAnodeMap() const {return fAnodeMap;}
+
+    inline SLArEventAnode& GetEventAnodeByTPCID(const int& tpc_id) {
+      auto it = fAnodeMap.find(tpc_id);
+      if (it != fAnodeMap.end()) {
+        return it->second;
+      }
+
+      throw std::out_of_range(Form("Anode for TPC %i not found", tpc_id));
+    }
+
+    inline SLArEventAnode& GetEventAnodeByID(const int& id) {
+      for (auto &anode : fAnodeMap) {
+        if (anode.second.GetID() == id) {return anode.second;}
+      }
+
+      throw std::out_of_range(Form("Anode with ID %i not found", id));
+    }
+
+    inline void Reset() {
+      for (auto& anode : fAnodeMap) {
+        anode.second.ResetHits();
+      }
+      fEvNumber = -1;
+    }
+
+  private:
+    Int_t fEvNumber = -1;
+    std::map<int, SLArEventAnode> fAnodeMap;
+
+  public: 
+    ClassDef(SLArListEventAnode, 1)
+};
+
 #endif /* end of include guard SLArEventAnode_HH */
 

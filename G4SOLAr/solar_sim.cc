@@ -17,11 +17,12 @@
 
 #include "G4UImanager.hh"
 
+#include "SLArVersion.hh"
 #include "SLArUserPath.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
-#include "SLArDetectorConstruction.hh"
+#include "detector/SLArDetectorConstruction.hh"
 #include "SLArActionInitialization.hh"
 #include "SLArRunAction.hh"
 
@@ -84,8 +85,8 @@ int main(int argc,char** argv)
   G4String output = ""; 
   G4String output_dir = ""; 
   G4String generator_file = ""; 
-  G4String geometry_file = "./assets/geometry/geometry.json"; 
-  G4String material_file = "./assets/materials/materials_db.json"; 
+  G4String geometry_file = G4String(SLAR_BIN_DIR) + "/assets/geometry/geometry.json"; 
+  G4String material_file = G4String(SLAR_BIN_DIR) + "/assets/materials/materials_db.json"; 
   G4bool   do_cerenkov = false; 
   G4bool   do_bias = false; 
   G4String bias_particle = ""; 
@@ -119,6 +120,11 @@ int main(int argc,char** argv)
   };
 
   int c, option_index; 
+
+  printf("************************************************************\n");
+  printf("* solar_sim version %s\n", SOLARSIM_VERSION);
+  printf("* The SoLAr Collaboration\n");
+  printf("************************************************************\n");
 
   while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
     switch(c) {
@@ -315,7 +321,7 @@ int main(int argc,char** argv)
   // Get the pointer to the User Interface manager
   //
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
-  //
+  UImanager->SetMacroSearchPath(G4String(SLAR_BIN_DIR) + "/assets/macros");
 
   if ( macro.size() ) {
     // Batch mode
