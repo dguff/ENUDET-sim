@@ -89,6 +89,10 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     inline SLArBaseDetModule* GetLArTargetVolume() {return fDetector;}
     //! Get the LAr target volume 
     inline const SLArBaseDetModule* GetLArTargetVolume() const {return fDetector;}
+    //! Get the Cryostat Volume
+    inline SLArDetCryostat* GetCryostatVolume() {return fCryostat;}
+    //! Get the Cryostat Volume
+    inline const SLArDetCryostat* GetCryostatVolume() const {return fCryostat;} //--JM
     //!  Return the geometry configuration file
     G4String                        GetGeometryCfgFile() {return fGeometryCfgFile;}
     //!  Return the material configuration file
