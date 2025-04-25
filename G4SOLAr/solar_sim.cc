@@ -85,8 +85,8 @@ int main(int argc,char** argv)
   G4String output = ""; 
   G4String output_dir = ""; 
   G4String generator_file = ""; 
-  G4String geometry_file = G4String(SLAR_BIN_DIR) + "/assets/geometry/geometry.json"; 
-  G4String material_file = G4String(SLAR_BIN_DIR) + "/assets/materials/materials_db.json"; 
+  G4String geometry_file = G4String(SLAR_ASSETS_DIR) + "/geometry/geometry.json"; 
+  G4String material_file = G4String(SLAR_ASSETS_DIR) + "/materials/materials_db.json"; 
   G4bool   do_cerenkov = false; 
   G4bool   do_bias = false; 
   G4String bias_particle = ""; 
