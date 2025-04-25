@@ -19,6 +19,7 @@
 
 #include "SLArVersion.hh"
 #include "SLArUserPath.hh"
+#include "SLArRootUtilities.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
@@ -250,6 +251,20 @@ int main(int argc,char** argv)
   //
   // Detector construction
   printf("Creating Detector Construction...\n");
+  
+  if (file_exists(geometry_file) == false) {
+    printf("solar_sim ERROR: geometry file %s does not exist\n", geometry_file.data());
+    exit(EXIT_FAILURE);
+  }
+  
+  if (file_exists(material_file) == false) {
+    printf("solar_sim ERROR: material file %s does not exist\n", material_file.data());
+    exit(EXIT_FAILURE);
+  }
+
+  validate_json(geometry_file);
+  validate_json(material_file);
+
   auto detector = new SLArDetectorConstruction(geometry_file, material_file);
   runManager-> SetUserInitialization(detector);
 

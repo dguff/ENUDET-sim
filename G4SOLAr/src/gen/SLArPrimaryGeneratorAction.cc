@@ -5,8 +5,7 @@
  */
 
 
-#include <SLArAnalysisManager.hh>
-
+#include "SLArRootUtilities.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArPrimaryGeneratorMessenger.hh"
 #include "SLArBulkVertexGenerator.hh"
@@ -82,6 +81,13 @@ SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction(const G4String config_fil
 }
 
 void SLArPrimaryGeneratorAction::SourceConfiguration(const G4String config_file_path) {
+  if (file_exists(config_file_path) == false) {
+    printf("SLArPrimaryGeneratorAction::SourceConfiguration ERROR: generator configuration file %s does not exist\n", config_file_path.data());
+    exit(EXIT_FAILURE);
+  }
+  validate_json(config_file_path);
+
+
   FILE* gen_cfg_file = std::fopen(config_file_path, "r");
   if (gen_cfg_file == nullptr) {
     fprintf(stderr, "SLArPrimaryGeneratorAction::SourceConfiguration ERROR: Cannot open configuration file %s",
