@@ -161,10 +161,6 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             &anodeCfg, 
             &anaMngr->GetEventAnode().GetEventAnodeByTPCID(fTPCID)); 
       } 
-      //else {
-        //printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
-        //getchar(); 
-      //}
     }
     catch (const std::exception& e) {
       G4cerr << "SLArLArSD::ProcessHits() ERROR: No anode config found for TPC "
