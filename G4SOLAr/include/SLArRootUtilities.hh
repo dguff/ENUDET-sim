@@ -60,7 +60,7 @@ inline static bool validate_json(const std::string& json_path)
   buffer << ifs.rdbuf();
 
   rapidjson::Document doc;
-  rapidjson::ParseResult result = doc.Parse(buffer.str().c_str());
+  rapidjson::ParseResult result = doc.Parse<rapidjson::kParseCommentsFlag>(buffer.str().c_str());
 
   if (!result) {
     std::cerr << "JSON parse error for file " << json_path.data()  
