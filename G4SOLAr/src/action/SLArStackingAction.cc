@@ -33,7 +33,7 @@
 #include "SLArStackingAction.hh"
 #include "SLArEventAction.hh"
 #include "SLArAnalysisManager.hh"
-#include "SLArPrimaryGeneratorAction.hh"
+#include "physics/SLArPhysicsList.hh"
 #include "SLArUserTrackInformation.hh"
 #include "SLArRunAction.hh"
 
@@ -200,9 +200,14 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 #endif
 
 
-      auto generatorAction = 
-        (gen::SLArPrimaryGeneratorAction*)G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction();  
-      if (generatorAction->DoTraceOptPhotons() == false) {
+      auto physicsList = 
+        dynamic_cast<const SLArPhysicsList*>(G4RunManager::GetRunManager()->GetUserPhysicsList());  
+      if (!physicsList) {
+        G4Exception("SLArStackingAction::ClassifyNewTrack",
+            "InvalidCast", FatalException,
+            "SLArStackingAction: invalid cast to SLArPhysicsList");
+      }
+      if (physicsList->DoTraceOptPhotons() == false) {
         kClassification = G4ClassificationOfNewTrack::fKill;
       }
     }

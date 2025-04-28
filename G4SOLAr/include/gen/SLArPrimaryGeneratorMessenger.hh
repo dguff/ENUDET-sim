@@ -36,10 +36,8 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     virtual void SetNewValue(G4UIcommand*, G4String);
 
   private:
-    SLArPrimaryGeneratorAction*         fSLArAction;
+    SLArPrimaryGeneratorAction*         fSLArGenAction;
     G4UIcmdWithAString*                 fCmdGenConfig;
-    G4UIcmdWithABool*                   fCmdTracePhotons;
-    G4UIcmdWithABool*                   fCmdDriftElectrons;
 
     G4UIcmdWithAnInteger*               fCmdVerbose;
 };

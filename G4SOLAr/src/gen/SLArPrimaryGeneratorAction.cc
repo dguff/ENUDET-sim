@@ -44,12 +44,6 @@ namespace gen {
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   //fVolumeName(""), 
-   //fGeneratorEnum(kParticleGun), 
-   //fGenPosition(0, 0, 0),
-   //fGenDirection(0, 0, 1), 
-   fDoTraceOptPhotons(true), 
-   fDoDriftElectrons(true), 
    fVerbose(0)
 {
   //create a messenger for this class

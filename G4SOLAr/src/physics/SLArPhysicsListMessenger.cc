@@ -54,6 +54,18 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
   fDirectory = new G4UIdirectory("/SLAr/phys/");
   fDirectory->SetGuidance("SLArPhysicsList control");
 
+  fCmdTracePhotons = 
+    new G4UIcmdWithABool("/SLAr/phys/DoTracePhotons", this); 
+  fCmdTracePhotons->SetGuidance("Set/unset tracing of optical photons"); 
+  fCmdTracePhotons->SetParameterName("do_trace", false, true); 
+  fCmdTracePhotons->SetDefaultValue(true);
+
+  fCmdDriftElectrons = 
+    new G4UIcmdWithABool("/SLAr/phys/DoDriftElectrons", this); 
+  fCmdDriftElectrons->SetGuidance("Set/unset drift and collection of ionization electrons"); 
+  fCmdDriftElectrons->SetParameterName("do_trace", false, true); 
+  fCmdDriftElectrons->SetDefaultValue(true);
+
   fSetAbsorptionCMD = new G4UIcmdWithABool(
       "/SLAr/phys/setAbsorption", this);
   fSetAbsorptionCMD->SetGuidance("Turn on or off absorption process");
@@ -151,6 +163,9 @@ SLArPhysicsListMessenger::SLArPhysicsListMessenger(SLArPhysicsList* pPhys)
 
 SLArPhysicsListMessenger::~SLArPhysicsListMessenger()
 {
+  delete fCmdTracePhotons;
+  delete fCmdDriftElectrons;
+
   delete fVerboseCmd;
   delete fCerenkovCmd;
 
@@ -177,7 +192,15 @@ SLArPhysicsListMessenger::~SLArPhysicsListMessenger()
 void SLArPhysicsListMessenger::SetNewValue(G4UIcommand* command,
     G4String newValue)
 {
-  if( command == fSetAbsorptionCMD ) {
+  if (command == fCmdTracePhotons) {
+    bool do_trace = fCmdTracePhotons->GetNewBoolValue(newValue); 
+    fPhysicsList->SetTraceOptPhotons(do_trace); 
+  }
+  else if (command == fCmdDriftElectrons) {
+    bool do_drift = fCmdDriftElectrons->GetNewBoolValue(newValue); 
+    fPhysicsList->SetDriftElectrons(do_drift); 
+  }
+  else if( command == fSetAbsorptionCMD ) {
     fPhysicsList->SetAbsorption(G4UIcmdWithABool::GetNewBoolValue(newValue));
   }
 

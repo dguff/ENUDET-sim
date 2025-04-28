@@ -85,16 +85,6 @@ namespace gen {
       void SourceConfiguration(const rapidjson::Value& config); 
       void SourceConfiguration(const G4String config_file_path); 
 
-      inline bool DoTraceOptPhotons() {return fDoTraceOptPhotons;}
-      inline bool DoDriftElectrons() {return fDoDriftElectrons;}
-      inline void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
-      inline void SetDriftElectrons(bool do_drift) {fDoDriftElectrons = do_drift;}
-
-      //inline G4String GetMarleyConf() {return fMarleyCfg;}
-      //inline EDirectionMode GetDirectionMode() {return fDirectionMode;}
-      //inline void SetDirectionMode(EDirectionMode kMode) {fDirectionMode = kMode;}
-      //inline EGenerator GetGeneratorIndex() const {return fGeneratorEnum;}
- 
       //inline void SetGenerator(EGenerator gen) {fGeneratorEnum = gen;}
       inline G4VUserPrimaryGeneratorAction* GetGenerator(const G4String& label) {
         if (fGeneratorActions.find(label) != fGeneratorActions.end()) {
@@ -103,27 +93,6 @@ namespace gen {
         return nullptr;
       }
       inline std::map<G4String, SLArBaseGenerator*>& GetGenerators() {return fGeneratorActions;}
-      //inline G4ThreeVector GetSourcePosition() const {return fGenPosition;}
-      //inline void SetSourcePosition(G4ThreeVector pos) {fGenPosition = pos;}
-      //inline G4ThreeVector GetGunDirection() const {return fGenDirection;}
-      //inline void SetEventDirection(G4ThreeVector dir) {fGenDirection = dir;}
-      //void ConfigBulkVertexGen(G4String vol);
-      //void ConfigBoxSurfaceVertexGen(G4String vol); 
-      //void SetBackgroundConf(G4String background_conf); 
-      //void SetExternalConf(G4String externals_conf); 
-      //void SetMarleyConf(G4String marley_conf); 
-
-      //void SetGunEnergy(const G4double ekin); 
-      //void SetGunParticle(const G4String particle_name); 
-      //void SetGunNumberOfParticles(const G4int n_particles);
-
-      //void SetGENIEEvntID(G4Event *ev, G4int evntID); //--JM
-      //void SetGENIEEvntExt(G4int evntID); //--JM
-      //void SetGENIEFile(G4String filename); //--JM
-
-#ifdef SLAR_CRY
-      void AppendCRYInput(const G4String); 
-#endif
 
       void SetVerboseLevel( G4int verbose) { 
         fVerbose = verbose; 
@@ -138,28 +107,7 @@ namespace gen {
 
       SLArPrimaryGeneratorMessenger* fGunMessenger;
 
-      //SLArBulkVertexGenerator* fBulkGenerator;
-      //SLArBoxSurfaceVertexGenerator* fBoxGenerator; 
 
-      //EDirectionMode fDirectionMode; 
-      //G4String       fVolumeName;
-      //G4String       fMarleyCfg; 
-
-      //EGenerator     fGeneratorEnum;
-      //G4ThreeVector  fGenPosition;
-      //G4ThreeVector  fGenDirection;
-      //G4double       fGenEnergy; 
-      //G4int          fGenNumberOfParticles;
-      //bool           fIncludeBackground; 
-      //G4String       fBackgoundModelCfg;
-
-      G4bool fDoDriftElectrons;
-      G4bool fDoTraceOptPhotons;
-
-      //G4int fGENIEEvntNum;
-      //G4String fGENIEFile;
-
-      //G4String fCRYCfg; 
       G4int fVerbose;
 
       void Reset(); 
