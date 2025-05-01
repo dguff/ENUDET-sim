@@ -23,8 +23,11 @@
 #include "TRandom3.h"
 #include "TDatabasePDG.h"
 
-#include "event/SLArMCEvent.hh"
+#include "event/SLArMCTruth.hh"
+#include "event/SLArEventAnode.hh"
+#include "event/SLArEventSuperCellArray.hh"
 #include "config/SLArCfgAnode.hh"
+#include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgAssembly.hh"
 #include "config/SLArCfgSuperCellArray.hh"
 
@@ -227,7 +230,10 @@ int process_pdarray(
   return nhits_pdarray;
 }
 
-int process_event(SLArMCEvent* ev, 
+int process_event(
+    SLArMCTruth* ev_truth,
+    SLArListEventAnode* ev_anode, 
+    SLArListEventPDS* ev_pds,
     const std::map<int, SLArCfgAnode*>& AnodeSysCfg, 
     SLArCfgBaseSystem<SLArCfgSuperCellArray>* PDSSysConfig, 
     std::map<int, std::vector<TH2Poly*>>& h2AnodeTilesCharge,
@@ -237,8 +243,8 @@ int process_event(SLArMCEvent* ev,
 {
   int nhits_total = 0; 
 
-  const std::map<int, SLArEventSuperCellArray> walls = ev->GetEventSuperCellArray();
-  const std::map<int, SLArEventAnode>& anodes = ev->GetEventAnode(); 
+  const std::map<int, SLArEventSuperCellArray> walls = ev_pds->GetConstOpDetArrayMap();
+  const std::map<int, SLArEventAnode>& anodes = ev_anode->GetConstAnodeMap(); 
 
   // read the anode signals first
   for (const auto &anode_ : anodes) {
@@ -393,8 +399,12 @@ void refactor_test_full_display(const TString file_path)
 
 
   //- - - - - - - - - - - - - - - - - - - - - - Setup event access
-  SLArMCEvent* ev = 0; 
-  mc_tree->SetBranchAddress("MCEvent", &ev); 
+  SLArMCTruth* ev_mctruth = {}; 
+  SLArListEventAnode* ev_anode = {};
+  SLArListEventPDS* ev_pds = {};
+  mc_tree->SetBranchAddress("MCTruth", &ev_mctruth); 
+  mc_tree->SetBranchAddress("EventAnode", &ev_anode);
+  mc_tree->SetBranchAddress("EventPDS", &ev_pds);
 
   TTimer* timer = new TTimer("gSystem->ProcessEvents();", 50, false); 
 
@@ -419,7 +429,7 @@ void refactor_test_full_display(const TString file_path)
 
     // fill hit maps
     int n_photon_hits = 
-      process_event(ev, AnodeSysCfg, PDSSysConfig, h2AnodeTilesCharge, h2AnodeTiles, h2PDArray, hTime); 
+      process_event(ev_mctruth, ev_anode, ev_pds, AnodeSysCfg, PDSSysConfig, h2AnodeTilesCharge, h2AnodeTiles, h2PDArray, hTime); 
     // get the maximum number of hits in all the maps for proper colorscale handling
     double hit_max = 0; 
     for (const auto& h2 : h2PDArray) {
@@ -456,7 +466,7 @@ void refactor_test_full_display(const TString file_path)
       }
       // display MC truth
       gtracks.clear(); 
-      get_mctruth_tracks(gtracks, ev->GetPrimaries(), AnodeSysCfg.at(tpc_id)); 
+      get_mctruth_tracks(gtracks, ev_mctruth->GetPrimaries(), AnodeSysCfg.at(tpc_id)); 
       printf("Drawing %ld tracks for TPC %i on canvas %s.%s\n", 
           gtracks.size(), tpc_id, c->GetName(), pad->GetName());
       for (auto& g : gtracks) {
