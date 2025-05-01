@@ -224,7 +224,6 @@ void SLArMarleyGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     if ( fabs_pdg == 12 || fabs_pdg == 14 || fabs_pdg == 16 ) {
       double total_energy = ip->total_energy();
       fConfig.ene_config.energy_tmp = ip->kinetic_energy();
-      printf("neutrino energy: total = %g - kinetic = %g\n", total_energy, fConfig.ene_config.energy_tmp);
     }
   }
 
