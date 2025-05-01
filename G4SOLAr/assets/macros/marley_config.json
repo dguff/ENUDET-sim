@@ -5,7 +5,7 @@
     "config" : {
       "neutrino": "ve",
       "direction" : {
-        "mode" : "isotropic"
+        "type" : "isotropic"
       },
       "energy" : {
         "mode" : "custom", 
