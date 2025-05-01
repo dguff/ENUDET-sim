@@ -82,7 +82,7 @@ class SLArPhysicsList: public G4VModularPhysicsList
 
   private:
     G4bool fDoDriftElectrons = true;
-    G4bool fDoTraceOptPhotons = false;
+    G4bool fDoTraceOptPhotons = true;
 
     G4double fCutForGamma;
     G4double fCutForElectron;
