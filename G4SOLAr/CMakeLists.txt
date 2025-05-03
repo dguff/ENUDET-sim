@@ -242,6 +242,13 @@ endif()
 if (SLAR_RADSRC_INTERFACE)
   target_include_directories(solar_sim PRIVATE ${RADSRC_INCLUDE_DIR})
 endif()
+if (SLAR_USE_G4CASCADE)
+  target_include_directories(solar_sim PUBLIC 
+    $<BUILD_INTERFACE:${G4CASCADE_INCLUDE_DEST}>
+    $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}/physics/cascade>
+  )
+endif()
+  
 
 # Add definitions
 target_compile_definitions(solar_sim 

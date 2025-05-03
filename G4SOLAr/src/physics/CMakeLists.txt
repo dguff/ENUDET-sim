@@ -25,5 +25,9 @@ set(SLAR_PHYSICS_SOURCES
 
 add_subdirectory( LiquidArgon )
 
+if (SLAR_USE_G4CASCADE) 
+  add_subdirectory( cascade )
+endif()
+
 set(solarsim_headers ${solarsim_headers} ${SLAR_PHYSICS_HEADERS} PARENT_SCOPE)
 set(solarsim_sources ${solarsim_sources} ${SLAR_PHYSICS_SOURCES} PARENT_SCOPE)
