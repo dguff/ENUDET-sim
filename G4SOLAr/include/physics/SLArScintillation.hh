@@ -74,7 +74,7 @@ class SLArScintillation : public G4VRestDiscreteProcess
                            G4ProcessType type          = fElectromagnetic);
   ~SLArScintillation();
 
-  std::map<SLArIonAndScintModel::EISModel, SLArIonAndScintModel*> IonAndScint; 
+  std::vector<SLArIonAndScintModel*> IonAndScint; 
 
   SLArScintillation(const SLArScintillation& right) = delete;
   SLArScintillation& operator=(const SLArScintillation& right) = delete;
