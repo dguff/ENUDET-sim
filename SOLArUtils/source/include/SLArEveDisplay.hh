@@ -143,6 +143,9 @@ namespace display {
       SLArMCTruth* fEvMCTruth = {};
       SLArListEventAnode* fEvAnodeList = {};
       SLArListEventPDS* fEvPDSList = {};
+      bool fIncludeMCTruth = true;
+      bool fIncludeTPCHits = true;
+      bool fIncludeOpHits = true;
       std::map<int, std::unique_ptr<SLArCfgAnode>> fCfgAnodes = {}; 
       std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>> fCfgPDS = {}; 
       std::unique_ptr<TTimer> fTimer = {};

@@ -65,11 +65,11 @@ namespace display {
     auto pdgDB = TDatabasePDG::Instance(); 
 
     if (pdg == 22) return fParticleSelector["gammas"]; 
-    else if ( fabs(pdg) == 11) return fParticleSelector["electrons"]; 
-    else if ( fabs(pdg) == 13 || fabs(pdg) == 15) return fParticleSelector["heavy leptons"]; 
-    else if ( fabs(pdg) == 12 || fabs(pdg) == 14 || fabs(pdg) == 16) return fParticleSelector["neutrinos"]; 
-    else if ( fabs(pdg) == 2212 ) return fParticleSelector["protons"]; 
-    else if ( fabs(pdg) == 2112 ) return fParticleSelector["neutrons"]; 
+    else if ( abs(pdg) == 11) return fParticleSelector["electrons"]; 
+    else if ( abs(pdg) == 13 || abs(pdg) == 15) return fParticleSelector["heavy leptons"]; 
+    else if ( abs(pdg) == 12 || abs(pdg) == 14 || abs(pdg) == 16) return fParticleSelector["neutrinos"]; 
+    else if ( abs(pdg) == 2212 ) return fParticleSelector["protons"]; 
+    else if ( abs(pdg) == 2112 ) return fParticleSelector["neutrons"]; 
     else {
       TParticlePDG* particlePDG = pdgDB->GetParticle( pdg );
       if (particlePDG) {
@@ -132,6 +132,7 @@ namespace display {
     if (fHitTree) {
       if (fMCEventTree->GetBranch("MCTruth") == nullptr) {
         printf("WARNING: branch MCTruth not found in %s\n", file_path.Data());
+        fIncludeMCTruth = false;
       }
       else {
         fMCEventTree->SetBranchAddress("MCTruth"  , &fEvMCTruth);
@@ -139,7 +140,7 @@ namespace display {
 
       if (fMCEventTree->GetBranch("EventAnode") == nullptr) {
         printf("WARNING: branch EventAnode not found in %s\n", file_path.Data());
-        return -1;
+        fIncludeTPCHits = false;
       }
       else {
         fMCEventTree->SetBranchAddress("EventAnode", &fEvAnodeList);
@@ -147,7 +148,7 @@ namespace display {
 
       if (fMCEventTree->GetBranch("EventPDS") == nullptr) {
         printf("WARNING: branch EventPDS not found in %s\n", file_path.Data());
-        return -1;
+        fIncludeOpHits = false;
       }
       else {
         fMCEventTree->SetBranchAddress("EventPDS"  , &fEvPDSList);
@@ -184,8 +185,6 @@ namespace display {
         }
       }
     }
-
-    printf("PDS cfg: %s\n", fCfgPDS->GetName()); 
 
     return 0;
   }
@@ -334,14 +333,20 @@ namespace display {
   }
 
   int SLArEveDisplay::ReadMCTruth() {
-    fEvMCTruth->Reset(); 
-    fEvAnodeList->Reset();
-    fEvPDSList->Reset();
+    if (fEvMCTruth) fEvMCTruth->Reset();
+    if (fEvAnodeList) fEvAnodeList->Reset();
+    if (fEvPDSList) fEvPDSList->Reset();
+
     fMCEventTree->GetEntry( fCurEvent ); 
 
-    ReadTracks();
+    if (fIncludeMCTruth) {
+      printf("reading MCTruth\n");
+      ReadTracks();
+    }
 
-    ReadOpHits();
+    if (fIncludeOpHits) {
+      ReadOpHits();
+    }
 
     return 0;
   }
@@ -465,6 +470,7 @@ namespace display {
 
   int SLArEveDisplay::ReadTracks() {
     const auto& primaries = fEvMCTruth->GetPrimaries();
+    printf("SLArEveDisplay::ReadTracks - found %zu primaries\n", primaries.size());
 
     for (const auto& p : primaries) {
       auto track_list = std::unique_ptr<TEveTrackList>( 
@@ -476,10 +482,10 @@ namespace display {
       double p_tot = 0.0; 
       for (const auto& p_ : p.GetMomentum()) p_tot += TMath::Sq( p_ ); 
       p_tot = sqrt(p_tot); 
-      //printf("%s - vertex @ [%.2f, %.2f, %.2f] m, t = %g ns, direction = [%.2f, %.2f, %.2f]\n", 
-          //p.GetName(),
-          //p.GetVertex().at(0), p.GetVertex().at(1), p.GetVertex().at(2), p.GetTime(),
-          //p.GetMomentum().at(0) / p_tot,  p.GetMomentum().at(1) / p_tot,  p.GetMomentum().at(2) / p_tot); 
+      printf("%s - vertex @ [%.2f, %.2f, %.2f] m, t = %g ns, direction = [%.2f, %.2f, %.2f]\n", 
+          p.GetName(),
+          p.GetVertex().at(0), p.GetVertex().at(1), p.GetVertex().at(2), p.GetTime(),
+          p.GetMomentum().at(0) / p_tot,  p.GetMomentum().at(1) / p_tot,  p.GetMomentum().at(2) / p_tot); 
 
       for (const auto& t : trajectories) {
         const int pdg_code = t->GetPDGID();
@@ -536,19 +542,19 @@ namespace display {
   }
 
   void SLArEveDisplay::set_track_style( TEveTrack* track ) {
-    if ( fabs(track->GetPdg()) == 13 ) { // muons
+    if ( abs(track->GetPdg()) == 13 ) { // muons
       track->SetLineColor( kOrange ); 
     }
-    else if (fabs(track->GetPdg()) == 11) { // electrons
+    else if (abs(track->GetPdg()) == 11) { // electrons
       track->SetLineColor(kOrange+7);
     }
     else if ( track->GetPdg() == 22 ) { // gamms
       track->SetLineColor( kYellow-7 );
     } 
-    else if (fabs(track->GetPdg()) == 2112) { // protons
+    else if (abs(track->GetPdg()) == 2112) { // protons
       track->SetLineColor(kRed-4);
     } 
-    else if (fabs(track->GetPdg()) == 2212) { // neutrons
+    else if (abs(track->GetPdg()) == 2212) { // neutrons
       track->SetLineColor(kBlue-7);
     } 
     else {
@@ -581,9 +587,7 @@ namespace display {
 
     ReadMCTruth(); 
 
-    ReadTracks();
-
-    ReadHits(); 
+    if (fIncludeTPCHits) ReadHits(); 
 
     update_entry_label();
 
