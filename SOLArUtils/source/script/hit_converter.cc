@@ -175,6 +175,7 @@ int main (int argc, char *argv[]) {
   TChannelAnalyzer ch_analyzer; 
   ch_analyzer.set_hit_threshold( threshold_eeV );
   ch_analyzer.set_channel_rms( noise_rms_eeV ); 
+  ch_analyzer.set_integration_window( window_int_us );
   
   while( mc_tree_reader.Next() ) {
     hitvars.reset(); 
@@ -210,6 +211,8 @@ int main (int argc, char *argv[]) {
             ch_analyzer.set_tile_config( &t_cfg ); 
             const auto& pixels = t.GetConstPixelEvents();
             for (const auto& pixel_itr : pixels) {
+              printf("---------------------------------------------------------------------\n");
+              printf("found pixel %i\n", pixel_itr.first);
               ch_analyzer.process_channel(pixel_itr.first, pixel_itr.second, hitvars ); 
             } // end of loop over pixels
           }

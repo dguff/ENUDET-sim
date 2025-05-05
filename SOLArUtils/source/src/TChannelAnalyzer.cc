@@ -25,7 +25,8 @@ int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventCharg
   UInt_t sampled_time = 0;
   for (auto stream_itr = hit_stream.begin(); stream_itr != hit_stream.end(); stream_itr++) {
     q += stream_itr->second;
-    if ( q > fHitThreshold ) {
+
+    if ( q > fHitThreshold && !sampling ) {
       trigger_t = stream_itr->first;
       sampling = true;
     }
