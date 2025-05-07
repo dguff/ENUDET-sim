@@ -131,7 +131,7 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     for ( unsigned j=0; j<vect->size(); j++) {
       particleName=CRYUtils::partName((*vect)[j]->id());
 
-      //if (verbose) {
+      if (verbose) {
         G4cout << "  "          << particleName << " "
           << "charge="      << (*vect)[j]->charge() << " "
           << std::setprecision(4)
@@ -141,7 +141,7 @@ void SLArCRYGeneratorAction::GeneratePrimaries(G4Event* anEvent)
           << " " << "direction cosines "
           << G4ThreeVector((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v())
           << " " << G4endl;
-      //}
+      }
 
       fVtxGen->ShootVertex(vertex);
       direction.set((*vect)[j]->u(), (*vect)[j]->w(), (*vect)[j]->v());
