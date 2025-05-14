@@ -78,6 +78,7 @@ endif()
 set(SOLARSIM_LIB_DIR     "${CMAKE_INSTALL_PREFIX}/lib")
 set(SOLARSIM_BIN_DIR     "${CMAKE_INSTALL_PREFIX}/bin")
 set(SOLARSIM_INC_DEST    "${CMAKE_INSTALL_PREFIX}/include")
+set(SOLARSIM_ASSETS_DIR "${CMAKE_INSTALL_PREFIX}/assets")
 set(SOLARSIM_ANALSYS_DIR "${PROJECT_SOURCE_DIR}/../SOLArAnalysis")
 set(SOLARSIM_INSTALL_CMAKE_DIR "${SOLARSIM_LIB_DIR}/cmake/${PROJECT_NAME}")
 
@@ -241,6 +242,13 @@ endif()
 if (SLAR_RADSRC_INTERFACE)
   target_include_directories(solar_sim PRIVATE ${RADSRC_INCLUDE_DIR})
 endif()
+if (SLAR_USE_G4CASCADE)
+  target_include_directories(solar_sim PUBLIC 
+    $<BUILD_INTERFACE:${G4CASCADE_INCLUDE_DEST}>
+    $<INSTALL_INTERFACE:${SOLARSIM_INC_DEST}/physics/cascade>
+  )
+endif()
+  
 
 # Add definitions
 target_compile_definitions(solar_sim 

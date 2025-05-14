@@ -5,8 +5,8 @@
 
 SLArIonAndScintLArQL::SLArIonAndScintLArQL() : 
   SLArIonAndScintModel(), 
-  fElectronIonRatio(0.29), fLArQLAlpha(0.0372), fLArQLBeta(0.0124), 
-  fLArQLChiPars( {0.00338427, -6.57037, 1.88418, 0.000129379} )
+  fElectronIonRatio(0.29), fLArQLAlpha(0.0387), fLArQLBeta(0.0128), 
+  fLArQLChiPars( {3.61e-3, -5.7, 1.74, 2.01e-4} )
 {}
 
 SLArIonAndScintLArQL::SLArIonAndScintLArQL(const G4MaterialPropertiesTable* mpt) : 

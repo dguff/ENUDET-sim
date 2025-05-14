@@ -36,34 +36,8 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
     virtual void SetNewValue(G4UIcommand*, G4String);
 
   private:
-    SLArPrimaryGeneratorAction*         fSLArAction;
+    SLArPrimaryGeneratorAction*         fSLArGenAction;
     G4UIcmdWithAString*                 fCmdGenConfig;
-    //G4UIdirectory*                      fCmdGunDir;
-    //G4UIcmdWith3VectorAndUnit*          fCmdGunPosition;
-    //G4UIcmdWith3Vector*                 fCmdGunDirection;
-
-    //G4UIcmdWithAString*                 fCmdDirectionMode;
-    //G4UIcmdWithAString*                 fCmdGenerator;
-    //G4UIcmdWithADoubleAndUnit*          fCmdEnergy; 
-    //G4UIcmdWithAString*                 fCmdBulkVol;
-    //G4UIcmdWithAString*                 fCmdParticle;
-    //G4UIcmdWithAnInteger*               fCmdNumberOfParticles; 
-    //G4UIcmdWithADouble*                 fCmdBulkVolFraction;
-    //G4UIcmdWithAString*                 fCmdMarley;
-    //G4UIcmdWithAString*                 fCmdBackgoundConf; 
-    //G4UIcmdWithAString*                 fCmdExternalConf; 
-#ifdef SLAR_CRY
-    G4UIcmdWithAString*                 fCmdCRYFile; 
-    G4UIcmdWithAString*                 fCmdCRYInput;
-    G4UIcmdWithoutParameter*            fCmdCRYUpdate;
-    G4UIcmdWithADoubleAndUnit*          fCmdCRYQuota;
-#endif
-
-    G4UIcmdWithABool*                   fCmdTracePhotons;
-    G4UIcmdWithABool*                   fCmdDriftElectrons;
-
-    //G4UIcmdWithAnInteger*               fCmdGENIEEvtSeed; //--JM
-    //G4UIcmdWithAString*                 fCmdGENIEFile; //--JM
 
     G4UIcmdWithAnInteger*               fCmdVerbose;
 };

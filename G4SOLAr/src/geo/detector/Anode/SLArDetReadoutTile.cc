@@ -636,7 +636,6 @@ G4int SLArDetReadoutTile::GetNumberOfCellRows() const {
   // get cell plane from daughter volumes
   for (size_t ii=0; ii < fModLV->GetNoDaughters(); ii++) {
     auto pv_tmp = fModLV->GetDaughter(ii);
-    G4cout << pv_tmp->GetName() << G4endl;
     if ( pv_tmp->GetName() == "ReadoutTileSensors") {
       pv = pv_tmp;
       break; 
@@ -681,10 +680,8 @@ G4int SLArDetReadoutTile::GetNumberOfCellCols() const {
   const auto plane_lv = plane_pv->GetLogicalVolume()->GetDaughter(0)->GetLogicalVolume(); 
 
   G4VPhysicalVolume* row_pv = nullptr;
-  printf("looking for daughters in %s\n", plane_lv->GetName().data());
   for (size_t ii=0; ii < plane_lv->GetNoDaughters(); ii++) {
     auto pv_tmp = plane_lv->GetDaughter(ii);
-    G4cout << pv_tmp->GetName() << G4endl;
     if ( pv_tmp->GetName() == "cell_row") {
       row_pv = pv_tmp;
       break; 

@@ -69,8 +69,11 @@ class SLArPhysicsListMessenger : public G4UImessenger
     SLArPhysicsList* fPhysicsList;
 
     G4UIdirectory* fDirectory;
-    G4UIdirectory* fDecayDirectory;
 
+    G4UIcmdWithABool* fCmdTracePhotons;
+    G4UIcmdWithABool* fCmdDriftElectrons;
+
+    G4UIdirectory* fDecayDirectory;
     G4UIcmdWithABool* fSetAbsorptionCMD;
 
     G4UIcmdWithAnInteger* fVerboseCmd;

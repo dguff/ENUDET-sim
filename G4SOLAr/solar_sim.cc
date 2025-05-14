@@ -19,6 +19,7 @@
 
 #include "SLArVersion.hh"
 #include "SLArUserPath.hh"
+#include "SLArRootUtilities.hh"
 #include "SLArPrimaryGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArPhysicsList.hh"
@@ -85,8 +86,8 @@ int main(int argc,char** argv)
   G4String output = ""; 
   G4String output_dir = ""; 
   G4String generator_file = ""; 
-  G4String geometry_file = G4String(SLAR_BIN_DIR) + "/assets/geometry/geometry.json"; 
-  G4String material_file = G4String(SLAR_BIN_DIR) + "/assets/materials/materials_db.json"; 
+  G4String geometry_file = G4String(SLAR_ASSETS_DIR) + "/geometry/geometry.json"; 
+  G4String material_file = G4String(SLAR_ASSETS_DIR) + "/materials/materials_db.json"; 
   G4bool   do_cerenkov = false; 
   G4bool   do_bias = false; 
   G4String bias_particle = ""; 
@@ -250,6 +251,20 @@ int main(int argc,char** argv)
   //
   // Detector construction
   printf("Creating Detector Construction...\n");
+  
+  if (file_exists(geometry_file) == false) {
+    printf("solar_sim ERROR: geometry file %s does not exist\n", geometry_file.data());
+    exit(EXIT_FAILURE);
+  }
+  
+  if (file_exists(material_file) == false) {
+    printf("solar_sim ERROR: material file %s does not exist\n", material_file.data());
+    exit(EXIT_FAILURE);
+  }
+
+  validate_json(geometry_file);
+  validate_json(material_file);
+
   auto detector = new SLArDetectorConstruction(geometry_file, material_file);
   runManager-> SetUserInitialization(detector);
 

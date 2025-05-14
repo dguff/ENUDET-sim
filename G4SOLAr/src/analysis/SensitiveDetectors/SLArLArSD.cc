@@ -15,6 +15,7 @@
 #include "SLArEventAction.hh"
 #include "SensitiveDetectors/SLArLArSD.hh"
 #include "SensitiveDetectors/SLArLArHit.hh"
+#include "physics/SLArPhysicsList.hh"
 #include "physics/SLArElectronDrift.hh"
 
 #include "G4EventManager.hh"
@@ -132,8 +133,11 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
           n_el);
 #endif
 
-      auto generatorAction = (gen::SLArPrimaryGeneratorAction*)
-        G4RunManager::GetRunManager()->GetUserPrimaryGeneratorAction(); 
+      auto physicsList = dynamic_cast<const SLArPhysicsList*>(
+          G4RunManager::GetRunManager()->GetUserPhysicsList());
+      if (!physicsList) {
+        G4Exception("SLArLArSD::ProcessHits", "InvalidCast", FatalException, "Failed to cast to SLArPhysicsList");
+      }
       const auto eventAction = (SLArEventAction*)
         G4RunManager::GetRunManager()->GetUserEventAction(); 
       auto ancestor_id = eventAction->FindAncestorID(step->GetTrack()->GetTrackID()); 
@@ -149,7 +153,7 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
       if (ancestor) ancestor->IncrementLArEdep(edep); 
 
-      if (generatorAction->DoDriftElectrons()) {
+      if (physicsList->DoDriftElectrons()) {
         runAction->GetElectronDrift()->Drift(n_el, 
             step->GetTrack()->GetTrackID(), ancestor_id,
             0.5*(postStepPoint->GetPosition()+preStepPoint->GetPosition()),
@@ -157,10 +161,6 @@ G4bool SLArLArSD::ProcessHits(G4Step* step, G4TouchableHistory*)
             &anodeCfg, 
             &anaMngr->GetEventAnode().GetEventAnodeByTPCID(fTPCID)); 
       } 
-      //else {
-        //printf("SLArLArSD::ProcessHits WARNING: Sensitive Detector TPC ID %i does not match with any TPC in the geometry\n", fTPCID);
-        //getchar(); 
-      //}
     }
     catch (const std::exception& e) {
       G4cerr << "SLArLArSD::ProcessHits() ERROR: No anode config found for TPC "

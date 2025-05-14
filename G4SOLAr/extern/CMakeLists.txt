@@ -38,7 +38,7 @@ ExternalProject_Add("rapidjson"
 ExternalProject_Add("bxdecay0"
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/bxdecay0
   BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/bxdecay0-build
-  INSTALL_DIR     ${CMAKE_INSTALL_PREFIX}/install/bxdecay0
+  INSTALL_DIR     ${CMAKE_INSTALL_PREFIX}/bxdecay0
   GIT_REPOSITORY "https://github.com/BxCppDev/bxdecay0.git"
   GIT_TAG "develop"
   UPDATE_DISCONNECTED 0

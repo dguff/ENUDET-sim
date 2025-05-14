@@ -9,9 +9,6 @@
 
 ClassImp(SLArEventPhotonHit)
 
-TString EPhProcName[4] = {"All", "Cher"     , "Scint"        , "WLS"};
-TString EPhProcTitle[4]= {"All", "Cherenkov", "Scintillation", "WLS"};
-
 SLArEventPhotonHit::SLArEventPhotonHit() : 
   SLArEventGenericHit(),
   fMegaTileRowNr(0), fMegaTileNr(0), fRowTileNr(0), fTileNr(0), 

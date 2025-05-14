@@ -51,6 +51,11 @@ class SLArPhysicsList: public G4VModularPhysicsList
     SLArPhysicsList(G4String, G4bool);
     virtual ~SLArPhysicsList();
 
+    inline bool DoTraceOptPhotons() const {return fDoTraceOptPhotons;}
+    inline bool DoDriftElectrons() const {return fDoDriftElectrons;}
+    inline void SetTraceOptPhotons(bool do_trace) {fDoTraceOptPhotons = do_trace;}
+    inline void SetDriftElectrons(bool do_drift) {fDoDriftElectrons = do_drift;}
+
     void SetCuts();
     void SetCutForGamma(G4double);
     void SetCutForElectron(G4double);
@@ -60,23 +65,24 @@ class SLArPhysicsList: public G4VModularPhysicsList
     SLArStepMax* GetStepMaxProcess();
     void AddStepMax();
 
-    /// Remove specific physics from physics list.
+    //! Remove specific physics from physics list.
     void RemoveFromPhysicsList(const G4String&);
 
-    /// Make sure that the physics list is empty.
+    //! Make sure that the physics list is empty.
     void ClearPhysics();
 
     virtual void ConstructParticle();
     virtual void ConstructProcess();
 
-    // Turn on or off the absorption process
+    //! Turn on or off the absorption process
     void SetAbsorption(G4bool);
-
     void SetNbOfPhotonsCerenkov(G4int);
 
     void SetVerbose(G4int);
 
   private:
+    G4bool fDoDriftElectrons = true;
+    G4bool fDoTraceOptPhotons = true;
 
     G4double fCutForGamma;
     G4double fCutForElectron;

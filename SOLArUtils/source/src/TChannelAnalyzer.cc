@@ -16,16 +16,28 @@ int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventCharg
 
   //printf("\t\tpixel [%i]: %i hits\n", pix_bin, pix_ev.GetNhits());
   if (fClockUnit == 0) fClockUnit = pix_ev.GetClockUnit(); 
-  UInt_t window_int_cu = std::round(fIntegrationWindow * 1000 / fClockUnit);
+  UInt_t window_int_cu = std::round(fIntegrationWindow_us * 1000 / fClockUnit);
+  UInt_t reset_time_cu = std::round(fResetTime_us * 1000 / fClockUnit);
   const auto& hit_stream = pix_ev.GetConstHits();
             
   UInt_t q = 0;
   UInt_t trigger_t = 0; 
   Bool_t sampling = false;
+  Bool_t is_blind = false;
   UInt_t sampled_time = 0;
+  UInt_t end_hit_time = 0;
   for (auto stream_itr = hit_stream.begin(); stream_itr != hit_stream.end(); stream_itr++) {
+    if (is_blind) {
+      if (stream_itr->first - end_hit_time > reset_time_cu) {
+        is_blind = false;
+      }
+    }
+
+    if (is_blind) continue;
+
     q += stream_itr->second;
-    if ( q > fHitThreshold ) {
+
+    if ( q > fHitThreshold && !sampling ) {
       trigger_t = stream_itr->first;
       sampling = true;
     }
@@ -43,6 +55,8 @@ int TChannelAnalyzer::process_channel(const Int_t& pix_bin, const SLArEventCharg
         q = 0; 
         trigger_t = 0;
         sampling = false;
+        is_blind = true;
+        end_hit_time = stream_itr->first;
       } // end of record and reset
     } // end of sampling
       //getchar(); 

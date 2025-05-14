@@ -9,7 +9,7 @@
 #include "G4SystemOfUnits.hh"
 
 SLArIonAndScintModel::SLArIonAndScintModel() :
-  fWion(23.6e-6), fBirksK(0.0486), fBirksA(0.800), fLArDensity(1.39)
+  fWion(23.6e-6), fBirksK(0.0497), fBirksA(0.808), fLArDensity(1.39)
 {
   fIonizationDensity = 1.0 / fWion;
 }

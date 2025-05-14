@@ -8,9 +8,6 @@
 
 #define SLARIONANDSCINTMODEL_H
 
-#include <iostream>
-#include <vector>
-
 class G4MaterialPropertiesTable;
 
 struct Ion_and_Scint_t {
@@ -30,7 +27,7 @@ class SLArIonAndScintModel {
     enum EISModel {kSeparate = 0, kLArQL = 1};
     SLArIonAndScintModel();
     SLArIonAndScintModel(const G4MaterialPropertiesTable* mpt); 
-    ~SLArIonAndScintModel() {}; 
+    virtual ~SLArIonAndScintModel() {}; 
 
     virtual Ion_and_Scint_t ComputeIonAndScintYield(const double& energy_deposit, const double& step_length, const double& electric_field) const = 0; 
     virtual Ion_and_Scint_t ComputeIonAndScintYield(double& dEdx, const double& electric_field) const = 0; 

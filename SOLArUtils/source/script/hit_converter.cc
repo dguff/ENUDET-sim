@@ -76,7 +76,7 @@ int main (int argc, char *argv[]) {
   TString output_file_path = ""; 
   Float_t noise_rms_eeV =  900.0; 
   Float_t threshold_eeV = 3800.0; 
-  Float_t window_int_us =    1.0; 
+  Float_t window_int_us =    1.8; 
 
   while ( (c = getopt_long(argc, argv, short_opts, long_opts, &option_index)) != -1) {
     switch(c) {
@@ -175,6 +175,7 @@ int main (int argc, char *argv[]) {
   TChannelAnalyzer ch_analyzer; 
   ch_analyzer.set_hit_threshold( threshold_eeV );
   ch_analyzer.set_channel_rms( noise_rms_eeV ); 
+  ch_analyzer.set_integration_window_us( window_int_us );
   
   while( mc_tree_reader.Next() ) {
     hitvars.reset(); 

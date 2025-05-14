@@ -10,8 +10,6 @@
 
 #include "event/SLArMCPrimaryInfo.hh"
 
-#endif /* end of include guard SLARMCTRUTH_HH */
-
 class SLArMCTruth : public TObject {
   public: 
     
@@ -69,4 +67,4 @@ class SLArMCTruth : public TObject {
     ClassDef(SLArMCTruth, 1);
 };
 
-
+#endif /* end of include guard SLARMCTRUTH_HH */
