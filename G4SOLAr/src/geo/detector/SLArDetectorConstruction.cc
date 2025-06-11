@@ -7,6 +7,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 
+#include "action/SLArRunAction.hh"
 #include "SLArAnalysisManager.hh"
 #include "physics/SLArCrossSectionBiasing.hh"
 

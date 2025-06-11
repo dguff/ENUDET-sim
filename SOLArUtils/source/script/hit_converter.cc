@@ -82,23 +82,18 @@ int main (int argc, char *argv[]) {
     switch(c) {
       case 'i' :
         input_file_path = optarg;
-        printf("Monte Carlo input file: %s\n", input_file_path.Data());
         break;
       case 'o' :
         output_file_path = optarg;
-        printf("hit output file: %s\n", output_file_path.Data());
         break;
       case 'n' : 
         noise_rms_eeV = std::atof(optarg);
-        printf("pixel noise rms [eeV]: %.2f\n", noise_rms_eeV);  
         break;
       case 't' :
         threshold_eeV = std::atof(optarg);
-        printf("hit threshold [eeV]: %.2f\n", threshold_eeV);  
         break;
       case 'w' : 
         window_int_us = std::atof(optarg);
-        printf("integration window: %.2f μs\n", window_int_us); 
         break;
       case 'h' : 
         print_usage(); 
@@ -111,6 +106,11 @@ int main (int argc, char *argv[]) {
         break;
     }
   }
+  printf("Monte Carlo input file: %s\n", input_file_path.Data());
+  printf("hit output file: %s\n", output_file_path.Data());
+  printf("pixel noise rms [eeV]: %.2f\n", noise_rms_eeV);  
+  printf("hit threshold [eeV]: %.2f\n", threshold_eeV);  
+  printf("integration window: %.2f us\n", window_int_us); 
 
   // Setup input file and MC event
   TFile* input_file = new TFile(input_file_path); 
