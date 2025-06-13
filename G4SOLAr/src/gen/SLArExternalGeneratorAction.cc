@@ -132,7 +132,6 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     G4ThreeVector dir(0, 0, 0);
     fVtxGen->ShootVertex(vtx_pos);
     G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
-    G4cout << "Vtx time: " << vtx_time << G4endl;
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());
