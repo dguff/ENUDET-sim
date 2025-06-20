@@ -14,15 +14,20 @@
 
 namespace geo {
   double get_bounding_volume_surface(const G4VSolid* solid) {
+    static std::vector<G4VSolid*> flagged_solids;
+
     if (dynamic_cast<const G4Box*>(solid)) {
       const auto box = (G4Box*)solid;
       return box->GetSurfaceArea(); 
     }
     else {
-      printf("geo::get_bounding_volume_surface: WARNING"); 
-      printf("get_bounding_volume_surface is only implemented for G4Box solids. "); 
-      printf("Feel free to work on your solid's implementation and let me know!\n");
-      printf("Using a box approximation.\n");
+      if (std::find(flagged_solids.begin(), flagged_solids.end(), solid) == flagged_solids.end()) {
+        flagged_solids.push_back(const_cast<G4VSolid*>(solid));
+        printf("geo::get_bounding_volume_surface: WARNING "); 
+        printf("get_bounding_volume_surface is only implemented for G4Box solids. "); 
+        printf("Feel free to work on your solid's implementation and let me know!\n");
+        printf("Using a box approximation.\n");
+      }
 
       G4ThreeVector lo; 
       G4ThreeVector hi;

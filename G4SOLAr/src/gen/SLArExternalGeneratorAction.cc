@@ -107,7 +107,7 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
   const auto slar_random = run_action->GetTRandomInterface();
   
   G4int expected_particles = 0;
-  G4int total_particles = 0;
+  G4int total_particles = 1;
   G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
   //G4cout << "Total time: " << total_time << G4endl;
   G4double face_area = 0;
@@ -132,7 +132,6 @@ void SLArExternalGeneratorAction::GeneratePrimaries(G4Event* ev)
     G4ThreeVector dir(0, 0, 0);
     fVtxGen->ShootVertex(vtx_pos);
     G4double vtx_time = fVtxGen->GetTimeGenerator().SampleTime();
-    G4cout << "Vtx time: " << vtx_time << G4endl;
 
     //printf("Energy spectrum pointer: %p\n", fEnergySpectrum.get());
     //printf("Energy spectrum from %s\n", fEnergySpectrum->GetName());

@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
-project(SOLArUtils LANGUAGES CXX VERSION 0.3.0)
+project(SOLArUtils LANGUAGES CXX C VERSION 0.3.0)
 
 list(APPEND CMAKE_PREFIX_PATH 
   $ENV{ROOTSYS}

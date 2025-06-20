@@ -596,6 +596,7 @@ void SLArAnalysisManager::SetupBacktrackerRecords()
     }
 
   }
+}
 
 #ifdef SLAR_EXTERNAL
   void SLArAnalysisManager::SetupExternalsTree() {
@@ -617,4 +618,3 @@ void SLArAnalysisManager::SetupBacktrackerRecords()
     printf("ExternalsTree created with AutoFlush set to %lld\n", fExternalsTree->GetAutoFlush()); 
   }
 #endif // SLAR_EXTERNAL
-}
