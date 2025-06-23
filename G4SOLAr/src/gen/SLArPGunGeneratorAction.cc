@@ -13,11 +13,12 @@
 
 
 #include "G4Types.hh"
+#include "G4OpticalPhoton.hh"
 #include "rapidjson/document.h"
 
 namespace gen {
 SLArPGunGeneratorAction::SLArPGunGeneratorAction(const G4String label)  
-  : SLArBaseGenerator(label), fParticleGun(nullptr)
+  : SLArBaseGenerator(label), fParticleGun(nullptr), fParticleTable(nullptr)
 {
   fParticleGun = std::make_unique<G4ParticleGun>(1); 
   fParticleTable = G4ParticleTable::GetParticleTable(); 
@@ -44,6 +45,7 @@ void SLArPGunGeneratorAction::SetParticle(G4ParticleDefinition* particle_def)
 {
   if (particle_def) {
     fParticleGun->SetParticleDefinition(particle_def); 
+    fParticleDefinition = particle_def;
     return;
   } else {
     printf("SLArPGunGeneratorAction::SetParticle "); 
@@ -69,6 +71,10 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticleMomentumDirection( dir );
     fParticleGun->SetParticleEnergy( SampleEnergy(fConfig.ene_config) ); 
     fParticleGun->SetParticleTime( vtx_time ); 
+    if (fParticleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()) {
+      G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( dir ); 
+      fParticleGun->SetParticlePolarization( polarization );
+    }
     fParticleGun->GeneratePrimaryVertex(anEvent);
 
     fConfig.ene_config.energy_tmp = fParticleGun->GetParticleEnergy();
