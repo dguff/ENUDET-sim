@@ -243,26 +243,30 @@ int process_event(
 {
   int nhits_total = 0; 
 
-  const std::map<int, SLArEventSuperCellArray> walls = ev_pds->GetConstOpDetArrayMap();
-  const std::map<int, SLArEventAnode>& anodes = ev_anode->GetConstAnodeMap(); 
-
-  // read the anode signals first
-  for (const auto &anode_ : anodes) {
-    const SLArEventAnode& ev_anode = anode_.second;
-    int nhits = process_anode_light( 
-        ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTiles.at(anode_.first), hTime);
-    int qhits = process_anode_charge(
-        ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTilesCharge.at(anode_.first)
-        );
-    nhits_total += nhits;
+  if (ev_anode) {
+    const std::map<int, SLArEventAnode>& anodes = ev_anode->GetConstAnodeMap(); 
+    // read the anode signals first
+    for (const auto &anode_ : anodes) {
+      const SLArEventAnode& ev_anode = anode_.second;
+      int nhits = process_anode_light( 
+          ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTiles.at(anode_.first), hTime);
+      int qhits = process_anode_charge(
+          ev_anode, AnodeSysCfg.at(anode_.first), h2AnodeTilesCharge.at(anode_.first)
+          );
+      nhits_total += nhits;
+    }
   }
+
   // let's read the wall modules now
-  for (const auto& wallevent : walls) {
-    const SLArEventSuperCellArray& ev_pdarray = wallevent.second;
-    SLArCfgSuperCellArray& cfg_pdarray = PDSSysConfig->GetBaseElement(wallevent.first);
-    int nhits = process_pdarray(
-        ev_pdarray, &cfg_pdarray, h2PDArray.at(wallevent.first), hTime);
-    nhits_total += nhits;
+  if (ev_pds) {
+    const std::map<int, SLArEventSuperCellArray> walls = ev_pds->GetConstOpDetArrayMap();
+    for (const auto& wallevent : walls) {
+      const SLArEventSuperCellArray& ev_pdarray = wallevent.second;
+      SLArCfgSuperCellArray& cfg_pdarray = PDSSysConfig->GetBaseElement(wallevent.first);
+      int nhits = process_pdarray(
+          ev_pdarray, &cfg_pdarray, h2PDArray.at(wallevent.first), hTime);
+      nhits_total += nhits;
+    }
   }
 
   return nhits_total;
@@ -402,9 +406,24 @@ void refactor_test_full_display(const TString file_path)
   SLArMCTruth* ev_mctruth = {}; 
   SLArListEventAnode* ev_anode = {};
   SLArListEventPDS* ev_pds = {};
-  mc_tree->SetBranchAddress("MCTruth", &ev_mctruth); 
-  mc_tree->SetBranchAddress("EventAnode", &ev_anode);
-  mc_tree->SetBranchAddress("EventPDS", &ev_pds);
+  if (mc_tree->GetBranch("MCTruth") == nullptr) {
+    printf("Error: no MCTruth branch in the tree %s\n", mc_tree->GetName());
+  } else {
+    mc_tree->SetBranchAddress("MCTruth", &ev_mctruth); 
+  }
+
+  if (mc_tree->GetBranch("EventAnode") == nullptr) {
+    printf("Error: no EventAnode branch in the tree %s\n", mc_tree->GetName());
+  } else {
+    mc_tree->SetBranchAddress("EventAnode", &ev_anode); 
+  }
+
+  if (mc_tree->GetBranch("EventPDS") == nullptr) {
+    printf("Error: no EventPDS branch in the tree %s\n", mc_tree->GetName());
+  } else {
+    mc_tree->SetBranchAddress("EventPDS", &ev_pds);
+  }
+  
 
   TTimer* timer = new TTimer("gSystem->ProcessEvents();", 50, false); 
 
@@ -466,11 +485,13 @@ void refactor_test_full_display(const TString file_path)
       }
       // display MC truth
       gtracks.clear(); 
-      get_mctruth_tracks(gtracks, ev_mctruth->GetPrimaries(), AnodeSysCfg.at(tpc_id)); 
-      printf("Drawing %ld tracks for TPC %i on canvas %s.%s\n", 
-          gtracks.size(), tpc_id, c->GetName(), pad->GetName());
-      for (auto& g : gtracks) {
-        g.Draw("l same"); 
+      if (ev_mctruth) {
+        get_mctruth_tracks(gtracks, ev_mctruth->GetPrimaries(), AnodeSysCfg.at(tpc_id)); 
+        printf("Drawing %ld tracks for TPC %i on canvas %s.%s\n", 
+            gtracks.size(), tpc_id, c->GetName(), pad->GetName());
+        for (auto& g : gtracks) {
+          g.Draw("l same"); 
+        }
       }
       pad->Modified();
       pad->Update();
