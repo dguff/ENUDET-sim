@@ -76,12 +76,25 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4PrimaryVertex* vertex = new G4PrimaryVertex( vtx, vtx_time ); 
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
 
+
+  auto& record = gen_records.AddRecord( GetGeneratorEnum(), GetLabel() ); 
+  auto& status = record.GetGenStatus();
+  status.resize(3); 
+
+  const G4ThreeVector vtx_lar_frame = geo::transform_frame_world_to_det( vtx ); 
+
+  status[0] = vtx_lar_frame.x()*10.0;
+  status[1] = vtx_lar_frame.y()*10.0;
+  status[2] = vtx_lar_frame.z()*10.0;
+
 #ifdef SLAR_DEBUG
   printf("SLArPBombGeneratorAction::GeneratePrimaries(): Generating %i %ss\n", 
       fConfig.n_particles, fConfig.particle_name.data()); 
+  printf("Vertex position: %.2f, %.2f, %.2f\n", vtx.x(), vtx.y(), vtx.z());
+  printf("Vertex position in LAr frame: %.2f, %.2f, %.2f\n", 
+      vtx_lar_frame.x(), vtx_lar_frame.y(), vtx_lar_frame.z()); 
 #endif // DEBUG
 
-  auto& record = gen_records.AddRecord( GetGeneratorEnum(), GetLabel() ); 
 
   for (size_t n=0; n<fConfig.n_particles; n++) {
     G4PrimaryParticle* particle = new G4PrimaryParticle(fParticleDefinition);
