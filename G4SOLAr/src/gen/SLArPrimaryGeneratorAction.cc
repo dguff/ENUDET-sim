@@ -44,7 +44,8 @@ namespace gen {
 
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
-   fVerbose(0)
+   fVerbose(0),
+   fLocalEventID(0)
 {
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
@@ -379,7 +380,9 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   for (const auto& gen : fGeneratorActions) {
     G4int previousNrOfVertices = anEvent->GetNumberOfPrimaryVertex();
     gen.second->GeneratePrimaries( anEvent ); 
-    gen.second->RegisterPrimaries( anEvent, previousNrOfVertices ); 
+    if (fRegisterPrimaries) {
+      gen.second->RegisterPrimaries( anEvent, previousNrOfVertices ); 
+    }
   }
 
   //G4int n = anEvent->GetNumberOfPrimaryVertex(); 
@@ -431,6 +434,7 @@ void SLArPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     //}
   //}
 
+  fLocalEventID++; // increment local event ID
   return;
 }
 

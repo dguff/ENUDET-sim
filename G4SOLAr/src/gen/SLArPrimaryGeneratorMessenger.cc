@@ -30,6 +30,11 @@ SLArPrimaryGeneratorMessenger::SLArPrimaryGeneratorMessenger(SLArPrimaryGenerato
   fCmdGenConfig->SetGuidance("Set generator configuration");
   fCmdGenConfig->SetParameterName("ConfigFile", false);
 
+  fCmdGenRegisterPrimaries = 
+    new G4UIcmdWithABool("/SLAr/gen/registerPrimaries", this);
+  fCmdGenRegisterPrimaries->SetGuidance("Register primaries in the analysis manager");
+  fCmdGenRegisterPrimaries->SetParameterName("registerPrimaries", true, false);
+
   fCmdVerbose = 
     new G4UIcmdWithAnInteger("/SLAr/gen/verbose", this); 
   fCmdVerbose->SetGuidance("verbose level"); 
@@ -57,6 +62,14 @@ void SLArPrimaryGeneratorMessenger::SetNewValue(
   else if (command == fCmdVerbose) {
     G4String verbose_str = newValue; 
     fSLArGenAction->SetVerboseLevel( std::stoi( verbose_str ) ); 
+  }
+  else if (command == fCmdGenRegisterPrimaries) {
+    G4bool register_primaries = fCmdGenRegisterPrimaries->GetNewBoolValue(newValue);
+    fSLArGenAction->SetRegisterPrimaries(register_primaries);
+  }
+  else {
+    G4Exception("SLArPrimaryGeneratorMessenger::SetNewValue",
+                "InvalidCommand", FatalException, "Unknown command");
   }
 
 }
