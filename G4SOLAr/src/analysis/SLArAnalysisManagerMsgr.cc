@@ -16,6 +16,7 @@
 #include "G4UIcmdWithAnInteger.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
+#include "G4SDManager.hh"
 
 #ifdef SLAR_GDML
 #include "G4GDMLParser.hh"
@@ -30,6 +31,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdEnableMCTruthOutput(nullptr),
   fCmdEnableAnodeOutput(nullptr),
   fCmdEnablePDSOutput(nullptr),
+  fCmdDisableSD(nullptr),
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr), 
@@ -92,6 +94,11 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdEnablePDSOutput = 
     new G4UIcmdWithABool(UIManagerPath+"enablePDSOutput", this);
   fCmdEnablePDSOutput->SetGuidance("Enable PDS output");
+
+  fCmdDisableSD = 
+    new G4UIcmdWithAString(UIManagerPath+"disableSD", this);
+  fCmdDisableSD->SetGuidance("Disable sensitive detector");
+  fCmdDisableSD->SetParameterName("sensitive_detector", false);
 
   fCmdEnableBacktracker = 
     new G4UIcmdWithAString(UIManagerPath+"enableBacktracker", this);
@@ -175,6 +182,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdEnableMCTruthOutput) delete fCmdEnableMCTruthOutput;
   if (fCmdEnableAnodeOutput  ) delete fCmdEnableAnodeOutput  ;
   if (fCmdEnablePDSOutput    ) delete fCmdEnablePDSOutput    ;
+  if (fCmdDisableSD          ) delete fCmdDisableSD          ;
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
@@ -255,6 +263,21 @@ void SLArAnalysisManagerMsgr::SetNewValue
   }
   else if (cmd == fCmdEnablePDSOutput) {
     SLArAnaMgr->EnableEventPDSOutput( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
+  else if (cmd == fCmdDisableSD) {
+    auto SDman = G4SDManager::GetSDMpointer();
+    auto sd = SDman->FindSensitiveDetector(newVal, true);
+
+    if (sd) {
+      sd->Activate( false );
+    }
+    else {
+      G4cerr << "SLArAnalysisManagerMsgr::SetNewValue: "
+             << "Cannot find sensitive detector with name: " 
+             << newVal << G4endl;
+    }
+    
+    return;
   }
   else if (cmd == fCmdEnableBacktracker) {
     SLArAnaMgr->ConstructBacktracker( newVal );
