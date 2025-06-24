@@ -4,7 +4,7 @@ set(SLAR_GEN_SOURCE_DIR "${SOLARSIM_SRC_DIR}/gen")
 set(SLAR_GEN_HEADERS
   "${SLAR_GEN_INCLUDE_DIR}/SLArRandomExtra.hh"
   # vertex generators
-  "${SLAR_GEN_INCLUDE_DIR}/SLArVertextGenerator.hh"
+  "${SLAR_GEN_INCLUDE_DIR}/SLArVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArGPSVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArBulkVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArBoxSurfaceVertexGenerator.hh"

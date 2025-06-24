@@ -8,7 +8,7 @@
 
 #define SLAREXTERNALGENERATORACTION_HH
 
-#include <SLArVertextGenerator.hh>
+#include <SLArVertexGenerator.hh>
 #include <SLArBaseGenerator.hh>
 #include <SLArPGunGeneratorAction.hh>
 

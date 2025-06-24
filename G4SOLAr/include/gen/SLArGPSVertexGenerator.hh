@@ -8,7 +8,7 @@
 
 #define SLARGPSVERTEXGENERATOR_HH
 
-#include "gen/SLArVertextGenerator.hh"
+#include "gen/SLArVertexGenerator.hh"
 #include "G4SPSPosDistribution.hh"
 #include "G4SPSRandomGenerator.hh"
 

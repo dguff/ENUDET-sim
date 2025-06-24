@@ -10,7 +10,7 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include <G4ParticleGun.hh>
-#include <SLArVertextGenerator.hh>
+#include <SLArVertexGenerator.hh>
 #include <SLArBaseGenerator.hh>
 
 class G4Event; 

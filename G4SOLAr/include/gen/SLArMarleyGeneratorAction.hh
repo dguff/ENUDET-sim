@@ -22,7 +22,6 @@
 
 // Geant4 includes
 #include <G4VUserPrimaryGeneratorAction.hh>
-#include <SLArVertextGenerator.hh>
 #include <SLArBaseGenerator.hh>
 
 // MARLEY includes

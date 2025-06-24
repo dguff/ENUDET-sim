@@ -1,13 +1,13 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArVertextGenerator
+ * @file        : SLArVertexGenerator
  * @created     : Friday Mar 29, 2024 14:58:43 CET
  * @brief       : Vertex generator interface class
  */
 
-#ifndef SLARVERTEXTGENERATOR_HH
+#ifndef SLARVERTEXGENERATOR_HH
 
-#define SLARVERTEXTGENERATOR_HH
+#define SLARVERTEXGENERATOR_HH
 
 #include <cstdio>
 #include "G4ThreeVector.hh"
@@ -279,7 +279,7 @@ namespace gen {
        * @brief Generate a vertex
        * @param vertex_ The generated vertex
        */
-      virtual void ShootVertex(G4ThreeVector &  vertex_) = 0;
+      virtual void ShootVertex(G4ThreeVector&  vertex_) = 0;
 
       /**
        * @brief Configure the vertex generator
@@ -320,138 +320,6 @@ namespace gen {
         jsonArray.PushBack(vec.z(), allocator);
         return;
       }
-  };
-
-  /**
-   * @class SLArPointVertexGenerator
-   * @brief Point vertex generator
-   *
-   * This class implements a point vertex generator. The vertex is set
-   * to a fixed position in the 3D space. The position can be configured
-   * using the `Config` method, which takes a JSON object as input.
-   *
-   * The JSON object should contain the following fields:
-   * - `xyz`: the position of the vertex, given as a JSON object with
-   *   `val` field containing an array of three values (x, y, z) and
-   *   an optional `unit` field for the unit of the values.
-   * - `volume` (optional): the name of the reference volume for the vertex position.
-   * - `time` (optional): the time generator configuration, passed to the
-   *
-   */
-  class SLArPointVertexGenerator : public SLArVertexGenerator {
-    public: 
-      inline SLArPointVertexGenerator() : fVertex(0.0, 0.0, 0.0) {}
-
-      inline SLArPointVertexGenerator(const G4ThreeVector& v) {
-        fVertex.set( v.x(), v.y(), v.z() ); 
-      }
-
-      inline ~SLArPointVertexGenerator() {}
-
-      inline G4String GetType() const override {return "point_vertex_generator";}
-
-      inline G4ThreeVector GetVertex() const {return fVertex;}
-
-      inline void ShootVertex(G4ThreeVector& vertex) override {
-        HepGeom::Point3D<G4double> vtx(fVertex.x(), fVertex.y(), fVertex.z());
-        vtx = fTransform * vtx;
-        vertex.set( vtx.x(), vtx.y(), vtx.z() );
-        return;
-      }
-
-      /**
-       * @brief Configure the vertex generator
-       *
-       * @param config The configuration object
-       *
-       * This method configures the vertex generator based on the provided
-       * configuration object. The configuration object is expected to be
-       * in JSON format and should contain the following fields:
-       * - `xyz`: the position of the vertex, given as a JSON object with 
-       *   `val` field containing an array of three values (x, y, z) and 
-       *   an optional `unit` field for the unit of the values.
-       * - `volume` (optional): the name of the reference volume for the vertex position.
-       * - `time` (optional): the time generator configuration, passed to the
-       *   `SLArTimeGenerator::SourceConfiguration` method.
-       */
-      inline void Config(const rapidjson::Value& config) override {
-        if ( config.HasMember("time") ) {
-          fTimeGen.SourceConfiguration( config["time"] );
-        }
-        if ( config.HasMember("volume") ) {
-          fReferenceVolumeName = config["volume"].GetString(); 
-
-          G4PhysicalVolumeStore* pvstore = G4PhysicalVolumeStore::GetInstance();
-          auto ref = pvstore->GetVolume(fReferenceVolumeName);
-          const auto to_global = geo::GetTransformToGlobal(ref);
-          fTransform = to_global;
-        }
-        if ( !config.HasMember("xyz") ) {
-          throw std::invalid_argument("point vtx gen missing mandatory \"xyz\" field\n");
-        }
-
-        const auto& jxyz = config["xyz"];
-        if (jxyz.HasMember("val") == false) {
-          throw std::invalid_argument("field \"val\" not found in \"xyz\" field\n");
-        }
-        const auto& jxyz_val = jxyz["val"];
-        if (jxyz_val.IsArray() == false) {
-          throw std::invalid_argument("field \"value\" must be a rapidjson::Array\n");
-        }
-        G4double vunit = unit::GetJSONunit(jxyz);
-        assert(jxyz_val.Size() == 3);
-        fVertex.setX( jxyz_val.GetArray()[0].GetDouble() * vunit ); 
-        fVertex.setY( jxyz_val.GetArray()[1].GetDouble() * vunit ); 
-        fVertex.setZ( jxyz_val.GetArray()[2].GetDouble() * vunit ); 
-        return;
-      }
-
-      void Print() const override {
-        printf("SLArPointVertexGenerator configuration dump:\n"); 
-        printf("vertex set to %g, %g, %g mm\n\n", 
-            fVertex.x(), fVertex.y(), fVertex.z()); 
-        if (fReferenceVolumeName.size() > 0) {
-          printf("Reference volume: %s\n", fReferenceVolumeName.data());
-        }
-        return;
-      }
-
-      const rapidjson::Document ExportConfig() const override {
-        rapidjson::Document vtx_info; 
-        vtx_info.SetObject(); 
-
-        G4String gen_type = GetType();
-        char buffer[50];
-        int len = snprintf(buffer, sizeof(buffer), "%s", gen_type.data());
-        rapidjson::Value str_gen_type;
-        str_gen_type.SetString(buffer, len, vtx_info.GetAllocator());
-
-        vtx_info.AddMember("type", str_gen_type, vtx_info.GetAllocator()); 
-        rapidjson::Value vtx_coord(rapidjson::kArrayType); 
-        vtx_coord.PushBack( fVertex.x(), vtx_info.GetAllocator() ); 
-        vtx_coord.PushBack( fVertex.y(), vtx_info.GetAllocator() ); 
-        vtx_coord.PushBack( fVertex.z(), vtx_info.GetAllocator() ); 
-        vtx_info.AddMember("vertex", vtx_coord, vtx_info.GetAllocator()); 
-
-        if (fReferenceVolumeName.empty() == false) {
-          rapidjson::Value jvol; 
-          jvol.SetString(fReferenceVolumeName.data(), vtx_info.GetAllocator());
-          vtx_info.AddMember("volume", jvol, vtx_info.GetAllocator());
-        }
-
-        auto dtime = fTimeGen.ExportConfig();
-        rapidjson::Value jtime; jtime.SetObject();
-        jtime.CopyFrom( dtime, vtx_info.GetAllocator() );
-        vtx_info.AddMember("time", jtime, vtx_info.GetAllocator());
-
-        return vtx_info; 
-      }
-
-    private: 
-      G4ThreeVector fVertex;
-      G4String fReferenceVolumeName = {};
-      G4Transform3D fTransform = {};
-
   };
   }
 }
