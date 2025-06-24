@@ -5,6 +5,7 @@
  */
 
 #include "SLArPBombGeneratorAction.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "SLArIsotropicDirectionGenerator.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArRandomExtra.hh"

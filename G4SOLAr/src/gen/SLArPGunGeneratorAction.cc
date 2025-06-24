@@ -9,6 +9,7 @@
 #include "SLArRandomExtra.hh"
 #include "SLArRootUtilities.hh"
 #include "G4ParticlePropertyTable.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "SLArFixedDirectionGenerator.hh"
 
 

@@ -1,5 +1,6 @@
 #include "SLArGENIEGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
 #include "G4IonTable.hh"

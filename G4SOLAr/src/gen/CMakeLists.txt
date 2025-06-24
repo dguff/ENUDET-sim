@@ -5,6 +5,7 @@ set(SLAR_GEN_HEADERS
   "${SLAR_GEN_INCLUDE_DIR}/SLArRandomExtra.hh"
   # vertex generators
   "${SLAR_GEN_INCLUDE_DIR}/SLArVertexGenerator.hh"
+  "${SLAR_GEN_INCLUDE_DIR}/SLArPointVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArGPSVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArBulkVertexGenerator.hh"
   "${SLAR_GEN_INCLUDE_DIR}/SLArBoxSurfaceVertexGenerator.hh"
@@ -29,6 +30,7 @@ set(SLAR_GEN_HEADERS
 
 set(SLAR_GEN_SRC
   "${SLAR_GEN_SOURCE_DIR}/SLArRandomExtra.cc"
+  "${SLAR_GEN_SOURCE_DIR}/SLArPointVertexGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArBulkVertexGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArGPSVertexGenerator.cc"
   "${SLAR_GEN_SOURCE_DIR}/SLArBoxSurfaceVertexGenerator.cc"

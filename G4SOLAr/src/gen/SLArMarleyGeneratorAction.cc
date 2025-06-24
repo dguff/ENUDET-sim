@@ -40,6 +40,7 @@
 #include "SLArMarleyGeneratorAction.hh"
 #include "SLArRunAction.hh"
 #include "SLArRandomExtra.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "SLArFixedDirectionGenerator.hh"
 #include "SLArSunDirectionGenerator.hh"
 

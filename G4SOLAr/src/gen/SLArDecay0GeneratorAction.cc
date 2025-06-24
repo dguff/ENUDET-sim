@@ -6,7 +6,8 @@
 
 #include "SLArDecay0GeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
-#include <SLArBulkVertexGenerator.hh>
+#include "SLArBulkVertexGenerator.hh"
+#include "SLArPointVertexGenerator.hh"
 
 // Standard library:
 #include <iostream>

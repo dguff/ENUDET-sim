@@ -9,6 +9,7 @@
 #include "SLArAnalysisManager.hh"
 #include "SLArRootUtilities.hh"
 #include "SLArExternalGeneratorAction.hh"
+#include "SLArPointVertexGenerator.hh"  
 #include "SLArBoxSurfaceVertexGenerator.hh"
 #include "SLArIsotropicDirectionGenerator.hh"
 #include "SLArBulkVertexGenerator.hh"

@@ -6,6 +6,7 @@
 
 #include "gen/SLArCRYGeneratorAction.hh"
 #include "gen/SLArIsotropicDirectionGenerator.hh"
+#include "gen/SLArPointVertexGenerator.hh"
 #include "analysis/SLArAnalysisManager.hh"
 #include "geo/SLArGeoUtils.hh"
 #include "G4RandomTools.hh"
