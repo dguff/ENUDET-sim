@@ -45,7 +45,8 @@ namespace gen {
 SLArPrimaryGeneratorAction::SLArPrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(), 
    fVerbose(0),
-   fLocalEventID(0)
+   fLocalEventID(0), 
+   fRegisterPrimaries(true)
 {
   //create a messenger for this class
   fGunMessenger = new SLArPrimaryGeneratorMessenger(this);
