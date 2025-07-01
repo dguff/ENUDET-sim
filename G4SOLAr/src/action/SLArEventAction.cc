@@ -529,6 +529,12 @@ int SLArEventAction::FindAncestorID(int trkid) {
 
   SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
   const auto& primaries = anaMngr->GetMCTruth().GetPrimaries(); 
+
+  if (primaries.empty()) {
+    fprintf(stderr, "SLArEventAction::FindAncestorID(%i) ERROR: no primaries found in event\n", trkid);
+    return -1; 
+  }
+
   bool caught = false; 
 //#ifdef SLAR_DEBUG
   //printf("SLArEventAction::FindAncestorID() Lookging for primary parent of %i among\n", trkid);
@@ -557,7 +563,11 @@ int SLArEventAction::FindAncestorID(int trkid) {
       if (pid == p.GetTrackID()) {
         primary = pid; 
         caught = true;
-      }
+//#ifdef SLAR_DEBUG
+        //printf("Acestor found: trk %i associated to primary %i\n", 
+            //trkid, primary);
+//#endif
+       }
     }
 
     trkid = pid; 
