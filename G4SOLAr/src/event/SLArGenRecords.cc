@@ -27,6 +27,7 @@ bool SLArGenRecord::operator==(const SLArGenRecord& other) const {
     fGenLabel == other.fGenLabel &&
     fStatus == other.fStatus;
 }
+
 const Float_t SLArGenRecord::GetEnergy() const 
 {
     if (fStatus.size() == 0) {
