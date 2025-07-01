@@ -47,8 +47,8 @@ class SLArMCPrimaryInfo : public TNamed
     inline int GetCode() const {return fPDG;}
     inline int GetPDG() const {return fPDG;}
     inline int GetTrackID() const {return fTrkID;}
-    inline std::vector<std::unique_ptr<SLArEventTrajectory>>& GetTrajectories() {return fTrajectories;}
-    inline const std::vector<std::unique_ptr<SLArEventTrajectory>>& GetConstTrajectories() const {return fTrajectories;}
+    inline std::vector<SLArEventTrajectory*>& GetTrajectories() {return fTrajectories;}
+    inline const std::vector<SLArEventTrajectory*>& GetConstTrajectories() const {return fTrajectories;}
     inline int GetTotalScintPhotons() const {return fTotalScintPhotons;}
     inline int GetTotalCerenkovPhotons() const {return fTotalCerenkovPhotons;}
 
@@ -63,7 +63,8 @@ class SLArMCPrimaryInfo : public TNamed
     void ResetParticle();
     void SoftResetParticle();
     
-    int RegisterTrajectory(std::unique_ptr<SLArEventTrajectory> trj);
+    int RegisterTrajectory(SLArEventTrajectory&& trj);
+    int RegisterTrajectory(const SLArEventTrajectory& trj);
 
   private:
     Int_t fPDG; 
@@ -77,10 +78,18 @@ class SLArMCPrimaryInfo : public TNamed
     Double_t fTotalLArEdep; 
     std::vector<Double_t> fVertex;
     std::vector<Double_t> fMomentum;
-    std::vector<std::unique_ptr<SLArEventTrajectory>> fTrajectories;
+    std::vector<SLArEventTrajectory*> fTrajectories;
+
+    inline void ClearTrajectories() 
+    {
+      for (auto &trj : fTrajectories) {
+        delete trj;
+      }
+      fTrajectories.clear();
+    }
   
   public:
-    ClassDef(SLArMCPrimaryInfo, 4);
+    ClassDef(SLArMCPrimaryInfo, 5);
 };
 #endif /* end of include guard SLArMCTRACKINFO_HH */
 
