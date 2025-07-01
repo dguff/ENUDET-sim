@@ -113,19 +113,19 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
       }
       
       //printf("creating trajectory...\n");
-      std::unique_ptr<SLArEventTrajectory> trajectory = std::make_unique<SLArEventTrajectory>();
-      trajectory->SetTrackID( aTrack->GetTrackID() ); 
-      trajectory->SetParentID(aTrack->GetParentID()); 
-      trajectory->SetParticleName( particleName );
-      trajectory->SetPDGID( aTrack->GetDynamicParticle()->GetPDGcode() ); 
-      trajectory->SetCreatorProcess( creatorProc ); 
-      trajectory->SetTime( aTrack->GetGlobalTime() ); 
-      trajectory->SetWeight(aTrack->GetWeight()); 
-      trajectory->SetStoreTrajectoryPts( SLArAnaMgr->StoreTrajectoryFull() ); 
-      //trajectory->SetOriginVolCopyNo(aTrack->GetVolume()->GetCopyNo()); 
-      trajectory->SetInitKineticEne( aTrack->GetKineticEnergy() ); 
+      SLArEventTrajectory trajectory;
+      trajectory.SetTrackID( aTrack->GetTrackID() ); 
+      trajectory.SetParentID(aTrack->GetParentID()); 
+      trajectory.SetParticleName( particleName );
+      trajectory.SetPDGID( aTrack->GetDynamicParticle()->GetPDGcode() ); 
+      trajectory.SetCreatorProcess( creatorProc ); 
+      trajectory.SetTime( aTrack->GetGlobalTime() ); 
+      trajectory.SetWeight(aTrack->GetWeight()); 
+      trajectory.SetStoreTrajectoryPts( SLArAnaMgr->StoreTrajectoryFull() ); 
+      //trajectory.SetOriginVolCopyNo(aTrack->GetVolume()->GetCopyNo()); 
+      trajectory.SetInitKineticEne( aTrack->GetKineticEnergy() ); 
       auto& vertex_momentum = aTrack->GetMomentumDirection();
-      trajectory->SetInitMomentum( vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() );
+      trajectory.SetInitMomentum( vertex_momentum.x(), vertex_momentum.y(), vertex_momentum.z() );
       G4int ancestor_id = fEventAction->FindAncestorID( parentID ); 
 
       SLArMCPrimaryInfo* ancestor = nullptr; 
@@ -143,7 +143,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
 
       ancestor->RegisterTrajectory( std::move(trajectory) ); 
 
-      auto trkInfo = new SLArUserTrackInformation( ancestor->GetTrajectories().back().get() ); 
+      auto trkInfo = new SLArUserTrackInformation( ancestor->GetTrajectories().back() ); 
 
       trkInfo->SetStoreTrajectory(true); 
 
@@ -152,7 +152,7 @@ SLArStackingAction::ClassifyNewTrack(const G4Track * aTrack)
   }
   else 
   { // particle is optical photon
-    if(aTrack->GetParentID()>0)
+    if(aTrack->GetParentID() > 0)
     { // particle is secondary
       SLArAnalysisManager* anaMngr = SLArAnalysisManager::Instance(); 
       SLArMCPrimaryInfo* primary = nullptr; 
