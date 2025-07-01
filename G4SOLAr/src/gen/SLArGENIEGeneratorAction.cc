@@ -1,11 +1,13 @@
 #include "SLArGENIEGeneratorAction.hh"
 #include "SLArAnalysisManager.hh"
+#include "SLArRunAction.hh"
 #include "SLArPointVertexGenerator.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleTable.hh"
 #include "G4IonTable.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4String.hh"
+#include "G4RunManager.hh"
 
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
@@ -58,6 +60,12 @@ void SLArGENIEGeneratorAction::Configure() {
   m_gtree->SetBranchAddress("StdHepP4",&gVar.p4);
   m_gtree->SetBranchAddress("StdHepX4",&gVar.x4);
   m_gtree->SetBranchAddress("EvtVtx",&gVar.vtx);
+
+  // Set the transformation to map the vertex coordinates to the global coordinate system
+  G4PhysicalVolumeStore* pvstore = G4PhysicalVolumeStore::GetInstance();
+  auto ref = pvstore->GetVolume("target_lar_pv");
+  const auto to_global = geo::GetTransformToGlobal(ref);
+  fTransform = to_global;
 }
 
 /*
@@ -100,8 +108,10 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 
   size_t particle_idx = 0; // Think this can be done in a better way
 
-  G4ThreeVector vtx(0.,0.,0.);
-  vtx.set(gVar.vtx[0]*CLHEP::m, gVar.vtx[1]*CLHEP::m, gVar.vtx[2]*CLHEP::m);
+  HepGeom::Point3D<G4double> vtx(0.,0.,0.);
+  vtx.set(gVar.vtx[2]*CLHEP::m, gVar.vtx[1]*CLHEP::m, gVar.vtx[0]*CLHEP::m);
+  vtx = fTransform * vtx;
+
   std::vector<G4PrimaryVertex*> primary_vertices;
 
   const double gen_time = fVtxGen->GetTimeGenerator().SampleTime();
@@ -116,9 +126,9 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
     }
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
       G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
-          gVar.p4[i][0]*CLHEP::GeV,
-          gVar.p4[i][1]*CLHEP::GeV,
           gVar.p4[i][2]*CLHEP::GeV,
+          gVar.p4[i][1]*CLHEP::GeV,
+          gVar.p4[i][0]*CLHEP::GeV,
           gVar.p4[i][3]*CLHEP::GeV);
 
       // Set the time of the primary particle

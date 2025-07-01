@@ -1,6 +1,6 @@
 /**
  * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
- * @file        : SLArVertexGenerator
+ * @file        : SLArVertexGenerator.hh
  * @created     : Friday Mar 29, 2024 14:58:43 CET
  * @brief       : Vertex generator interface class
  */

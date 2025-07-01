@@ -13,6 +13,7 @@
 
 #include "G4Event.hh"
 #include "G4ThreeVector.hh"
+#include "G4Transform3D.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4PrimaryVertex.hh"
 #include "G4PrimaryParticle.hh"
@@ -62,6 +63,7 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     GENIEConfig_t fConfig; 
     TTree *m_gtree {};
     TFile *m_gfile {}; 
+    G4Transform3D fTransform;
     GenieEvent_t gVar;
 };
 
