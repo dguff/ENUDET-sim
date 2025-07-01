@@ -51,6 +51,18 @@ struct trj_point {
     fLAr = right.fLAr;
   }
 
+  trj_point(trj_point&& right) noexcept {
+    fX = right.fX;
+    fY = right.fY;
+    fZ = right.fZ;
+    fKEnergy = right.fKEnergy;
+    fEdep = right.fEdep;
+    fNph = right.fNph; 
+    fNel = right.fNel;
+    fCopy = right.fCopy; 
+    fLAr = right.fLAr;
+  }
+
 };
 
 class SLArEventTrajectoryLite;
@@ -60,6 +72,7 @@ class SLArEventTrajectory : public TObject
   public:
     SLArEventTrajectory();
     SLArEventTrajectory(const SLArEventTrajectory& trj);
+    SLArEventTrajectory(SLArEventTrajectory&& trj) = default;
     ~SLArEventTrajectory();
 
     TString GetParticleName() const {return fParticleName;}
@@ -124,7 +137,7 @@ class SLArEventTrajectory : public TObject
     float                  fTotalNel         ; 
 
   public:
-    ClassDef(SLArEventTrajectory, 4);
+    ClassDef(SLArEventTrajectory, 5);
 };
 
 class SLArEventTrajectoryLite : public TObject {
