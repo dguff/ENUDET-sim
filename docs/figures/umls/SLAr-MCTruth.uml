@@ -12,7 +12,7 @@ class SLArMCPrimaryInfo {
     -Double_t fTotalLArEdep
     -vector<Double_t> fVertex
     -vector<Double_t> fMomentum
-    -vector<SLArEventTrajectory> fTrajectories 
+    -vector<SLArEventTrajectory*> fTrajectories 
   }
   class SLArMCTruth {
     -Int_t fEvNumber
