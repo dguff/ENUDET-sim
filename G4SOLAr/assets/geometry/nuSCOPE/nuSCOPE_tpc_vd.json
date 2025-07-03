@@ -1,6 +1,6 @@
 "TPC" : [
     {"copyID" : 10, 
-      "position": {"xyz" : [0, 100.05, 0], "unit" : "cm"},
+      "position": {"xyz" : [0, 110.05, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, -1, 0]},
       "dimensions" : [
         {"name" : "tpc_x"  , "val" :  5.00, "unit" :  "m"},
@@ -17,7 +17,7 @@
       }
     },
     {"copyID" : 11, 
-      "position": {"xyz" : [0, -100.05, 0], "unit" : "cm"},
+      "position": {"xyz" : [0, -110.05, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, 1, 0]},
       "dimensions" : [
         {"name" : "tpc_x"  , "val" : 5.00, "unit" :  "m"},
