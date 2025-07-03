@@ -14,22 +14,22 @@ ClassImp(SLArMCPrimaryInfo)
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo() : 
   TNamed(),
-  fID(0), fTrkID(0), fGeneratorLabel(), fEnergy(0.),
+  fPDG(0), fTrkID(0), fGeneratorLabel(), fEnergy(0.),
   fTotalEdep(0.), fTotalLArEdep(0), fTotalScintPhotons(0), fTotalCerenkovPhotons(0),
-  fVertex(3, 0.), fMomentum(3, 0.)
+  fVertex(3, 0.), fMomentum(3, 0.), fTrajectories{}
 {
   fTrajectories.reserve(100);
 }
 
 SLArMCPrimaryInfo::SLArMCPrimaryInfo(const SLArMCPrimaryInfo& p) 
   : TNamed(p), 
-    fID(p.fID), fTrkID(p.fTrkID), fGeneratorLabel(p.fGeneratorLabel), fEnergy(p.fEnergy), 
+    fPDG(p.fPDG), fTrkID(p.fTrkID), fGeneratorLabel(p.fGeneratorLabel), fEnergy(p.fEnergy), 
     fTime(p.fTime), fTotalEdep(p.fTotalEdep), fTotalLArEdep(p.fTotalLArEdep), 
     fTotalScintPhotons(p.fTotalScintPhotons), fTotalCerenkovPhotons(p.fTotalCerenkovPhotons),
     fVertex(p.fVertex), fMomentum(p.fMomentum) 
 {
   for (const auto& t : p.fTrajectories) {
-    fTrajectories.push_back( std::make_unique<SLArEventTrajectory>(*t) ); 
+    fTrajectories.emplace_back( new SLArEventTrajectory(*t) ); 
   }
 }
 
@@ -37,7 +37,7 @@ SLArMCPrimaryInfo& SLArMCPrimaryInfo::operator=(const SLArMCPrimaryInfo& p)
 {
   if (this != &p) {
     TNamed::operator=(p);
-    fID = p.fID;
+    fPDG = p.fPDG;
     fTrkID = p.fTrkID;
     fGeneratorLabel = p.fGeneratorLabel;
     fEnergy = p.fEnergy;
@@ -49,14 +49,14 @@ SLArMCPrimaryInfo& SLArMCPrimaryInfo::operator=(const SLArMCPrimaryInfo& p)
     fVertex = p.fVertex;
     fMomentum = p.fMomentum;
     for (const auto& t : p.fTrajectories) {
-      fTrajectories.push_back( std::make_unique<SLArEventTrajectory>(*t) ); 
+      fTrajectories.emplace_back( new SLArEventTrajectory(*t) ); 
     }
   }
   return *this;
 }
 
 SLArMCPrimaryInfo::~SLArMCPrimaryInfo() {
-  fTrajectories.clear();
+  ClearTrajectories();
 }
 
 void SLArMCPrimaryInfo::SetPosition(const double& x, const double& y,
@@ -80,7 +80,7 @@ void SLArMCPrimaryInfo::SetMomentum(const double& px, const double& py, const do
 
 void SLArMCPrimaryInfo::ResetParticle()
 {
-  fID           = 0;
+  fPDG           = 0;
   fTrkID        = 0; 
   fGeneratorLabel = "";
   fName         = "";
@@ -92,10 +92,8 @@ void SLArMCPrimaryInfo::ResetParticle()
   fTotalScintPhotons = 0; 
   fTotalCerenkovPhotons = 0; 
 
-  //for (auto &t :fTrajectories) {
-    //delete t;
-  //}
-  fTrajectories.clear();
+  ClearTrajectories();
+
   std::fill(fVertex.begin(), fVertex.end(), 0.); 
   std::fill(fMomentum.begin(), fMomentum.end(), 0.); 
 }
@@ -105,8 +103,9 @@ void SLArMCPrimaryInfo::PrintParticle() const
 {
   std::cout << "SLAr Primary Info: " << std::endl;
   std::cout << "Generator:" << fGeneratorLabel << std::endl;
-  std::cout << "Particle:" << fName << ", id: " << fID <<", trk id: " << fTrkID << std::endl;
+  std::cout << "Particle:" << fName << ", pdg: " << fPDG <<", trk id: " << fTrkID << std::endl;
   std::cout << "Energy  :" << fEnergy <<std::endl;
+  std::cout << "Time    :" << fTime << " (ns)" << std::endl;
   std::cout << "Vertex:" << fVertex[0] << ", " 
                          << fVertex[1]<< ", " 
                          << fVertex[2] << " (mm)" << std::endl;
@@ -115,23 +114,18 @@ void SLArMCPrimaryInfo::PrintParticle() const
                            << fMomentum[2]<< std::endl;
 }
 
-int SLArMCPrimaryInfo::RegisterTrajectory(std::unique_ptr<SLArEventTrajectory> trj)
+int SLArMCPrimaryInfo::RegisterTrajectory(SLArEventTrajectory&& trj)
 {
-  fTotalEdep += trj->GetTotalEdep(); 
-  //fTrajectories.push_back(trj);
-  fTrajectories.push_back( std::move(trj) );
-  //printf("Added trj %i to primary register\n", trj->GetTrackID());
+  fTotalEdep += trj.GetTotalEdep(); 
+  fTrajectories.emplace_back( new SLArEventTrajectory(std::move(trj)) );
   return (int)fTrajectories.size();
 }
 
-//template<>
-//int SLArMCPrimaryInfoPtr::RegisterTrajectory(SLArEventTrajectory* trj)
-//{
-  //fTotalEdep += trj->GetTotalEdep(); 
-  //fTrajectories.push_back( std::move(trj) );
-  ////printf("Added trj %i to primary register\n", trj->GetTrackID());
-  //return (int)fTrajectories.size();
-//}
-
+int SLArMCPrimaryInfo::RegisterTrajectory(const SLArEventTrajectory& trj)
+{
+  fTotalEdep += trj.GetTotalEdep(); 
+  fTrajectories.emplace_back( new SLArEventTrajectory(trj) );
+  return (int)fTrajectories.size();
+}
 
 

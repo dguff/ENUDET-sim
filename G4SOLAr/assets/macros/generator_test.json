@@ -10,8 +10,10 @@
           "value" : {"val" : 2, "unit" : "MeV"}
         },
         "direction" : {
-          "mode" : "fixed", 
-          "axis" : [0, 1, 0]
+          "type" : "fixed", 
+          "config" : {
+            "axis" : [0, 1, 0]
+          }
         },
         "vertex_gen" : {
           "type" : "point", 
@@ -22,32 +24,21 @@
         }
       }
     }
-    , 
-    {
-      "type" : "particlebomb", 
-      "label" : "pbomb_test", 
-      "config" : {
-        "particle" : "opticalphoton", 
-        "energy" : {"mode":"monoenergetic", "value":{"val" : 9.68, "unit" : "eV"}}, 
-        "n_particles" : 5, 
-        "direction" : {"mode" : "isotropic"},
-        "vertex_gen" : {
-          "type" : "point", 
-          "config" : {"xyz" : {"val" : [-50, -30, -60], "unit" : "cm"} }
-        }
-      }
-    }, 
+    ,
     {
       "type" : "marley", 
       "label" : "marley_test", 
       "config" : {
+        "neutrino": "ve",
         "target" : {"nuclides" : [1000180400], "atom_fractions" : [1.0]}, 
         "reactions" : ["ve40ArCC_Bhattacharya2009.react"], 
         "direction" : {
-          "mode" : "sun", 
-          "nadir_histogram" : {
-            "filename" : "./assets/marley_cfg/nadir_pdf.root", 
-            "objname" : "nadir_hist_surf"
+          "type" : "sun", 
+          "config" : {
+            "nadir_hist" : {
+              "filename" : "./assets/marley_cfg/nadir_pdf.root", 
+              "objname" : "nadir_hist_surf"
+            }
           }
         },
         "energy" : {
@@ -74,7 +65,7 @@
       "config" : {
         "decay0_type" : "background",
         "nuclide" : "Ar39", 
-        "n_decays" : 5,
+        "specific_activity" : {"val": 1.1, "unit": "Bq/kg"},
         "vertex_gen" : {
           "type" : "bulk", 
           "config" : {
@@ -89,27 +80,26 @@
           } 
         }
       }
-    }, 
+    }
+    , 
     {
       "type" : "external", 
       "label" : "cryostat_box", 
       "config" : {
-        "particle" : "neutron", 
-        "n_particles" : 4,
+        "particle" : "gamma", 
+        "n_particles" : 100,
         "energy" : {
-          "mode" : "ext_spectrum", 
-          "energy_distribution" : {
-            "filename" : "./assets/background/neutron_rates_20240313.root",
-            "objname" : "rock/rock_total"
-          }
+          "mode" : "mono", 
+          "value" : {"val" : 3.5, "unit" : "MeV"}
         },
         "direction" : {
-          "mode" : "isotropic"
+          "type" : "isotropic"
         },
         "vertex_gen" : {
           "type" : "boxsurface", 
           "config" : {
-            "volume" : "cryostat_pv"
+            "volume" : "TPC10", 
+            "origin_face" : 5
           }
         }
       }

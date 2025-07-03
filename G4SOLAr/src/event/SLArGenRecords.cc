@@ -27,7 +27,8 @@ bool SLArGenRecord::operator==(const SLArGenRecord& other) const {
     fGenLabel == other.fGenLabel &&
     fStatus == other.fStatus;
 }
-const Float16_t SLArGenRecord::GetEnergy() const 
+
+const Float_t SLArGenRecord::GetEnergy() const 
 {
     if (fStatus.size() == 0) {
       fprintf(stderr, "SLArGenRecord::GetEnergy() WARNING. Energy not set.\n"); 
@@ -36,9 +37,9 @@ const Float16_t SLArGenRecord::GetEnergy() const
     return fStatus.at(0);
   }
 
-const std::array<Float16_t, 3> SLArGenRecord::GetDirection() 
+const std::array<Float_t, 3> SLArGenRecord::GetDirection() 
 {
-  std::array<Float16_t, 3> dir{0, 0, 0}; 
+  std::array<Float_t, 3> dir{0, 0, 0}; 
   if (fStatus.size() < 4) {
     fprintf(stderr, "SLArGenRecord::GetDirection() WARNING. Direction not set.\n"); 
   }

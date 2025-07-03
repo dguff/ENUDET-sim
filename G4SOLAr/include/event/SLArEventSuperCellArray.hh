@@ -32,7 +32,6 @@ class SLArEventSuperCellArray : public TNamed {
     int SoftResetHits();
 
     void SetActive(bool is_active); 
-    //bool SortHits(); 
 
   private: 
     int fNhits; 
@@ -43,6 +42,50 @@ class SLArEventSuperCellArray : public TNamed {
   public:
     ClassDef(SLArEventSuperCellArray, 2); 
 }; 
+
+class SLArListEventPDS: public TObject {
+  public: 
+    inline SLArListEventPDS() : fEvNumber(-1), TObject() {}
+
+    inline SLArListEventPDS(const SLArListEventPDS& ev) 
+      : fEvNumber(ev.fEvNumber), TObject(ev) 
+    {
+      for (const auto& p : ev.fOpDetArrayMap) {
+        fOpDetArrayMap[p.first] = SLArEventSuperCellArray(p.second);
+      }
+    }
+
+    inline ~SLArListEventPDS() { fOpDetArrayMap.clear(); }
+
+    inline void SetEventNumber(int ev) {fEvNumber = ev;}
+    
+    inline int GetEventNumber() const {return fEvNumber;}
+    
+    inline std::map<int, SLArEventSuperCellArray>& GetOpDetArrayMap() {return fOpDetArrayMap;}
+    
+    inline const std::map<int, SLArEventSuperCellArray>& GetConstOpDetArrayMap() const {return fOpDetArrayMap;}
+    
+    inline SLArEventSuperCellArray& GetOpDetArrayByID(int id) {
+      auto it = fOpDetArrayMap.find(id);
+      if (it != fOpDetArrayMap.end()) {
+        return it->second;
+      }
+      throw std::out_of_range("PDS Wall ID not found");
+    }
+
+    inline void Reset() {
+      for (auto& p : fOpDetArrayMap) {
+        p.second.ResetHits();
+      }
+      fEvNumber = -1;
+    }
+  private: 
+    Int_t fEvNumber = {};
+    std::map<int, SLArEventSuperCellArray> fOpDetArrayMap;
+
+  public: 
+    ClassDef(SLArListEventPDS, 2);
+};
 
 #endif /* end of include guard SLAREVENTSUPERCELLARRAY */
 

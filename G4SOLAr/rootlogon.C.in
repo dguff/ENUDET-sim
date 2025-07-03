@@ -1,0 +1,20 @@
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : rootlogon.C
+ * @created     : Wednesday Jul 20, 2022 16:33:35 CEST
+ */
+
+#include <iostream>
+#include "TSystem.h"
+
+void rootlogon()
+{
+  gSystem->AddIncludePath("@SOLARSIM_INCLUDE_DIR@"); 
+  gSystem->AddDynamicPath("@SOLARSIM_LIB_DIR@");
+
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArReadoutSystemConfig@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEventReadout@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCTruth@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArGenRecords@CMAKE_SHARED_LIBRARY_SUFFIX@"); 
+}
+

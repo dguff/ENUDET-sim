@@ -85,12 +85,12 @@
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 #include "G4PhysicsModelCatalog.hh"
-#include <G4RunManager.hh>
-#include <SLArLArProperties.hh>
-#include <SLArDetectorConstruction.hh>
-#include "physics/SLArScintillation.h"
-#include "physics/SLArIonAndScintLArQL.h"
-#include "physics/SLArIonAndScintSeparate.h"
+#include "G4RunManager.hh"
+#include "SLArScintillation.hh"
+#include "detector/SLArDetectorConstruction.hh"
+#include "LiquidArgon/SLArLArProperties.hh"
+#include "LiquidArgon/SLArIonAndScintLArQL.h"
+#include "LiquidArgon/SLArIonAndScintSeparate.h"
 
 
 #include <unistd.h>     //required for usleep()
@@ -128,10 +128,9 @@ SLArScintillation::SLArScintillation(const G4String& processName,
 
   Initialise();
 
-  IonAndScint.insert(std::make_pair(
-        SLArIonAndScintModel::kSeparate, new SLArIonAndScintSeparate()));  
-  IonAndScint.insert(std::make_pair(
-        SLArIonAndScintModel::kLArQL, new SLArIonAndScintLArQL())); 
+  IonAndScint.resize(2, nullptr);
+  IonAndScint.at(SLArIonAndScintModel::kSeparate) = new SLArIonAndScintSeparate();  
+  IonAndScint.at(SLArIonAndScintModel::kLArQL) = new SLArIonAndScintLArQL(); 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -153,6 +152,10 @@ SLArScintillation::~SLArScintillation()
     delete fIntegralTable3;
   }
 
+  for (auto& is: IonAndScint) {
+    if (is) delete is;
+  }
+  IonAndScint.clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -434,9 +437,11 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
       SLArIonAndScintLArQL* ion_and_scint  = 
         (SLArIonAndScintLArQL*)IonAndScint[SLArIonAndScintModel::kLArQL]; 
 #ifdef SLAR_DEBUG
-      printf("SLArScintillation: %s - getting nr of photons from SLArIonAndScint\n", 
-          aTrack.GetParticleDefinition()->GetParticleName().data());
-      printf("dE/dx = %g MeV/cm\n", (TotalEnergyDeposit/CLHEP::MeV) / (StepWidth/CLHEP::cm) ); 
+      if (verboseLevel > 1) {
+        printf("SLArScintillation: %s - getting nr of photons from SLArIonAndScint\n", 
+            aTrack.GetParticleDefinition()->GetParticleName().data());
+        printf("dE/dx = %g MeV/cm\n", (TotalEnergyDeposit/CLHEP::MeV) / (StepWidth/CLHEP::cm) ); 
+      }
 #endif
       // Set scintillation yield
       GetScintillationYieldByParticleType( aTrack, aStep, yield1, yield2, yield3); 
@@ -470,30 +475,32 @@ G4VParticleChange* SLArScintillation::PostStepDoIt(const G4Track& aTrack,
       MeanNumberOfIonElectrons = IonAndScintYield.ion * (TotalEnergyDeposit/CLHEP::MeV); 
     }
 #ifdef SLAR_DEBUG
-    G4double PartX= aStep.GetPreStepPoint()->GetPosition().x()/CLHEP::cm;
-    G4double PartY= aStep.GetPreStepPoint()->GetPosition().y()/CLHEP::cm;
-    G4double PartZ= aStep.GetPreStepPoint()->GetPosition().z()/CLHEP::cm;
-    G4double PartE= aStep.GetPreStepPoint()->GetKineticEnergy()/CLHEP::MeV;
-    G4cout << " --------------------------------------------- " << G4endl;
-    G4cout << "Using ScintByParticle predicting " << MeanNumberOfPhotons << " photons with ";
-    if (MIP) {
-      G4cout << "LArQL model" << G4endl;
+    if (verboseLevel > 11) {
+      G4double PartX= aStep.GetPreStepPoint()->GetPosition().x()/CLHEP::cm;
+      G4double PartY= aStep.GetPreStepPoint()->GetPosition().y()/CLHEP::cm;
+      G4double PartZ= aStep.GetPreStepPoint()->GetPosition().z()/CLHEP::cm;
+      G4double PartE= aStep.GetPreStepPoint()->GetKineticEnergy()/CLHEP::MeV;
+      G4cout << " --------------------------------------------- " << G4endl;
+      G4cout << "Using ScintByParticle predicting " << MeanNumberOfPhotons << " photons with ";
+      if (MIP) {
+        G4cout << "LArQL model" << G4endl;
+      }
+      else {
+        G4cout << "Constant LY value" << G4endl;
+      }
+      G4cout << "Particle: " << aStep.GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName() << G4endl;
+      G4cout << "Position : " << PartX << " " << PartY << " " << PartZ << " cm" << G4endl;
+      G4cout << "E_Kin : " << PartE << " MeV" << G4endl;
+      G4cout << "TotalEnergyDeposit = " << TotalEnergyDeposit / CLHEP::MeV<< " MeV" << G4endl;
+      G4cout << "StepWidth = " << StepWidth / CLHEP::cm << " cm" << G4endl;
+      G4cout << "dE/dx = " << (TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) <<" MeV/cm" << G4endl;
+      G4cout << "Light yield = " << IonAndScintYield.scint << " ph/MeV" << G4endl; 
+      G4cout << "Charge yield = " << IonAndScintYield.ion << " elec/MeV" << G4endl; 
+      G4cout << "Mean nr of photons = " << MeanNumberOfPhotons << G4endl;
+      G4cout << "Mean nr of electrons = " << MeanNumberOfIonElectrons << G4endl;
+      G4cout << "Electric Field = " << electricField_ << " kV/cm" << G4endl;
+      G4cout << "Relative yields = " << yield1 << " " << yield2 << " " << yield3 << G4endl;
     }
-    else {
-      G4cout << "Constant LY value" << G4endl;
-    }
-    G4cout << "Particle: " << aStep.GetTrack()->GetDynamicParticle()->GetParticleDefinition()->GetParticleName() << G4endl;
-    G4cout << "Position : " << PartX << " " << PartY << " " << PartZ << " cm" << G4endl;
-    G4cout << "E_Kin : " << PartE << " MeV" << G4endl;
-    G4cout << "TotalEnergyDeposit = " << TotalEnergyDeposit / CLHEP::MeV<< " MeV" << G4endl;
-    G4cout << "StepWidth = " << StepWidth / CLHEP::cm << " cm" << G4endl;
-    G4cout << "dE/dx = " << (TotalEnergyDeposit / CLHEP::MeV)/(StepWidth / CLHEP::cm) <<" MeV/cm" << G4endl;
-    G4cout << "Light yield = " << IonAndScintYield.scint << " ph/MeV" << G4endl; 
-    G4cout << "Charge yield = " << IonAndScintYield.ion << " elec/MeV" << G4endl; 
-    G4cout << "Mean nr of photons = " << MeanNumberOfPhotons << G4endl;
-    G4cout << "Mean nr of electrons = " << MeanNumberOfIonElectrons << G4endl;
-    G4cout << "Electric Field = " << electricField_ << " kV/cm" << G4endl;
-    G4cout << "Relative yields = " << yield1 << " " << yield2 << " " << yield3 << G4endl;
 #endif
   }
   else
@@ -921,6 +928,7 @@ G4double SLArScintillation::GetScintillationYieldByParticleType(
   ScintTrackYield += ScintillationYield;
   ScintTrackEDep += StepEnergyDeposit;
 
+  if (verboseLevel > 1) {
   G4cout << "\n--- SLArScintillation::GetScintillationYieldByParticleType() ---\n"
          << "--\n"
          << "--  Name         =  "
@@ -937,7 +945,7 @@ G4double SLArScintillation::GetScintillationYieldByParticleType(
          << "--  Step yield   =  " << ScintillationYield << " photons\n"
          << "--  Track yield  =  " << ScintTrackYield << " photons\n"
          << G4endl;
-
+  }
   // The track has terminated within or has left the scintillator volume
   if((aTrack.GetTrackStatus() == fStopButAlive) or
      (aStep.GetPostStepPoint()->GetStepStatus() == fGeomBoundary))

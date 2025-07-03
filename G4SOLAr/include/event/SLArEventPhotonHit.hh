@@ -11,8 +11,9 @@
 #include "event/SLArEventGenericHit.hh"
 
 enum  EPhProcess {kAll = 0, kCher = 1, kScnt = 2, kWLS = 3};
-extern TString EPhProcName[4];
-extern TString EPhProcTitle[4];
+
+inline TString EPhProcName[4] = {"All", "Cher"     , "Scint"        , "WLS"};
+inline TString EPhProcTitle[4]= {"All", "Cherenkov", "Scintillation", "WLS"};
 
 class SLArEventPhotonHit : public SLArEventGenericHit  
 {

@@ -8,7 +8,6 @@
 
 #define SLARRECOHITS_HH
 
-#include <stdio.h>
 #include <array>
 #include <vector>
 #include "TObject.h"
