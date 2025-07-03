@@ -1,0 +1,44 @@
+// nuSCOPE CRT geometry configuration file
+// position of each module is defined with respect to the LAr target center
+"CRT" : [
+  {"copyID" : 60,
+    "position": {"xyz" : [0, 4.5, 0], "unit" : "m"},
+    "dimensions" : [
+      {"name" : "crt_x"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_y"  , "val" : 0.25, "unit" :  "m"},
+      {"name" : "crt_z"  , "val" : 23.0, "unit" :  "m"}
+    ]
+  },
+  {"copyID" : 61,
+    "position": {"xyz" : [4.5, 0, 0], "unit" : "m"},
+    "dimensions" : [
+      {"name" : "crt_x"  , "val" : 0.25, "unit" :  "m"},
+      {"name" : "crt_y"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_z"  , "val" : 23.0, "unit" :  "m"}
+    ]
+  },
+  {"copyID" : 62,
+    "position": {"xyz" : [-4.5, 0, 0], "unit" : "m"},
+    "dimensions" : [
+      {"name" : "crt_x"  , "val" : 0.25, "unit" :  "m"},
+      {"name" : "crt_y"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_z"  , "val" : 23.0, "unit" :  "m"}
+    ]
+  },
+  {"copyID" : 63,
+    "position": {"xyz" : [0, 0, 13.0], "unit" : "m"},
+    "dimensions" : [
+      {"name" : "crt_x"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_y"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_z"  , "val" : 0.25, "unit" :  "m"}
+    ]
+  },
+  {"copyID" : 64,
+    "position": {"xyz" : [0, 0, -13.0], "unit" : "m"},
+    "dimensions" : [
+      {"name" : "crt_x"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_y"  , "val" : 6.0, "unit" :  "m"},
+      {"name" : "crt_z"  , "val" : 0.25, "unit" :  "m"}
+    ]
+  }
+]

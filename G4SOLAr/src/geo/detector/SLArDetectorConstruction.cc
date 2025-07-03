@@ -464,17 +464,24 @@ void SLArDetectorConstruction::ConstructCathode() {
 
 void SLArDetectorConstruction::ConstructCRT() // --JM
 {
+  const G4ThreeVector det_pos = fDetector->GetModPV()->GetTranslation();
 
   for (auto &crt : fCRT) {
     crt.second->BuildMaterial(fMaterialDBFile);
     crt.second->BuildCRT();
- 
+
     auto geoinfo = crt.second->GetGeoInfo();
+
+    const G4ThreeVector crt_pos(
+        geoinfo->GetGeoPar("crt_pos_x"),
+        geoinfo->GetGeoPar("crt_pos_y"),
+        geoinfo->GetGeoPar("crt_pos_z"));
+    
+    // Transform the CRT position to the world coordinates
+ 
     crt.second->GetModPV(
         "CRT_pv", 0,
-        G4ThreeVector(geoinfo->GetGeoPar("crt_pos_x"),
-                      geoinfo->GetGeoPar("crt_pos_y"),
-                      geoinfo->GetGeoPar("crt_pos_z")),
+        det_pos + crt_pos,
         fWorldLog, 0);
     crt.second->SetVisAttributes();
   }
