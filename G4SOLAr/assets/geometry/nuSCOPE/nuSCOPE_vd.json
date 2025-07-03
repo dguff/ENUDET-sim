@@ -1,5 +1,5 @@
 {
-  #include "surf_experimental_hall.json"
+  #include "nuSCOPE_experimental_hall.json"
   ,
   #include "nuSCOPE_tpc_vd.json"
   ,
