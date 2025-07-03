@@ -15,7 +15,7 @@
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
 #include "SLArGeoUtils.hh"
-#include "SLArVertextGenerator.hh"
+#include "gen/SLArVertexGenerator.hh"
 
 namespace gen {
 namespace vertex {

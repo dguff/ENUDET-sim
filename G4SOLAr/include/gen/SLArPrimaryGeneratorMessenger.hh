@@ -38,7 +38,7 @@ class SLArPrimaryGeneratorMessenger: public G4UImessenger
   private:
     SLArPrimaryGeneratorAction*         fSLArGenAction;
     G4UIcmdWithAString*                 fCmdGenConfig;
-
+    G4UIcmdWithABool*                   fCmdGenRegisterPrimaries;
     G4UIcmdWithAnInteger*               fCmdVerbose;
 };
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

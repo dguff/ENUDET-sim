@@ -5,6 +5,7 @@
  */
 
 #include "SLArPBombGeneratorAction.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "SLArIsotropicDirectionGenerator.hh"
 #include "SLArAnalysisManager.hh"
 #include "SLArRandomExtra.hh"
@@ -75,28 +76,37 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4PrimaryVertex* vertex = new G4PrimaryVertex( vtx, vtx_time ); 
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
 
+
+  auto& record = gen_records.AddRecord( GetGeneratorEnum(), GetLabel() ); 
+  auto& status = record.GetGenStatus();
+  status.resize(3); 
+
+  const G4ThreeVector vtx_lar_frame = geo::transform_frame_world_to_det( vtx ); 
+
+  status[0] = vtx_lar_frame.x()*10.0;
+  status[1] = vtx_lar_frame.y()*10.0;
+  status[2] = vtx_lar_frame.z()*10.0;
+
 #ifdef SLAR_DEBUG
   printf("SLArPBombGeneratorAction::GeneratePrimaries(): Generating %i %ss\n", 
       fConfig.n_particles, fConfig.particle_name.data()); 
+  printf("Vertex position: %.2f, %.2f, %.2f\n", vtx.x(), vtx.y(), vtx.z());
+  printf("Vertex position in LAr frame: %.2f, %.2f, %.2f\n", 
+      vtx_lar_frame.x(), vtx_lar_frame.y(), vtx_lar_frame.z()); 
 #endif // DEBUG
 
-  auto& record = gen_records.AddRecord( GetGeneratorEnum(), GetLabel() ); 
 
   for (size_t n=0; n<fConfig.n_particles; n++) {
     G4PrimaryParticle* particle = new G4PrimaryParticle(fParticleDefinition);
 
     fDirGen->ShootDirection( dir );
-    fConfig.ene_config.energy_tmp = SampleEnergy();
+    fConfig.ene_config.energy_tmp = SampleEnergy(fConfig.ene_config);
 
     particle->SetMomentumDirection( dir ); 
     particle->SetKineticEnergy( fConfig.ene_config.energy_tmp ); 
 
     if (fParticleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()) {
       G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( dir ); 
-      //printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z());  
-      // #ifdef SLAR_DEBUG
-        // printf("Random linear polarization: %.2f, %.2f, %.2f\n", polarization.x(), polarization.y(), polarization.z()); 
-      // #endif
       particle->SetPolarization(polarization.x(), polarization.y(), polarization.z()); 
     }
 

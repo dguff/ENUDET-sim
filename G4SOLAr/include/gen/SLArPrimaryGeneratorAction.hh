@@ -85,6 +85,9 @@ namespace gen {
       void SourceConfiguration(const rapidjson::Value& config); 
       void SourceConfiguration(const G4String config_file_path); 
 
+      void IncrementEventID() {fLocalEventID++;}
+      G4int GetEventID() const {return fLocalEventID;}
+
       //inline void SetGenerator(EGenerator gen) {fGeneratorEnum = gen;}
       inline G4VUserPrimaryGeneratorAction* GetGenerator(const G4String& label) {
         if (fGeneratorActions.find(label) != fGeneratorActions.end()) {
@@ -93,6 +96,10 @@ namespace gen {
         return nullptr;
       }
       inline std::map<G4String, SLArBaseGenerator*>& GetGenerators() {return fGeneratorActions;}
+
+      inline void SetRegisterPrimaries(G4bool registerPrimaries) {
+        fRegisterPrimaries = registerPrimaries;
+      }
 
       void SetVerboseLevel( G4int verbose) { 
         fVerbose = verbose; 
@@ -107,6 +114,9 @@ namespace gen {
 
       SLArPrimaryGeneratorMessenger* fGunMessenger;
 
+      G4int fLocalEventID; ///< local event number
+
+      G4bool fRegisterPrimaries; ///< register primaries in the analysis manager
 
       G4int fVerbose;
 

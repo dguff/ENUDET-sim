@@ -9,15 +9,17 @@
 #include "SLArRandomExtra.hh"
 #include "SLArRootUtilities.hh"
 #include "G4ParticlePropertyTable.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "SLArFixedDirectionGenerator.hh"
 
 
 #include "G4Types.hh"
+#include "G4OpticalPhoton.hh"
 #include "rapidjson/document.h"
 
 namespace gen {
 SLArPGunGeneratorAction::SLArPGunGeneratorAction(const G4String label)  
-  : SLArBaseGenerator(label), fParticleGun(nullptr)
+  : SLArBaseGenerator(label), fParticleGun(nullptr), fParticleTable(nullptr)
 {
   fParticleGun = std::make_unique<G4ParticleGun>(1); 
   fParticleTable = G4ParticleTable::GetParticleTable(); 
@@ -44,6 +46,7 @@ void SLArPGunGeneratorAction::SetParticle(G4ParticleDefinition* particle_def)
 {
   if (particle_def) {
     fParticleGun->SetParticleDefinition(particle_def); 
+    fParticleDefinition = particle_def;
     return;
   } else {
     printf("SLArPGunGeneratorAction::SetParticle "); 
@@ -69,11 +72,23 @@ void SLArPGunGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     fParticleGun->SetParticleMomentumDirection( dir );
     fParticleGun->SetParticleEnergy( SampleEnergy(fConfig.ene_config) ); 
     fParticleGun->SetParticleTime( vtx_time ); 
+    if (fParticleDefinition == G4OpticalPhoton::OpticalPhotonDefinition()) {
+      G4ThreeVector polarization = SLArRandom::SampleLinearPolarization( dir ); 
+      fParticleGun->SetParticlePolarization( polarization );
+    }
     fParticleGun->GeneratePrimaryVertex(anEvent);
 
     fConfig.ene_config.energy_tmp = fParticleGun->GetParticleEnergy();
     
     auto& record = gen_status_vec.AddRecord(GetGeneratorEnum(), GetLabel());
+    auto& status = record.GetGenStatus();
+    status.resize(3); 
+    
+    const G4ThreeVector vtx_lar_frame = geo::transform_frame_world_to_det( vtx ); 
+    
+    status[0] = vtx_lar_frame.x()*10.0;
+    status[1] = vtx_lar_frame.y()*10.0;
+    status[2] = vtx_lar_frame.z()*10.0;
   }
 }
 

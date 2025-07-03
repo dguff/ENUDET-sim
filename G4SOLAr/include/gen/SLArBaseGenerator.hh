@@ -13,7 +13,7 @@
 #include "G4ParticleTable.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "SLArGeneratorConfig.hh"
-#include "SLArVertextGenerator.hh"
+#include "SLArVertexGenerator.hh"
 #include "SLArDirectionGenerator.hh"
 #include "event/SLArGenRecords.hh"
 

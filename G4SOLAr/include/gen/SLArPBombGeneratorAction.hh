@@ -9,7 +9,7 @@
 #define SLARPBOMBGENERATORACTION_HH
 
 #include <string>
-#include <SLArVertextGenerator.hh>
+#include <SLArVertexGenerator.hh>
 #include <SLArBaseGenerator.hh>
 
 #include <G4ParticleDefinition.hh>

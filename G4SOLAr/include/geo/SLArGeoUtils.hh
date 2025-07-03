@@ -11,11 +11,14 @@
 #include <map>
 #include <regex>
 
+#include "SLArRunAction.hh"
+
 #include "G4ThreeVector.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Transform3D.hh"
 #include "G4LogicalVolume.hh"
+#include "G4RunManager.hh"
 
 #include "rapidjson/document.h"
 #include "rapidjson/allocators.h"
@@ -65,6 +68,25 @@ namespace geo {
     return globalTransform;
   }
   
+  template <typename T>
+  inline static const G4ThreeVector transform_frame_world_to_det(
+      const HepGeom::Point3D<T>& world_pos) 
+  {
+    const SLArRunAction* run_action = 
+      static_cast<const SLArRunAction*>(
+          G4RunManager::GetRunManager()->GetUserRunAction()
+          );
+    const G4Transform3D& transform = run_action->GetTransformWorld2Det();
+    const HepGeom::Point3D<double> pp =  transform * world_pos;
+    return G4ThreeVector(pp.x(), pp.y(), pp.z());
+  }
+
+  inline static const G4ThreeVector transform_frame_world_to_det(
+      const G4ThreeVector& world_pos) 
+  {
+    const HepGeom::Point3D<double> pos( world_pos );
+    return transform_frame_world_to_det(pos);
+  }
 
 
 }

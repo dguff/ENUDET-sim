@@ -53,6 +53,7 @@ class SLArPGunGeneratorAction : public SLArBaseGenerator
     PGunConfig_t fConfig; 
     std::unique_ptr<G4ParticleGun> fParticleGun; 
     G4ParticleTable* fParticleTable; 
+    G4ParticleDefinition* fParticleDefinition;
 
 }; 
 }

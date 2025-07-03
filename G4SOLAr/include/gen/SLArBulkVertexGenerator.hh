@@ -11,11 +11,12 @@
 // Standard library
 #include <random>
 
-#include <G4LogicalVolume.hh>
-#include <G4Box.hh>
-#include <G4ThreeVector.hh>
-#include <G4RotationMatrix.hh>
-#include <SLArVertextGenerator.hh>
+#include "gen/SLArVertexGenerator.hh"
+
+#include "G4LogicalVolume.hh"
+#include "G4Box.hh"
+#include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
 
 namespace gen {
 namespace vertex {

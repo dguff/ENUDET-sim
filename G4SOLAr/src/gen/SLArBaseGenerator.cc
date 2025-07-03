@@ -12,6 +12,7 @@
 
 #include "SLArRootUtilities.hh"
 #include "SLArBaseGenerator.hh"
+#include "SLArPointVertexGenerator.hh"
 #include "SLArBulkVertexGenerator.hh"
 #include "SLArBoxSurfaceVertexGenerator.hh"
 #include "SLArGPSVertexGenerator.hh"
@@ -497,8 +498,8 @@ void SLArBaseGenerator::RegisterPrimaries(const G4Event* anEvent, const G4int fi
       tc_primary.SetGeneratorLabel( fLabel.data() ); 
 
 #ifdef SLAR_DEBUG
-      printf("Adding particle to primary output list\n"); 
-      tc_primary.PrintParticle(); 
+      //printf("Adding particle to primary output list\n"); 
+      //tc_primary.PrintParticle(); 
       //getchar();
 #endif
       SLArAnaMgr->GetMCTruth().RegisterPrimary( tc_primary );

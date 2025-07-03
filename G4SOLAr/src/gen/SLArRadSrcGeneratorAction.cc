@@ -10,6 +10,7 @@
 #include "gen/SLArBulkVertexGenerator.hh"
 #include "gen/SLArBoxSurfaceVertexGenerator.hh"
 #include "gen/SLArGPSVertexGenerator.hh"
+#include "gen/SLArPointVertexGenerator.hh"
 #include "analysis/SLArAnalysisManager.hh"
 #include "G4RandomTools.hh"
 #include "G4EventManager.hh"
