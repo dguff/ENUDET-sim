@@ -1,37 +1,33 @@
-######################################################################
-# @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
-# @file        : CMakeLists
-# @created     : venerdì mag 06, 2022 23:01:03 CEST
-######################################################################
+set(SLAR_PHYSICS_INCLUDE_DIR ${SOLARSIM_INCLUDE_DIR}/physics)
+set(SLAR_PHYSICS_SOURCE_DIR ${SOLARSIM_SRC_DIR}/physics)
 
-add_library(SLArIonAndScint
-  SHARED
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArLArProperties.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArLArProperties.hh
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintModel.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintModel.h
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintSeparate.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintSeparate.h
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArIonAndScintLArQL.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArIonAndScintLArQL.h
-  )
-target_link_libraries(SLArIonAndScint ROOT::Core ${Geant4_LIBRARIES})
+set(SLAR_PHYSICS_HEADERS 
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArStepMax.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArExtraPhysics.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArScintillation.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArOpticalPhysics.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArPhysicsList.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArPhysicsListMessenger.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArCrossSectionBiasing.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArElectronDrift.hh"
+)
 
-add_library(SLArScintillation
-  SHARED
-  ${PROJECT_SOURCE_DIR}/src/physics/SLArScintillation.cc
-  ${PROJECT_SOURCE_DIR}/include/physics/SLArScintillation.h
-  #${PROJECT_SOURCE_DIR}/src/physics/SLArElectronDrift.cc
-  #${PROJECT_SOURCE_DIR}/include/physics/SLArElectronDrift.hh
-  )
-add_dependencies(SLArScintillation SLArMCEventReadout SLArReadoutSystemConfig)
-target_link_libraries(SLArScintillation SLArIonAndScint ${Geant4_LIBRARIES} SLArMCEventReadout SLArReadoutSystemConfig)
+set(SLAR_PHYSICS_SOURCES
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArStepMax.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArExtraPhysics.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArScintillation.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArOpticalPhysics.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArPhysicsList.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArPhysicsListMessenger.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArCrossSectionBiasing.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArElectronDrift.cc"
+)
 
-#----------------------------------------------------------------------------
-# Install instructions
+add_subdirectory( LiquidArgon )
 
+if (SLAR_USE_G4CASCADE) 
+  add_subdirectory( cascade )
+endif()
 
-install(TARGETS SLArScintillation SLArIonAndScint
-  EXPORT                      G4SOLArTargets
-  LIBRARY DESTINATION        "${G4SOLAR_LIB_DIR}"
-  RUNTIME DESTINATION        "${G4SOLAR_LIB_DIR}")
+set(solarsim_headers ${solarsim_headers} ${SLAR_PHYSICS_HEADERS} PARENT_SCOPE)
+set(solarsim_sources ${solarsim_sources} ${SLAR_PHYSICS_SOURCES} PARENT_SCOPE)

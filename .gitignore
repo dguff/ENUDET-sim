@@ -34,16 +34,26 @@
 # Output files
 *.root
 
+# Plots
+*.jpg
+*.png
+*.pdf
+*.jpeg
+
 # External dependencies
 G4SOLAr/extern
+G4SOLAr/include/physics/cascade/
+G4SOLAr/src/physics/cascade/
+
 
 # build files
-build/
-install/
+build*/
+install*/
 _deprecated/
 
 # automatically generated files
 SOLArAnalysis/rootlogon.C
+G4SOLAr/include/SLArVersion.hh
 G4SOLAr/include/SLArUserPath.hh
 
 #cache

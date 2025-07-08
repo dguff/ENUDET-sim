@@ -6,7 +6,7 @@
       "particle" : "opticalphoton", 
       "energy" : {"mode" : "mono", "value" : {"val" : 9.68, "unit" : "eV"}}, 
       "n_particles" : 100000, 
-      "direction" : {"mode":"isotropic"}, 
+      "direction" : {"type":"isotropic"}, 
       "vertex_gen" : {
         "type" : "point", 
         "config" : {

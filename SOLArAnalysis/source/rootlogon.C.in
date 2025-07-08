@@ -9,14 +9,14 @@
 
 void rootlogon()
 {
-  gSystem->AddIncludePath("@G4SOLAR_INCLUDE_DIR@"); 
+  gSystem->AddIncludePath("@SOLARSIM_INCLUDE_DIR@"); 
   gSystem->AddIncludePath("@G4S_ANALYSIS_INC_DIR@");
-  gSystem->AddDynamicPath("@G4SOLAR_LIB_DIR@");
+  gSystem->AddDynamicPath("@SOLARSIM_LIB_DIR@");
 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEventReadout.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
-  gSystem->Load("@G4SOLAR_LIB_DIR@/libSLArMCEvent.so"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArReadoutSystemConfig.so"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEventReadout.so"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCPrimaryInfo.so"); 
+  gSystem->Load("@SOLARSIM_LIB_DIR@/libSLArMCEvent.so"); 
   gSystem->Load("@G4S_ANALYSIS_LIB_DIR@/libSLArLightPropagation.so");
 }
 

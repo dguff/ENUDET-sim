@@ -28,8 +28,11 @@
 #include "memory"
 #include "rapidjson/document.h"
 
-#include "event/SLArMCEvent.hh"
 #include "SLArRecoHits.hh"
+
+#include "event/SLArMCTruth.hh"
+#include "event/SLArEventAnode.hh"
+#include "event/SLArEventSuperCellArray.hh"
 
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgSuperCellArray.hh"
@@ -104,7 +107,7 @@ namespace display {
       ~SLArEveDisplay();
 
       int LoadHitFile(const TString file_path, const TString tree_key); 
-      int LoadMCTruthFile(const TString file_path, const TString tree_key);
+      int LoadMCEventFile(const TString file_path, const TString tree_key);
 
       void Configure(const rapidjson::Value& config); 
       int  MakeGUI(); 
@@ -112,6 +115,8 @@ namespace display {
       int  ReadMCTruth();
       int  ReadTracks();
       int  ReadOpHits();
+      int  ReadOpHitsFromOpDetArray(const int idx_array, const SLArEventSuperCellArray& ev_opdet_array); 
+      int  ReadOpHitsFromAnode(const int tpc_id, const SLArEventAnode& ev_anode);
       void ResetHits();  
       int  ReDraw(); 
       void NextEvent();
@@ -132,10 +137,15 @@ namespace display {
     private: 
       TFile* fHitFile = {};
       TTree* fHitTree = {}; 
-      TFile* fMCTruthFile = {};
-      TTree* fMCTruthTree = {};
+      TFile* fMCEventFile = {};
+      TTree* fMCEventTree = {};
       reco::hitvarContainerPtr fHitVars = {};
-      SLArMCEvent* fMCEvent = {};
+      SLArMCTruth* fEvMCTruth = {};
+      SLArListEventAnode* fEvAnodeList = {};
+      SLArListEventPDS* fEvPDSList = {};
+      bool fIncludeMCTruth = true;
+      bool fIncludeTPCHits = true;
+      bool fIncludeOpHits = true;
       std::map<int, std::unique_ptr<SLArCfgAnode>> fCfgAnodes = {}; 
       std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>> fCfgPDS = {}; 
       std::unique_ptr<TTimer> fTimer = {};
@@ -170,6 +180,7 @@ namespace display {
       std::map<TString, MCParticleSelector_t> fParticleSelector; 
 
       void ConfigureTPC(const rapidjson::Value& tpc_config);
+
       inline Int_t GetTPCindex(const Int_t itpc) {
         Int_t index = 0;
         for (const auto& tpc : fTPCs) {

@@ -1,0 +1,65 @@
+@startuml
+skinparam defaultFontName DejaVu Sans Mono
+
+class SLArListEventAnode {
+  -Int_t fEvNumber
+  -std::map<int, SLArEventAnode> fAnodeMap
+}
+
+class SLArEventAnode {
+  -int fID
+  -int fNhits
+  -bool fIsActive
+  -UShort_t fLightBacktrackerRecordSize
+  -UShort_t fChargeBacktrackerRecordSize
+  -UShort_t fZeroSuppressionThreshold
+  -std::map<int, SLArEventMegatile> fMegaTilesMap
+}
+
+class SLArEventMegatile {
+  -int fIdx
+  -bool fIsActive
+  -int fNhits
+  -UShort_t fLightBacktrackerRecordSize
+  -UShort_t fChargeBacktrackerRecordSize
+  -std::map<int, SLArEventTile> fTilesMap 
+}
+
+class SLArEventTile {
+  UShort_t fChargeBacktrackerRecordSize
+  std::map<int, SLArEventChargePixel> fPixelHits 
+}
+
+class "SLArEventHitsCollection<SLArEventPhotonHit>" as hits_collection_l {
+  -int fIdx
+  -bool fIsActive
+  -UShort_t fNhits
+  -UShort_t fBacktrackerRecordSize
+  -HitsCollection_t fHits
+  -BacktrackerVectorCollection_t fBacktrackerCollections
+  -UShort_t fClockUnit
+}
+
+class SLArEventChargePixel {
+
+}
+
+class "SLArEventHitsCollection<SLArEventChargeHit>" as hits_collection_q {
+  -int fIdx
+  -bool fIsActive
+  -UShort_t fNhits
+  -UShort_t fBacktrackerRecordSize
+  -HitsCollection_t fHits
+  -BacktrackerVectorCollection_t fBacktrackerCollections
+  -UShort_t fClockUnit
+}
+
+SLArListEventAnode --* SLArEventAnode : contains
+SLArEventAnode --* SLArEventMegatile : contains
+SLArEventMegatile --* SLArEventTile : contains
+SLArEventTile --|> hits_collection_l : inherits
+SLArEventTile --* SLArEventChargePixel : contains
+SLArEventChargePixel --> hits_collection_q : inherits
+
+@enduml
+

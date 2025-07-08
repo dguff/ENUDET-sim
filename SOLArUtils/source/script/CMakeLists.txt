@@ -4,16 +4,24 @@
 # @created     : Monday Apr 08, 2024 14:11:35 CEST
 ######################################################################
 
-list(APPEND CMAKE_INSTALL_RPATH "${G4SOLAR_LIB_DIR}" "${SOLAR_UTILS_LIB_DIR}" )
+list(APPEND CMAKE_INSTALL_RPATH "${SOLARSIM_LIB_DIR}" "${SOLAR_UTILS_LIB_DIR}" )
 message(STATUS "CMAKE_INSTALL_RPATH: ${CMAKE_INSTALL_RPATH}")
 
 add_executable(hit_converter hit_converter.cc)
-target_link_libraries(hit_converter PUBLIC SLArHitConverter)
 target_link_libraries(hit_converter PUBLIC
-  G4SOLAr::SLArMCEvent
-  G4SOLAr::SLArMCEventReadout
-  G4SOLAr::SLArReadoutSystemConfig 
+  SOLARSIM::SLArMCEventReadout
+  SOLARSIM::SLArReadoutSystemConfig 
   SLArRecoHits
+  SLArHitConverter
+  )
+target_include_directories(hit_converter
+  PRIVATE
+  $<BUILD_INTERFACE:${SOLAR_UTILS_INC_DIR}>
+  $<INSTALL_INTERFACE:${SOLAR_UTILS_INC_DEST}>
+  ${SOLARSIM_INCLUDE_DIR}
+  ${Geant4_INCLUDE_DIR}
+  ${ROOT_INCLUDE_DIRS}
+  "${RapidJSON_INCLUDE_DIR}/.."
   )
 
 add_executable(hit_viewer hit_viewer.cc)
@@ -21,18 +29,33 @@ target_link_libraries(hit_viewer
   PUBLIC SLArEveDisplay
   PRIVATE
   ${ROOT_LIBRARIES} ROOT::Geom
-  G4SOLAr::SLArMCPrimaryInfo
-  G4SOLAr::SLArMCEvent
-  G4SOLAr::SLArMCEventReadout
-  G4SOLAr::SLArReadoutSystemConfig 
+  SOLARSIM::SLArMCTruth
+  SOLARSIM::SLArMCEventReadout
+  SOLARSIM::SLArReadoutSystemConfig 
+  )
+target_include_directories(hit_viewer
+  PRIVATE
+  $<BUILD_INTERFACE:${SOLAR_UTILS_INC_DIR}>
+  $<INSTALL_INTERFACE:${SOLAR_UTILS_INC_DEST}>
+  ${SOLARSIM_INCLUDE_DIR}
+  ${Geant4_INCLUDE_DIR}
+  ${ROOT_INCLUDE_DIRS}
+  "${RapidJSON_INCLUDE_DIR}/.."
   )
 
 add_executable(hit_calibration hit_calibration.cc)
 target_link_libraries(hit_calibration
   PRIVATE
   ${ROOT_LIBRARIES} 
-  G4SOLAr::SLArGenRecords
+  SOLARSIM::SLArGenRecords
 )
+target_include_directories(hit_calibration
+  PRIVATE
+  ${SOLARSIM_INCLUDE_DIR}
+  ${Geant4_INCLUDE_DIR}
+  ${ROOT_INCLUDE_DIRS}
+  "${RapidJSON_INCLUDE_DIR}/.."
+  )
 
 install(TARGETS hit_converter hit_viewer hit_calibration
   LIBRARY DESTINATION "${SOLAR_UTILS_BIN_DIR}"
