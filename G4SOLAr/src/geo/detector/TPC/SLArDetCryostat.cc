@@ -829,7 +829,6 @@ void SLArDetCryostat::SetVisAttributes() {
   col_map.insert( std::make_pair("BoratedPolyethilene", G4Colour(0.267, 0.671, 0.22))); 
   col_map.insert( std::make_pair("Polyurethane", G4Colour(0.867, 0.871, 0.769))); 
   G4Colour stdCol(0.611, 0.847, 0.988);
-  fModLV->SetVisAttributes( G4VisAttributes(G4Colour(0, 1, 1)) );
   for (auto &ll : fCryostatStructure) {
     auto lv = ll.second->fModule->GetModLV();
     printf("%s\n", lv->GetName().c_str());
@@ -840,6 +839,8 @@ void SLArDetCryostat::SetVisAttributes() {
     }
     lv->SetVisAttributes( G4VisAttributes( col ) ); 
   }
+
+  fModLV->SetVisAttributes( G4VisAttributes(false) );
 }
 
 void SLArDetCryostat::BuildMaterials(G4String material_db) {

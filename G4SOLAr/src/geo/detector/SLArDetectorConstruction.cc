@@ -409,7 +409,7 @@ void SLArDetectorConstruction::ConstructTarget() {
   matTarget->BuildMaterialFromDB(fMaterialDBFile); 
   fDetector->SetLogicVolume( new G4LogicalVolume(fDetector->GetModSV(), 
       matTarget->GetMaterial(), "target_lar_lv") ); 
-  fDetector->GetModLV()->SetVisAttributes( G4VisAttributes( G4Colour(1, 0, 0) ) ); 
+  fDetector->GetModLV()->SetVisAttributes( G4VisAttributes( false ) ); 
 
 }
 
