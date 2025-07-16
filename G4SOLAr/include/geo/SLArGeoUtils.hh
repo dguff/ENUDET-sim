@@ -53,6 +53,11 @@ namespace geo {
 
   bool track_crosses_volume(const G4ThreeVector& vtx, const G4ThreeVector& dir, const G4String& pv_name);
 
+  G4String searchInLogicalVolume(G4LogicalVolume* logicalVolume, const G4String& pv_name);
+
+  G4String searchPvVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name);
+
+
   inline static const G4Transform3D GetTransformToGlobal(const G4VPhysicalVolume* pv) {
     G4Transform3D globalTransform = G4Transform3D::Identity;
     while (pv->GetMotherLogical() != nullptr) {

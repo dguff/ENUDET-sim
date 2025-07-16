@@ -73,5 +73,63 @@ namespace geo {
     }
     return inside;
   }
+
+  G4String searchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
+    if (!logicalVolume) {
+      G4cout << "Logical volume is null" << G4endl;
+      return "";
+    }
+    
+    for (int i = 0; i < logicalVolume->GetNoDaughters(); ++i) {
+      G4VPhysicalVolume* daughter = logicalVolume->GetDaughter(i);
+      if (!daughter) {
+          G4cout << "Error: Daughter volume is null." << G4endl;
+          continue;
+      }
+
+      if (daughter->GetName() == pv_name) {
+          G4cout << "Found volume: " << pv_name << " inside logical volume: " << logicalVolume->GetName() << G4endl;
+          return daughter->GetLogicalVolume()->GetName();
+      }
+
+      if (daughter->IsParameterised()) {
+          G4cout << "Exploring parametrised daughter volume: " << daughter->GetName() << G4endl;
+          auto result = searchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
+          if (!result.empty()) {
+              return result;
+          }
+      }
+    }
+
+    return "";
+  }
+
+  G4String searchPvVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name) {
+    auto volumeStore = G4PhysicalVolumeStore::GetInstance();
+    if (!volumeStore) {
+        G4cout << "Error: G4PhysicalVolumeStore is not initialized." << G4endl;
+        return "";
+    }
+
+    G4cout << "Searching for volume: " << pv_name << " inside parametrised volume: " << param_vol_name << G4endl;
+
+    for (auto vol : *volumeStore) {
+      if (vol->GetName() == param_vol_name 
+      //&& vol->IsParameterised()
+      ) {
+          G4cout << "Found parametrised volume: " << param_vol_name << G4endl;
+          auto logicalVolume = vol->GetLogicalVolume();
+          if (!logicalVolume) {
+              G4cout << "Error: LogicalVolume is null for " << param_vol_name << G4endl;
+              return "";
+          }
+
+          return searchInLogicalVolume(logicalVolume, pv_name);
+      }
+    }
+
+    G4cout << "Parametrised volume " << param_vol_name << " not found in G4PhysicalVolumeStore." << G4endl;
+    return "";
+  }
 }
 
