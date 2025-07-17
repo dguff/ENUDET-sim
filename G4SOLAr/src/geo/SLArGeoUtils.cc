@@ -86,8 +86,8 @@ namespace geo {
           G4cout << "Error: Daughter volume is null." << G4endl;
           continue;
       }
-
-      if (daughter->GetName() == pv_name) {
+      
+      if (daughter->GetLogicalVolume()->GetName() == pv_name) {
           G4cout << "Found volume: " << pv_name << " inside logical volume: " << logicalVolume->GetName() << G4endl;
           return daughter->GetLogicalVolume();
       }
@@ -96,15 +96,14 @@ namespace geo {
           G4cout << "Exploring parametrised daughter volume: " << daughter->GetName() << G4endl;
           auto result = searchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
           if (result != nullptr) {
-              G4cout << "Found the volume !" << G4endl;
               return result;
           }
       }
+    
       else {
         G4cout << "Exploring unparametrised daughter volume: " << daughter->GetName() << G4endl;
         auto result = searchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
           if (result != nullptr) {
-              G4cout << "Found the volume !" << G4endl;
               return result;
           }
       }
@@ -113,34 +112,6 @@ namespace geo {
     return nullptr;
   }
 
-  /*G4String searchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
-    if (!logicalVolume) {
-        G4cout << "Logical volume is null" << G4endl;
-        return "";
-    }
-    
-    for (int i = 0; i < logicalVolume->GetNoDaughters(); ++i) {
-        G4VPhysicalVolume* daughter = logicalVolume->GetDaughter(i);
-        if (!daughter) {
-            G4cout << "Error: Daughter volume is null." << G4endl;
-            continue;
-        }
-
-        if (daughter->GetName() == pv_name) {
-            G4cout << "Found volume: " << pv_name << " inside logical volume: " << logicalVolume->GetName() << G4endl;
-            return daughter->GetLogicalVolume()->GetName();
-        }
-
-        // Ricerca ricorsiva nei figli, indipendentemente dal fatto che siano parametrizzati o meno
-        auto result = searchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
-        if (!result.empty()) {
-            return result;
-        }
-    }
-
-    return "";
-}*/
-
   G4LogicalVolume* searchPvVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name) {
     auto volumeStore = G4PhysicalVolumeStore::GetInstance();
     if (!volumeStore) {
@@ -148,13 +119,9 @@ namespace geo {
         return nullptr;
     }
 
-    G4cout << "Searching for volume: " << pv_name << " inside parametrised volume: " << param_vol_name << G4endl;
 
     for (auto vol : *volumeStore) {
-      if (vol->GetName() == param_vol_name 
-      //&& vol->IsParameterised()
-      ) {
-          G4cout << "Found parametrised volume: " << param_vol_name << G4endl;
+      if (vol->GetName() == param_vol_name) {
           auto logicalVolume = vol->GetLogicalVolume();
           if (!logicalVolume) {
               G4cout << "Error: LogicalVolume is null for " << param_vol_name << G4endl;
