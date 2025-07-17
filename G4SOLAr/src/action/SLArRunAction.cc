@@ -84,7 +84,12 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   G4cout << "Searching for volume " << vol_name << G4endl;
   G4cout << "Calling the function" << G4endl;
   auto volume_found = geo::searchPvVolumeInParametrisedVolume(vol_name, "pds_31");
-  G4cout << "Volume found " << volume_found.data() << G4endl;
+  if (volume_found != nullptr) {
+    G4cout << "Volume " << volume_found->GetName() << " has been found!" << G4endl;
+  }
+  else {
+    G4cout << "Volume " << vol_name << " not found!" << G4endl;
+  }
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
 }
 
