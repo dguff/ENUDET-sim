@@ -19,6 +19,7 @@
 #include "G4Transform3D.hh"
 #include "G4LogicalVolume.hh"
 #include "G4RunManager.hh"
+#include "geo/VolumeStruct.hh"
 
 #include "rapidjson/document.h"
 #include "rapidjson/allocators.h"
@@ -53,9 +54,9 @@ namespace geo {
 
   bool track_crosses_volume(const G4ThreeVector& vtx, const G4ThreeVector& dir, const G4String& pv_name);
 
-  G4LogicalVolume* searchInLogicalVolume(G4LogicalVolume* logicalVolume, const G4String& pv_name);
+  VolumeStruct* SearchInLogicalVolume(G4LogicalVolume* logicalVolume, const G4String& pv_name);
 
-  G4LogicalVolume* searchPvVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name);
+  VolumeStruct* SearchLogicalVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name);
 
 
   inline static const G4Transform3D GetTransformToGlobal(const G4VPhysicalVolume* pv) {

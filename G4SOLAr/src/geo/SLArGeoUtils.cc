@@ -11,6 +11,8 @@
 #include "geo/SLArGeoUtils.hh"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Box.hh"
+#include "G4Tubs.hh"
+#include "geo/VolumeStruct.hh"
 
 
 namespace geo {
@@ -74,7 +76,7 @@ namespace geo {
     return inside;
   }
 
-  G4LogicalVolume* searchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
+  VolumeStruct* SearchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
     if (!logicalVolume) {
       G4cout << "Logical volume is null" << G4endl;
       return nullptr;
@@ -88,21 +90,21 @@ namespace geo {
       }
       
       if (daughter->GetLogicalVolume()->GetName() == pv_name) {
-          G4cout << "Found volume: " << pv_name << " inside logical volume: " << logicalVolume->GetName() << G4endl;
-          return daughter->GetLogicalVolume();
+          G4cout << "FOUND volume " << pv_name << " inside logical volume " << logicalVolume->GetName() << G4endl;
+          return new VolumeStruct(daughter->GetLogicalVolume(), daughter);
       }
 
       if (daughter->IsParameterised()) {
-          G4cout << "Exploring parametrised daughter volume: " << daughter->GetName() << G4endl;
-          auto result = searchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
+          //G4cout << "Exploring parametrised daughter volume: " << daughter->GetName() << G4endl;
+          auto result = SearchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
           if (result != nullptr) {
               return result;
           }
       }
     
       else {
-        G4cout << "Exploring unparametrised daughter volume: " << daughter->GetName() << G4endl;
-        auto result = searchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
+        //G4cout << "Exploring unparametrised daughter volume: " << daughter->GetName() << G4endl;
+        auto result = SearchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
           if (result != nullptr) {
               return result;
           }
@@ -112,7 +114,7 @@ namespace geo {
     return nullptr;
   }
 
-  G4LogicalVolume* searchPvVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name) {
+  VolumeStruct* SearchLogicalVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name) {
     auto volumeStore = G4PhysicalVolumeStore::GetInstance();
     if (!volumeStore) {
         G4cout << "Error: G4PhysicalVolumeStore is not initialized." << G4endl;
@@ -128,7 +130,7 @@ namespace geo {
               return nullptr;
           }
 
-          return searchInLogicalVolume(logicalVolume, pv_name);
+          return SearchInLogicalVolume(logicalVolume, pv_name);
       }
     }
 
@@ -136,4 +138,3 @@ namespace geo {
     return nullptr;
   }
 }
-
