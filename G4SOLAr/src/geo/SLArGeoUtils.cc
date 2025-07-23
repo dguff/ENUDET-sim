@@ -111,6 +111,15 @@ namespace geo {
     G4Transform3D mother_transform = GetTransformToGlobal(mother_pv);
     collect_volume_transforms(mother_lv, navigation, transforms, mother_transform); 
 
+    printf("Found %ld replicas of %s\n", transforms.size(), target_pv_name.data()); 
+    int ii = 0; 
+    for (const auto& tt : transforms) {
+      printf("[%i]: (%g, %g, %g)\n", ii, 
+          tt.getTranslation().x()*0.1, 
+          tt.getTranslation().y()*0.1, 
+          tt.getTranslation().z()*0.1);
+    }
+
     return transforms;
   }
 
@@ -155,13 +164,13 @@ namespace geo {
       const G4Transform3D& currentTransform,
       size_t currentIndex) 
   {
-    const auto& volume_info = navigation_info.at(currentIndex);
 
     if (currentIndex >= navigation_info.size()) {
       transforms.push_back(currentTransform);
       return;
     }
 
+    const auto& volume_info = navigation_info.at(currentIndex);
     if (volume_info.index < 0 || 
         volume_info.index >= logicalVolume->GetNoDaughters()) {
       G4cout << "Error: Invalid index in navigation info." << G4endl;
