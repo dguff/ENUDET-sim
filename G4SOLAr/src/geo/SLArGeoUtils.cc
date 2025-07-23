@@ -4,11 +4,14 @@
  * @created     : Monday Feb 12, 2024 12:27:48 CET
  */
 
+#include <cstdio>
+#include <cstdlib>
 #include <utility>
 #include <unordered_set>
 #include <regex>
 
 #include "geo/SLArGeoUtils.hh"
+#include "geo/detector/SLArPlaneParameterisation.hpp"
 #include "G4PhysicalVolumeStore.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
@@ -74,6 +77,142 @@ namespace geo {
       pos += step_len*dir;
     }
     return inside;
+  }
+
+  std::vector<G4Transform3D> get_volume_transforms(const G4String& target_pv_name,
+                                                   const G4String& mother_pv_name,
+                                                   G4LogicalVolume* target_lv) {
+    std::vector<G4Transform3D> transforms;
+    G4PhysicalVolumeStore* pvs = G4PhysicalVolumeStore::GetInstance();
+    const auto mother_pv = pvs->GetVolume(mother_pv_name);
+    const auto target_pv = pvs->GetVolume(target_pv_name);
+    if (!mother_pv) {
+      G4cout << "Error: Mother physical volume " << mother_pv_name << " not found." << G4endl;
+      exit(EXIT_FAILURE);
+    }
+    if (!target_pv) {
+      G4cout << "Error: Target physical volume " << target_pv_name << " not found." << G4endl;
+      exit(EXIT_FAILURE);
+    }
+
+    const auto mother_lv = mother_pv->GetLogicalVolume();
+
+    std::vector<volume_navigation_info> navigation;
+    
+    bool gotcha = search_in_logical_volume(target_pv_name, mother_lv, navigation);
+    if (!gotcha) {
+      G4cout << "Error: Target physical volume " << target_pv_name << 
+        " not found in logical volume " 
+        << mother_lv->GetName() << G4endl;
+      exit(EXIT_FAILURE);
+    }
+
+    // now loop through the navigation info to build the transformations
+    G4Transform3D mother_transform = GetTransformToGlobal(mother_pv);
+    collect_volume_transforms(mother_lv, navigation, transforms, mother_transform); 
+
+    return transforms;
+  }
+
+  bool search_in_logical_volume(const G4String& pv_name,
+      const G4LogicalVolume* logicalVolume,
+      std::vector<volume_navigation_info>& navigation_info) {
+    if (!logicalVolume) {
+      G4cout << "Logical volume is null" << G4endl;
+      exit(EXIT_FAILURE);
+    }
+
+    for (int i = 0; i < logicalVolume->GetNoDaughters(); ++i) {
+      G4VPhysicalVolume* daughter = logicalVolume->GetDaughter(i);
+      if (!daughter) {
+        fprintf(stderr, "Error: %s's daughter volume %i is null.\n", 
+            logicalVolume->GetName().data(), i);
+        continue;
+      }
+
+      if (daughter->GetName() == pv_name) {
+        //G4cout << "FOUND volume " << pv_name << " inside logical volume " << logicalVolume->GetName() << G4endl;
+        navigation_info.emplace_back(i, daughter->IsParameterised(), daughter->IsReplicated());
+        return true;
+      }
+
+      auto daughter_lv = daughter->GetLogicalVolume();
+      navigation_info.emplace_back(i, daughter->IsParameterised(), daughter->IsReplicated());
+      if (search_in_logical_volume(pv_name, daughter_lv, navigation_info)) {
+        return true;
+      }
+      // If we reach here, it means we did not find the volume in this branch
+      navigation_info.pop_back();
+    }
+
+    return false;
+  }
+
+  void collect_volume_transforms(
+      const G4LogicalVolume* logicalVolume,
+      const std::vector<volume_navigation_info>& navigation_info,
+      std::vector<G4Transform3D>& transforms,
+      const G4Transform3D& currentTransform,
+      size_t currentIndex) 
+  {
+    const auto& volume_info = navigation_info.at(currentIndex);
+
+    if (currentIndex >= navigation_info.size()) {
+      transforms.push_back(currentTransform);
+      return;
+    }
+
+    if (volume_info.index < 0 || 
+        volume_info.index >= logicalVolume->GetNoDaughters()) {
+      G4cout << "Error: Invalid index in navigation info." << G4endl;
+      exit(EXIT_FAILURE);
+    }
+
+    G4VPhysicalVolume* daughter_pv = logicalVolume->GetDaughter(volume_info.index);
+    if (!daughter_pv) {
+      fprintf(stderr, "Error: %s daughter volume at index %d is null.\n", 
+          logicalVolume->GetName().data(), volume_info.index);
+      exit(EXIT_FAILURE);
+    }
+    G4LogicalVolume* daughter_lv = daughter_pv->GetLogicalVolume();
+
+    if (volume_info.is_parametrised) {
+      const G4PVParameterised* ppv = dynamic_cast<const G4PVParameterised*>(daughter_pv); 
+      if (!ppv) {
+        fprintf(stderr, "ERROR: Unable to cast %s in a G4PVParameterisedVolume\n", 
+            daughter_pv->GetName().data()); 
+        exit(EXIT_FAILURE); 
+      }
+
+      const SLArPlaneParameterisation* plane_prmt = 
+        dynamic_cast<const SLArPlaneParameterisation*>(ppv->GetParameterisation());
+      if (plane_prmt) {
+        const auto prmt_data = get_plane_replication_data(ppv); 
+        for (int i = 0; i< prmt_data.fNreplica; i++) {
+          G4ThreeVector trans = plane_prmt->ComputeTranslation(i); 
+          G4Transform3D newTransform = currentTransform * G4Transform3D(G4RotationMatrix(), trans);
+
+          collect_volume_transforms(
+              daughter_lv, navigation_info, transforms, newTransform, currentIndex+1);
+        }
+      }
+      else {
+        fprintf(stderr, "Error: collect_volume_transforms only treats parameterised volumes"); 
+        fprintf(stderr, "using SLArPlaneParameterisation.\n"); 
+        exit(EXIT_FAILURE); 
+      }
+    }
+    else {
+      G4RotationMatrix* rot = daughter_pv->GetRotation(); 
+      G4ThreeVector trans = daughter_pv->GetTranslation(); 
+
+      G4Transform3D newTransform = currentTransform * G4Transform3D(rot ? *rot : G4RotationMatrix(), trans);
+
+      collect_volume_transforms(
+          daughter_lv, navigation_info, transforms, newTransform, currentIndex+1); 
+    }
+
+    return;
   }
 
   VolumeStruct* SearchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
