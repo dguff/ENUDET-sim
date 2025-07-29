@@ -109,8 +109,11 @@ public:
 private:
   // Configuration:
   G4LogicalVolume * fLogVol = nullptr; ///< Reference to the logical volume
+  G4String fMotherVolumeName;
+  G4String fTargetVolumeName;
   G4ThreeVector fBulkTranslation; ///< The box position in world coordinate frame
   G4RotationMatrix fBulkRotation; ///< The box rotation in world coordinate frame
+  std::vector<G4Transform3D> fBulkTransformVec; ///< The vectors box transformation in world coordinate frame
   G4Transform3D fBulkTransform; ///< The box transformation in world coordinate frame
   double fTolerance{1.0 * CLHEP::um}; ///< Geometrical tolerance (length)
   unsigned int fRandomSeed{0}; ///< Seed for the random number generator

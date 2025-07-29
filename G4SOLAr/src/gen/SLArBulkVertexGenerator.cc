@@ -9,6 +9,8 @@
 #include <G4TransportationManager.hh>
 #include <G4Material.hh>
 #include <G4RandomTools.hh>
+#include "geo/SLArGeoUtils.hh"
+#include "geo/VolumeStruct.hh"
 
 #include <TMath.h>
 
@@ -144,9 +146,17 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   } while (!fSolid->Inside(localVertex) && ++itry < maxtries && strcmp(fMaterial, localMaterial) != 0) ;
 
   HepGeom::Point3D<G4double> vtx(localVertex.x(), localVertex.y(), localVertex.z());
-  vtx = fBulkTransform * vtx;
+  //Randomizer
+  int index = fBulkTransformVec.size();
+  if (index == 0) {
+    throw std::runtime_error("SLArBulkVertexGenerator::ShootVertex Error. No transforms available.");
+  }
+  int rnd_seed = static_cast<int>(G4UniformRand() * (index + 1));
+  vtx = fBulkTransformVec[rnd_seed] * vtx; 
+
   //G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
+  G4cout << "Vertex coordinates: " << vtx.x() << ", " << vtx.y() << ", " << vtx.z() << " m\n";
   fCounter++;
 }
 
@@ -206,8 +216,15 @@ void SLArBulkVertexGenerator::Config(const G4String& volumeName) {
   SetBulkLogicalVolume(volume->GetLogicalVolume()); 
   SetSolidTranslation(volume->GetTranslation()); 
   SetSolidRotation(volume->GetRotation()); 
+
+  VolumeStruct* result = geo::SearchLogicalVolumeInParametrisedVolume(fTargetVolumeName, volumeName);
+  if (!result) {
+    throw std::runtime_error("SLArBulkVertexGenerator::Config Error. Unable to find target logical volume.");
+  }
+  G4LogicalVolume* target_lv = result->logical_volume;
+  G4VPhysicalVolume* target_pv = result->physical_volume;
   
-  fBulkTransform = geo::GetTransformToGlobal(volume);
+  fBulkTransformVec = geo::get_volume_transforms(target_pv->GetName(), fMotherVolumeName, target_lv);
   return;
 }
 
@@ -215,7 +232,7 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
   if ( cfg.HasMember("volume")==false ) {
     throw std::invalid_argument("Missing mandatory \"volume\" field from bulk vtx generator specs.\n"); 
   }
-  G4String volName = cfg["volume"].GetString(); 
+  fTargetVolumeName = cfg["volume"].GetString(); 
   if (cfg.HasMember("fiducial_fraction")) {
     fFVFraction = cfg["fiducial_fraction"].GetDouble(); 
   }
@@ -229,8 +246,26 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
   if ( cfg.HasMember("time") ) {
     fTimeGen.SourceConfiguration( cfg["time"] );
   }
-
-  Config(volName);
+  if (cfg.HasMember("mother")) {
+    fMotherVolumeName = cfg["mother"].GetString();
+    Config(fMotherVolumeName);
+  }
+  else {
+    auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fTargetVolumeName); 
+    if (volume == nullptr) {
+      char err_msg[200]; 
+      snprintf(err_msg, sizeof(err_msg),
+        "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", fTargetVolumeName.c_str());
+      throw std::runtime_error(err_msg);
+    }
+  
+    SetBulkLogicalVolume(volume->GetLogicalVolume()); 
+    SetSolidTranslation(volume->GetTranslation()); 
+    SetSolidRotation(volume->GetRotation()); 
+    
+    fBulkTransform = geo::GetTransformToGlobal(volume);
+    return;  
+  }
 }
 
 const rapidjson::Document SLArBulkVertexGenerator::ExportConfig() const {

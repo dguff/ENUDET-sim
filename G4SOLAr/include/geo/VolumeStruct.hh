@@ -12,7 +12,7 @@
 struct VolumeStruct {
     G4LogicalVolume* logical_volume;
     G4VPhysicalVolume* physical_volume;
-    G4ThreeVector* position;
+    //G4ThreeVector* position;
     G4ThreeVector* dimension;
 
     VolumeStruct(G4LogicalVolume* lv, G4VPhysicalVolume* pv)
@@ -32,10 +32,12 @@ struct VolumeStruct {
                     dimension->setZ(0);
                 }
                 else {
-                    dimension = nullptr; 
+                    dimension->setX(0);
+                    dimension->setY(0);
+                    dimension->setZ(0);
                 }
             }
-            position = pv ? new G4ThreeVector(pv->GetObjectTranslation()) : new G4ThreeVector(0, 0, 0);
+            //position = pv ? new G4ThreeVector(pv->GetObjectTranslation()) : new G4ThreeVector(0, 0, 0);
         }    
 };
 
