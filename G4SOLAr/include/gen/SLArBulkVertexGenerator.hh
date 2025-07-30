@@ -48,6 +48,8 @@ public:
   SLArBulkVertexGenerator();
 
   SLArBulkVertexGenerator(const SLArBulkVertexGenerator&);
+  
+  bool fBulkTransformInitialized;
 
   ~SLArBulkVertexGenerator() override;
 
@@ -55,7 +57,7 @@ public:
   
   const G4LogicalVolume * GetBulkLogicalVolume() const;
   
-  void SetBulkLogicalVolume(G4LogicalVolume *);
+  void SetBulkLogicalVolume(G4LogicalVolume *, int counter);
    
   const G4VSolid * GetSolid() const;
  

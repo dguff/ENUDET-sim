@@ -14,9 +14,10 @@ struct VolumeStruct {
     G4VPhysicalVolume* physical_volume;
     //G4ThreeVector* position;
     G4ThreeVector* dimension;
+    int counter;
 
     VolumeStruct(G4LogicalVolume* lv, G4VPhysicalVolume* pv)
-        : logical_volume(lv), physical_volume(pv) {
+        : logical_volume(lv), physical_volume(pv), counter(0) {
             if (lv) {
                 auto solid = lv->GetSolid();
                 dimension = new G4ThreeVector(0, 0, 0);
@@ -35,6 +36,16 @@ struct VolumeStruct {
                     dimension->setX(0);
                     dimension->setY(0);
                     dimension->setZ(0);
+                }
+            }
+            //Counter gives the number of repetitions of the logical volume in the mother volume
+            if (pv && pv->GetLogicalVolume()) {
+                G4LogicalVolume* mother_lv = pv->GetLogicalVolume();
+                for (int i = 0; i < mother_lv->GetNoDaughters(); ++i) {
+                    G4VPhysicalVolume* daughter_pv = mother_lv->GetDaughter(i);
+                    if (daughter_pv && daughter_pv->GetLogicalVolume() == lv) {
+                        ++counter;
+                    }
                 }
             }
             //position = pv ? new G4ThreeVector(pv->GetObjectTranslation()) : new G4ThreeVector(0, 0, 0);

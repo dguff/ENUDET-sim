@@ -17,6 +17,7 @@
 namespace gen {
 namespace vertex {
 SLArBulkVertexGenerator::SLArBulkVertexGenerator()
+: fBulkTransformInitialized(false)
 {
   fBulkInverseRotation = fBulkRotation.inverse();
 }
@@ -46,11 +47,11 @@ const G4LogicalVolume * SLArBulkVertexGenerator::GetBulkLogicalVolume() const
   return fLogVol;
 }
   
-void SLArBulkVertexGenerator::SetBulkLogicalVolume(G4LogicalVolume * logvol_)
+void SLArBulkVertexGenerator::SetBulkLogicalVolume(G4LogicalVolume * logvol_, int counter)
 {
   fSolid = logvol_->GetSolid();
   fLogVol = logvol_;
-  fMass = GetMassVolumeGenerator();
+  fMass = GetMassVolumeGenerator() * counter;
   std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: solid=" << fSolid << "\n";
 }
 
@@ -148,11 +149,15 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   HepGeom::Point3D<G4double> vtx(localVertex.x(), localVertex.y(), localVertex.z());
   //Randomizer
   int index = fBulkTransformVec.size();
-  if (index == 0) {
-    throw std::runtime_error("SLArBulkVertexGenerator::ShootVertex Error. No transforms available.");
+
+  if (index == 0 && fBulkTransformInitialized) {
+    vtx = fBulkTransform * vtx; 
   }
-  int rnd_seed = static_cast<int>(G4UniformRand() * (index + 1));
-  vtx = fBulkTransformVec[rnd_seed] * vtx; 
+
+  else {
+    int rnd_seed = static_cast<int>(G4UniformRand() * (index + 1));
+    vtx = fBulkTransformVec[rnd_seed] * vtx; 
+  }
 
   //G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
@@ -213,16 +218,16 @@ void SLArBulkVertexGenerator::Config(const G4String& volumeName) {
     throw std::runtime_error(err_msg);
   }
 
-  SetBulkLogicalVolume(volume->GetLogicalVolume()); 
-  SetSolidTranslation(volume->GetTranslation()); 
-  SetSolidRotation(volume->GetRotation()); 
-
   VolumeStruct* result = geo::SearchLogicalVolumeInParametrisedVolume(fTargetVolumeName, volumeName);
   if (!result) {
     throw std::runtime_error("SLArBulkVertexGenerator::Config Error. Unable to find target logical volume.");
   }
   G4LogicalVolume* target_lv = result->logical_volume;
   G4VPhysicalVolume* target_pv = result->physical_volume;
+
+  SetBulkLogicalVolume(volume->GetLogicalVolume(), result->counter); 
+  SetSolidTranslation(volume->GetTranslation()); 
+  SetSolidRotation(volume->GetRotation()); 
   
   fBulkTransformVec = geo::get_volume_transforms(target_pv->GetName(), fMotherVolumeName, target_lv);
   return;
@@ -250,7 +255,7 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
     fMotherVolumeName = cfg["mother"].GetString();
     Config(fMotherVolumeName);
   }
-  else {
+  else if (cfg.HasMember("mother") == false) {
     auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fTargetVolumeName); 
     if (volume == nullptr) {
       char err_msg[200]; 
@@ -259,11 +264,12 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
       throw std::runtime_error(err_msg);
     }
   
-    SetBulkLogicalVolume(volume->GetLogicalVolume()); 
+    SetBulkLogicalVolume(volume->GetLogicalVolume(), 1); 
     SetSolidTranslation(volume->GetTranslation()); 
     SetSolidRotation(volume->GetRotation()); 
     
     fBulkTransform = geo::GetTransformToGlobal(volume);
+    fBulkTransformInitialized = true;
     return;  
   }
 }

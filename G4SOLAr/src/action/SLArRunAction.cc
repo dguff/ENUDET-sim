@@ -72,7 +72,7 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   for (const auto& xsec : SLArAnaMgr->GetXSecDumpVector()) {
     SLArAnaMgr->WriteCrossSection(xsec); 
   }
-
+  /*
   auto volumeStore = G4PhysicalVolumeStore::GetInstance();
   for (auto vol : *volumeStore) {
     G4cout << "Nome: " << vol->GetName()
