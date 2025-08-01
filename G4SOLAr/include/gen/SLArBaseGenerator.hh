@@ -85,7 +85,7 @@ namespace gen{
           local.n_particles = config["n_particles"].GetInt(); 
         }
         if (config.HasMember("specific_activity")) {
-          local.specific_activity = config["specific_activity"].GetDouble(); 
+          local.specific_activity = unit::ParseJsonVal(config["specific_activity"]); 
         }
         SourceEnergyConfig(config["energy"], local.ene_config); 
       };
