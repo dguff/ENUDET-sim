@@ -80,6 +80,15 @@ namespace gen{
 
       void CopyConfigurationToString(const rapidjson::Value& config); 
       virtual void SourceEnergyConfig(const rapidjson::Value& ene_config); 
+      inline void SourceCommonConfig(const rapidjson::Value& config, GenConfig_t& local) {
+        if (config.HasMember("n_particles")) {
+          local.n_particles = config["n_particles"].GetInt(); 
+        }
+        if (config.HasMember("specific_activity")) {
+          local.specific_activity = config["specific_activity"].GetDouble(); 
+        }
+        SourceEnergyConfig(config["energy"], local.ene_config); 
+      };
       virtual void SourceEnergyConfig(const rapidjson::Value& ene_config, EnergyConfig_t& local); 
       virtual const rapidjson::Document ExportEnergyConfig() const; 
       virtual G4double SampleEnergy(); 
