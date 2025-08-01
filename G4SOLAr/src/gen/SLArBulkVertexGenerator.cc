@@ -51,7 +51,9 @@ void SLArBulkVertexGenerator::SetBulkLogicalVolume(G4LogicalVolume * logvol_, in
   fSolid = logvol_->GetSolid();
   fLogVol = logvol_;
   fMass = GetMassVolumeGenerator() * counter;
-  std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: solid=" << fSolid << "\n";
+  std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: solid volume =" << fSolid << "\n";
+  std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: logic volume =" << fLogVol << "\n";
+  std::clog << "[log] SLArBulkVertexGenerator::SetBulkLogicalVolume: mass [kg] =" << fMass / CLHEP::kg << "\n";
 }
 
 const G4VSolid * SLArBulkVertexGenerator::GetSolid() const
@@ -159,7 +161,7 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
 
   //G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
   vertex_.set(vtx.x(), vtx.y(), vtx.z()); 
-  G4cout << "Vertex coordinates: " << vtx.x() << ", " << vtx.y() << ", " << vtx.z() << " m\n";
+  //G4cout << "Vertex coordinates: " << vtx.x() << ", " << vtx.y() << ", " << vtx.z() << " m\n";
   fCounter++;
 }
 
