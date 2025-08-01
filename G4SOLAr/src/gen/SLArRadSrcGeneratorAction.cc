@@ -104,7 +104,7 @@ void SLArRadSrcGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   else if  (fConfig.spec_activity) {
     G4double total_time = fVtxGen->GetTimeGenerator().CalculateTotalTime();
     if (auto ptr = dynamic_cast<const vertex::SLArBulkVertexGenerator*>(fVtxGen.get())) {
-      G4double vol_mass = ptr->GetMassVolumeGenerator();
+      G4double vol_mass = ptr->GetBulkVolumeMass();
       //G4cout << "Total volume mass: " << vol_mass/CLHEP::kg << G4endl;
       G4int exp_num_decays = fConfig.spec_activity * vol_mass * total_time;
       //G4cout << "Expected number of decays: " << exp_num_decays << G4endl;

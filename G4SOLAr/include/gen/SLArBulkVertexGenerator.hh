@@ -52,6 +52,8 @@ public:
   ~SLArBulkVertexGenerator() override;
 
   G4String GetType() const override {return "bulk_vertex_generator";}
+
+  inline G4double GetBulkVolumeMass() const {return fMass;} ///< Get the mass of the bulk volume
   
   const G4LogicalVolume * GetBulkLogicalVolume() const;
   
@@ -93,11 +95,7 @@ public:
     return fSolid->GetCubicVolume();
   }
 
-  G4double GetMassVolumeGenerator() const {
-    return fLogVol->GetMass();
-  }
-
-  inline void Print() const override {
+    inline void Print() const override {
     printf("SLArBulkVertexGenerator info dump:\n"); 
     printf("logical (solid) volume name: %s (%s)\n",
         fLogVol->GetName().data(), fSolid->GetName().data()); 
@@ -122,12 +120,14 @@ private:
   double fFVFraction{1.0}; //!< Volume fraction 
   G4bool fRequireMaterialMatch = false;
   G4String fMaterial = {};
-  G4double fMass; //Parameter that sets up the volume mass
+  G4double fMass; //!< Parameter that sets up the volume mass
   
   // Working internals:
   G4VSolid * fSolid = nullptr; ///< Reference to the solid volume from which are generated vertexes
   G4RotationMatrix fBulkInverseRotation; ///< The inverse box rotation
   unsigned int fCounter = 0.0; // Internal vertex counter
+
+  inline G4double GetMassVolumeGenerator() const {return fLogVol->GetMass();}
 
   double ComputeDeltaX(const G4ThreeVector& lo, const G4ThreeVector& hi) const;
   double ComputeDeltaX(const G4ThreeVector& lo, const G4ThreeVector& hi, const G4double fv) const;
