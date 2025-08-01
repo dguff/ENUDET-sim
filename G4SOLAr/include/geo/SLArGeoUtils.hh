@@ -19,7 +19,7 @@
 #include "G4Transform3D.hh"
 #include "G4LogicalVolume.hh"
 #include "G4RunManager.hh"
-#include "geo/VolumeStruct.hh"
+//#include "geo/VolumeStruct.hh"
 
 #include "rapidjson/document.h"
 #include "rapidjson/allocators.h"
@@ -54,9 +54,9 @@ namespace geo {
 
   bool track_crosses_volume(const G4ThreeVector& vtx, const G4ThreeVector& dir, const G4String& pv_name);
 
-  VolumeStruct* SearchInLogicalVolume(G4LogicalVolume* logicalVolume, const G4String& pv_name);
+  //VolumeStruct* SearchInLogicalVolume(G4LogicalVolume* logicalVolume, const G4String& pv_name);
 
-  VolumeStruct* SearchLogicalVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name);
+  //VolumeStruct* SearchLogicalVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name);
 
   struct volume_navigation_info {
     int index; //!< Index of the volume in the navigation stack
@@ -68,8 +68,7 @@ namespace geo {
 
   std::vector<G4Transform3D> get_volume_transforms(
       const G4String& target_pv_name,
-      const G4String& mother_pv_name,
-      G4LogicalVolume* target_lv = nullptr);
+      const G4String& mother_pv_name);
 
   void collect_volume_transforms(
       const G4LogicalVolume* logicalVolume,

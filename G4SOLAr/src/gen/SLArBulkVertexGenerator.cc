@@ -17,7 +17,6 @@
 namespace gen {
 namespace vertex {
 SLArBulkVertexGenerator::SLArBulkVertexGenerator()
-: fBulkTransformInitialized(false)
 {
   fBulkInverseRotation = fBulkRotation.inverse();
 }
@@ -150,13 +149,12 @@ void SLArBulkVertexGenerator::ShootVertex(G4ThreeVector & vertex_)
   //Randomizer
   int index = fBulkTransformVec.size();
 
-  if (index == 0 && fBulkTransformInitialized) {
-    vtx = fBulkTransform * vtx; 
+  if (index == 1) {
+    vtx = fBulkTransformVec.at(0) * vtx; 
   }
-
   else {
     int rnd_seed = static_cast<int>(G4UniformRand() * (index + 1));
-    vtx = fBulkTransformVec[rnd_seed] * vtx; 
+    vtx = fBulkTransformVec.at(rnd_seed) * vtx; 
   }
 
   //G4ThreeVector vtx = fBulkInverseRotation(localVertex) + fBulkTranslation;
@@ -209,27 +207,46 @@ double SLArBulkVertexGenerator::ComputeDeltaX(
   }
 }
 
-void SLArBulkVertexGenerator::Config(const G4String& volumeName) {
-  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(volumeName); 
+
+void SLArBulkVertexGenerator::Config(const G4String& target_volume_name) {
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(target_volume_name); 
   if (volume == nullptr) {
     char err_msg[200]; 
     snprintf(err_msg, sizeof(err_msg),
-	    "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", volumeName.c_str());
+        "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", target_volume_name.data());
     throw std::runtime_error(err_msg);
   }
 
-  VolumeStruct* result = geo::SearchLogicalVolumeInParametrisedVolume(fTargetVolumeName, volumeName);
-  if (!result) {
-    throw std::runtime_error("SLArBulkVertexGenerator::Config Error. Unable to find target logical volume.");
-  }
-  G4LogicalVolume* target_lv = result->logical_volume;
-  G4VPhysicalVolume* target_pv = result->physical_volume;
+  SetBulkLogicalVolume(volume->GetLogicalVolume(), 1); 
+  //SetSolidTranslation(volume->GetTranslation()); 
+  //SetSolidRotation(volume->GetRotation()); 
 
-  SetBulkLogicalVolume(volume->GetLogicalVolume(), result->counter); 
-  SetSolidTranslation(volume->GetTranslation()); 
-  SetSolidRotation(volume->GetRotation()); 
+  fBulkTransformVec.push_back(geo::GetTransformToGlobal(volume));
+  return;  
+}
+
+void SLArBulkVertexGenerator::Config(const G4String& target_volume_name, const G4String& mother_volume_name) {
+  auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(target_volume_name); 
+  if (volume == nullptr) {
+    char err_msg[200]; 
+    snprintf(err_msg, sizeof(err_msg),
+	    "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", target_volume_name.c_str());
+    throw std::runtime_error(err_msg);
+  }
+
+  //VolumeStruct* result = geo::SearchLogicalVolumeInParametrisedVolume(target_volume_name, mother_volume_name);
+  //if (!result) {
+    //throw std::runtime_error("SLArBulkVertexGenerator::Config Error. Unable to find target logical volume.");
+  //}
+  //G4LogicalVolume* target_lv = result->logical_volume;
+  //G4VPhysicalVolume* target_pv = result->physical_volume;
+
+  //SetSolidTranslation(volume->GetTranslation()); 
+  //SetSolidRotation(volume->GetRotation()); 
   
-  fBulkTransformVec = geo::get_volume_transforms(target_pv->GetName(), fMotherVolumeName, target_lv);
+  fBulkTransformVec = geo::get_volume_transforms(target_volume_name, mother_volume_name);
+  SetBulkLogicalVolume(volume->GetLogicalVolume(), fBulkTransformVec.size()); 
+
   return;
 }
 
@@ -253,24 +270,10 @@ void SLArBulkVertexGenerator::Config(const rapidjson::Value& cfg) {
   }
   if (cfg.HasMember("mother")) {
     fMotherVolumeName = cfg["mother"].GetString();
-    Config(fMotherVolumeName);
+    Config(fTargetVolumeName, fMotherVolumeName);
   }
   else if (cfg.HasMember("mother") == false) {
-    auto volume = G4PhysicalVolumeStore::GetInstance()->GetVolume(fTargetVolumeName); 
-    if (volume == nullptr) {
-      char err_msg[200]; 
-      snprintf(err_msg, sizeof(err_msg),
-        "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", fTargetVolumeName.c_str());
-      throw std::runtime_error(err_msg);
-    }
-  
-    SetBulkLogicalVolume(volume->GetLogicalVolume(), 1); 
-    SetSolidTranslation(volume->GetTranslation()); 
-    SetSolidRotation(volume->GetRotation()); 
-    
-    fBulkTransform = geo::GetTransformToGlobal(volume);
-    fBulkTransformInitialized = true;
-    return;  
+    Config(fTargetVolumeName);
   }
 }
 

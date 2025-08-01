@@ -49,8 +49,6 @@ public:
 
   SLArBulkVertexGenerator(const SLArBulkVertexGenerator&);
   
-  bool fBulkTransformInitialized;
-
   ~SLArBulkVertexGenerator() override;
 
   G4String GetType() const override {return "bulk_vertex_generator";}
@@ -87,7 +85,9 @@ public:
     
   void Config(const rapidjson::Value& cfg) override;
 
-  void Config(const G4String& volumeName); 
+  void Config(const G4String& target_volume_name); 
+
+  void Config(const G4String& target_volume_name, const G4String& mother_volume_name);
 
   inline G4double GetCubicVolumeGenerator() const {
     return fSolid->GetCubicVolume();
@@ -116,7 +116,6 @@ private:
   G4ThreeVector fBulkTranslation; ///< The box position in world coordinate frame
   G4RotationMatrix fBulkRotation; ///< The box rotation in world coordinate frame
   std::vector<G4Transform3D> fBulkTransformVec; ///< The vectors box transformation in world coordinate frame
-  G4Transform3D fBulkTransform; ///< The box transformation in world coordinate frame
   double fTolerance{1.0 * CLHEP::um}; ///< Geometrical tolerance (length)
   unsigned int fRandomSeed{0}; ///< Seed for the random number generator
   bool fNoDaughters = false; ///< Flag to reject vertexes generated from daughter volumes

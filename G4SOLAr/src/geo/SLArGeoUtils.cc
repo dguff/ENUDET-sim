@@ -80,8 +80,8 @@ namespace geo {
   }
 
   std::vector<G4Transform3D> get_volume_transforms(const G4String& target_pv_name,
-                                                   const G4String& mother_pv_name,
-                                                   G4LogicalVolume* target_lv) {
+                                                   const G4String& mother_pv_name)
+  {
     std::vector<G4Transform3D> transforms;
     G4PhysicalVolumeStore* pvs = G4PhysicalVolumeStore::GetInstance();
     const auto mother_pv = pvs->GetVolume(mother_pv_name);
@@ -224,65 +224,69 @@ namespace geo {
     return;
   }
 
-  VolumeStruct* SearchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
-    if (!logicalVolume) {
-      G4cout << "Logical volume is null" << G4endl;
-      return nullptr;
-    }
-    
-    for (int i = 0; i < logicalVolume->GetNoDaughters(); ++i) {
-      G4VPhysicalVolume* daughter = logicalVolume->GetDaughter(i);
-      if (!daughter) {
-          G4cout << "Error: Daughter volume is null." << G4endl;
-          continue;
-      }
-      
-      if (daughter->GetLogicalVolume()->GetName() == pv_name) {
-          G4cout << "FOUND volume " << pv_name << " inside logical volume " << logicalVolume->GetName() << G4endl;
-          return new VolumeStruct(daughter->GetLogicalVolume(), daughter);
-      }
-
-      if (daughter->IsParameterised()) {
-          //G4cout << "Exploring parametrised daughter volume: " << daughter->GetName() << G4endl;
-          auto result = SearchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
-          if (result != nullptr) {
-              return result;
-          }
-      }
-    
-      else {
-        //G4cout << "Exploring unparametrised daughter volume: " << daughter->GetName() << G4endl;
-        auto result = SearchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
-          if (result != nullptr) {
-              return result;
-          }
-      }
-    }
-
-    return nullptr;
-  }
-
-  VolumeStruct* SearchLogicalVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name) {
-    auto volumeStore = G4PhysicalVolumeStore::GetInstance();
-    if (!volumeStore) {
-        G4cout << "Error: G4PhysicalVolumeStore is not initialized." << G4endl;
-        return nullptr;
-    }
-
-
-    for (auto vol : *volumeStore) {
-      if (vol->GetName() == param_vol_name) {
-          auto logicalVolume = vol->GetLogicalVolume();
-          if (!logicalVolume) {
-              G4cout << "Error: LogicalVolume is null for " << param_vol_name << G4endl;
-              return nullptr;
-          }
-
-          return SearchInLogicalVolume(logicalVolume, pv_name);
-      }
-    }
-
-    G4cout << "Parametrised volume " << param_vol_name << " not found in G4PhysicalVolumeStore." << G4endl;
-    return nullptr;
-  }
+/*
+ *  VolumeStruct* SearchInLogicalVolume (G4LogicalVolume* logicalVolume, const G4String& pv_name) {
+ *    if (!logicalVolume) {
+ *      G4cout << "Logical volume is null" << G4endl;
+ *      return nullptr;
+ *    }
+ *    
+ *    for (int i = 0; i < logicalVolume->GetNoDaughters(); ++i) {
+ *      G4VPhysicalVolume* daughter = logicalVolume->GetDaughter(i);
+ *      if (!daughter) {
+ *          G4cout << "Error: Daughter volume is null." << G4endl;
+ *          continue;
+ *      }
+ *      
+ *      if (daughter->GetLogicalVolume()->GetName() == pv_name) {
+ *          G4cout << "FOUND volume " << pv_name << " inside logical volume " << logicalVolume->GetName() << G4endl;
+ *          return new VolumeStruct(daughter->GetLogicalVolume(), daughter);
+ *      }
+ *
+ *      if (daughter->IsParameterised()) {
+ *          //G4cout << "Exploring parametrised daughter volume: " << daughter->GetName() << G4endl;
+ *          auto result = SearchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
+ *          if (result != nullptr) {
+ *              return result;
+ *          }
+ *      }
+ *    
+ *      else {
+ *        //G4cout << "Exploring unparametrised daughter volume: " << daughter->GetName() << G4endl;
+ *        auto result = SearchInLogicalVolume(daughter->GetLogicalVolume(), pv_name);
+ *          if (result != nullptr) {
+ *              return result;
+ *          }
+ *      }
+ *    }
+ *
+ *    return nullptr;
+ *  }
+ *
+ */
+/*
+ *  VolumeStruct* SearchLogicalVolumeInParametrisedVolume(const G4String& pv_name, const G4String& param_vol_name) {
+ *    auto volumeStore = G4PhysicalVolumeStore::GetInstance();
+ *    if (!volumeStore) {
+ *        G4cout << "Error: G4PhysicalVolumeStore is not initialized." << G4endl;
+ *        return nullptr;
+ *    }
+ *
+ *
+ *    for (auto vol : *volumeStore) {
+ *      if (vol->GetName() == param_vol_name) {
+ *          auto logicalVolume = vol->GetLogicalVolume();
+ *          if (!logicalVolume) {
+ *              G4cout << "Error: LogicalVolume is null for " << param_vol_name << G4endl;
+ *              return nullptr;
+ *          }
+ *
+ *          return SearchInLogicalVolume(logicalVolume, pv_name);
+ *      }
+ *    }
+ *
+ *    G4cout << "Parametrised volume " << param_vol_name << " not found in G4PhysicalVolumeStore." << G4endl;
+ *    return nullptr;
+ *  }
+ */
 }
