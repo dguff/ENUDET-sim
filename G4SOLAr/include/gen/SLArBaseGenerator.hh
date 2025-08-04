@@ -84,10 +84,20 @@ namespace gen{
         if (config.HasMember("n_particles")) {
           local.n_particles = config["n_particles"].GetInt(); 
         }
-        if (config.HasMember("specific_activity")) {
-          local.specific_activity = unit::ParseJsonVal(config["specific_activity"]); 
+
+        if (config.HasMember("vertex_gen")) {
+          SetupVertexGenerator( config["vertex_gen"] );
         }
-        SourceEnergyConfig(config["energy"], local.ene_config); 
+
+        if (config.HasMember("direction")) {
+          SetupDirectionGenerator( config["direction"] );
+        }
+
+        if (config.HasMember("energy")) {
+          SourceEnergyConfig( config["energy"], local.ene_config ); 
+        }
+
+        return;
       };
       virtual void SourceEnergyConfig(const rapidjson::Value& ene_config, EnergyConfig_t& local); 
       virtual const rapidjson::Document ExportEnergyConfig() const; 

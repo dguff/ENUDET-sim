@@ -181,6 +181,10 @@ void SLArRadSrcGeneratorAction::RadSrcConfig_t::to_input() {
  }
 
 void SLArRadSrcGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
+  CopyConfigurationToString(config);
+
+  SourceCommonConfig(config, fConfig);
+
   if (config.HasMember("n_decays")) {
     fConfig.n_particles = config["n_decays"].GetInt(); 
     fConfig.n_decays = fConfig.n_particles;
@@ -242,17 +246,11 @@ void SLArRadSrcGeneratorAction::SourceConfiguration(const rapidjson::Value& conf
     }
   }
 
-  if (config.HasMember("vertex_gen")) {
-    SetupVertexGenerator( config["vertex_gen"] ); 
-  }
-  else {
+  if (fVtxGen == nullptr) {
     fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
   }
 
-  if (config.HasMember("direction")) {
-    SetupDirectionGenerator( config["direction"] );
-  }
-  else {
+  if (fDirGen == nullptr) {
     fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
   }
   
@@ -266,46 +264,48 @@ void SLArRadSrcGeneratorAction::Configure() {
   return;
 }
 
-G4String SLArRadSrcGeneratorAction::WriteConfig() const {
-  G4String config_str = "";
-
-  rapidjson::Document d; 
-  d.SetObject(); 
-  rapidjson::StringBuffer buffer;
-  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-
-  G4String gen_type = GetGeneratorType(); 
-
-  d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator()); 
-  d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
-  rapidjson::Value jisotopes(rapidjson::kArrayType); 
-  for (const auto& p : fConfig.isotopes) {
-    if (p.second) {
-      rapidjson::Value jisotope(rapidjson::kObjectType); 
-      jisotope.AddMember("name", rapidjson::StringRef(p.first.data()), d.GetAllocator()); 
-      jisotope.AddMember("fraction", p.second, d.GetAllocator());
-      jisotopes.PushBack( jisotope, d.GetAllocator()); 
-    }
-  }
-  d.AddMember("isotopes", jisotopes, d.GetAllocator()); 
-  d.AddMember("age", fConfig.age, d.GetAllocator()); 
-  d.AddMember("add_brem", fConfig.add_brem, d.GetAllocator()); 
-  if (fConfig.min_energy != 0 && fConfig.max_energy != 0) {
-    rapidjson::Value jrange(rapidjson::kArrayType); 
-    jrange.PushBack(fConfig.min_energy, d.GetAllocator()); 
-    jrange.PushBack(fConfig.max_energy, d.GetAllocator()); 
-    d.AddMember("range", jrange, d.GetAllocator());
-  }
-
-  const rapidjson::Document vtx_json = fVtxGen->ExportConfig(); 
-  rapidjson::Value vtx_config;
-  vtx_config.CopyFrom(vtx_json, d.GetAllocator(), true); 
-  d.AddMember("vertex_generator", vtx_config, d.GetAllocator()); 
-
-  d.Accept(writer);
-  config_str = buffer.GetString();
-  return config_str;
-}
+/*
+ *G4String SLArRadSrcGeneratorAction::WriteConfig() const {
+ *  G4String config_str = "";
+ *
+ *  rapidjson::Document d; 
+ *  d.SetObject(); 
+ *  rapidjson::StringBuffer buffer;
+ *  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+ *
+ *  G4String gen_type = GetGeneratorType(); 
+ *
+ *  d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator()); 
+ *  d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
+ *  rapidjson::Value jisotopes(rapidjson::kArrayType); 
+ *  for (const auto& p : fConfig.isotopes) {
+ *    if (p.second) {
+ *      rapidjson::Value jisotope(rapidjson::kObjectType); 
+ *      jisotope.AddMember("name", rapidjson::StringRef(p.first.data()), d.GetAllocator()); 
+ *      jisotope.AddMember("fraction", p.second, d.GetAllocator());
+ *      jisotopes.PushBack( jisotope, d.GetAllocator()); 
+ *    }
+ *  }
+ *  d.AddMember("isotopes", jisotopes, d.GetAllocator()); 
+ *  d.AddMember("age", fConfig.age, d.GetAllocator()); 
+ *  d.AddMember("add_brem", fConfig.add_brem, d.GetAllocator()); 
+ *  if (fConfig.min_energy != 0 && fConfig.max_energy != 0) {
+ *    rapidjson::Value jrange(rapidjson::kArrayType); 
+ *    jrange.PushBack(fConfig.min_energy, d.GetAllocator()); 
+ *    jrange.PushBack(fConfig.max_energy, d.GetAllocator()); 
+ *    d.AddMember("range", jrange, d.GetAllocator());
+ *  }
+ *
+ *  const rapidjson::Document vtx_json = fVtxGen->ExportConfig(); 
+ *  rapidjson::Value vtx_config;
+ *  vtx_config.CopyFrom(vtx_json, d.GetAllocator(), true); 
+ *  d.AddMember("vertex_generator", vtx_config, d.GetAllocator()); 
+ *
+ *  d.Accept(writer);
+ *  config_str = buffer.GetString();
+ *  return config_str;
+ *}
+ */
 
 }  
 }
