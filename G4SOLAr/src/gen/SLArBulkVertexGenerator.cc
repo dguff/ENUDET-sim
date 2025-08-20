@@ -232,7 +232,7 @@ void SLArBulkVertexGenerator::Config(const G4String& target_volume_name, const G
   if (volume == nullptr) {
     char err_msg[200]; 
     snprintf(err_msg, sizeof(err_msg),
-	    "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", target_volume_name.c_str());
+	    "SLArBulkVertexGenerator::Config Error.\nUnable to find %s in physical volume store.\n", target_volume_name.data());
     throw std::runtime_error(err_msg);
   }
 
