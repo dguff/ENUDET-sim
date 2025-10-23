@@ -23,7 +23,7 @@ namespace geo {
     }
     else {
       if (flagged_solids.find(solid) == flagged_solids.end()) {
-        flagged_solids.insert(const_cast<G4VSolid*>(solid));
+        flagged_solids.insert(solid);
         printf("geo::get_bounding_volume_surface: WARNING "); 
         printf("get_bounding_volume_surface is only implemented for G4Box solids. "); 
         printf("Feel free to work on your solid's implementation and let me know!\n");
