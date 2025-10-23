@@ -28,7 +28,7 @@ struct VolumeStruct {
                     dimension->setZ(box->GetZHalfLength() * 2);
                 } else if (dynamic_cast<const G4Tubs*>(solid)) {
                     const G4Tubs* tubs = static_cast<const G4Tubs*>(solid);
-                    dimension->setX(tubs->GetInnerRadius() + tubs->GetOuterRadius());
+                    dimension->setX(2 * tubs->GetOuterRadius());
                     dimension->setY(tubs->GetZHalfLength() * 2);
                     dimension->setZ(0);
                 }
