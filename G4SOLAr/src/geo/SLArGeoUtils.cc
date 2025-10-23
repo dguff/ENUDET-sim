@@ -88,11 +88,13 @@ namespace geo {
     const auto target_pv = pvs->GetVolume(target_pv_name);
     if (!mother_pv) {
       G4cout << "Error: Mother physical volume " << mother_pv_name << " not found." << G4endl;
-      exit(EXIT_FAILURE);
+      throw std::runtime_error("Mother physical volume " + 
+          mother_pv_name + " not found");
     }
     if (!target_pv) {
       G4cout << "Error: Target physical volume " << target_pv_name << " not found." << G4endl;
-      exit(EXIT_FAILURE);
+      throw std::runtime_error("Target physical volume " + 
+          target_pv_name + " not found");
     }
 
     const auto mother_lv = mother_pv->GetLogicalVolume();
@@ -104,13 +106,16 @@ namespace geo {
       G4cout << "Error: Target physical volume " << target_pv_name << 
         " not found in logical volume " 
         << mother_lv->GetName() << G4endl;
-      exit(EXIT_FAILURE);
+      throw std::runtime_error("Target physical volume " +
+          target_pv_name + " not found in logical volume " + 
+          mother_lv->GetName());
     }
 
     // now loop through the navigation info to build the transformations
     G4Transform3D mother_transform = GetTransformToGlobal(mother_pv);
     collect_volume_transforms(mother_lv, navigation, transforms, mother_transform); 
 
+#ifdef SLAR_DEBUG
     printf("Found %ld replicas of %s\n", transforms.size(), target_pv_name.data()); 
     int ii = 0; 
     for (const auto& tt : transforms) {
@@ -119,6 +124,7 @@ namespace geo {
           tt.getTranslation().y()*0.1, 
           tt.getTranslation().z()*0.1);
     }
+#endif  
 
     return transforms;
   }
@@ -128,7 +134,7 @@ namespace geo {
       std::vector<volume_navigation_info>& navigation_info) {
     if (!logicalVolume) {
       G4cout << "Logical volume is null" << G4endl;
-      exit(EXIT_FAILURE);
+      throw std::runtime_error("Logical volume is null");
     }
 
     for (int i = 0; i < logicalVolume->GetNoDaughters(); ++i) {
@@ -174,14 +180,14 @@ namespace geo {
     if (volume_info.index < 0 || 
         volume_info.index >= logicalVolume->GetNoDaughters()) {
       G4cout << "Error: Invalid index in navigation info." << G4endl;
-      exit(EXIT_FAILURE);
+      throw std::runtime_error("Invalid index in navigation info");
     }
 
     G4VPhysicalVolume* daughter_pv = logicalVolume->GetDaughter(volume_info.index);
     if (!daughter_pv) {
       fprintf(stderr, "Error: %s daughter volume at index %d is null.\n", 
           logicalVolume->GetName().data(), volume_info.index);
-      exit(EXIT_FAILURE);
+      throw std::runtime_error("Daughter volume is null");
     }
     G4LogicalVolume* daughter_lv = daughter_pv->GetLogicalVolume();
 
@@ -190,7 +196,7 @@ namespace geo {
       if (!ppv) {
         fprintf(stderr, "ERROR: Unable to cast %s in a G4PVParameterisedVolume\n", 
             daughter_pv->GetName().data()); 
-        exit(EXIT_FAILURE); 
+        throw std::runtime_error("Unable to cast daughter_pv in G4PVParameterisedVolume");
       }
 
       const SLArPlaneParameterisation* plane_prmt = 
@@ -208,7 +214,7 @@ namespace geo {
       else {
         fprintf(stderr, "Error: collect_volume_transforms only treats parameterised volumes"); 
         fprintf(stderr, "using SLArPlaneParameterisation.\n"); 
-        exit(EXIT_FAILURE); 
+        throw std::runtime_error("Error: collect_volume_transforms only treats parameterised volumes using SLArPlaneParameterisation.");
       }
     }
     else {
