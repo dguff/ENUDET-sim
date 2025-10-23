@@ -5,6 +5,7 @@
  */
 
 #include <utility>
+#include <unordered_set>
 #include <regex>
 
 #include "geo/SLArGeoUtils.hh"
@@ -14,15 +15,15 @@
 
 namespace geo {
   double get_bounding_volume_surface(const G4VSolid* solid) {
-    static std::vector<G4VSolid*> flagged_solids;
+    static std::unordered_set<const G4VSolid*> flagged_solids;
 
     if (dynamic_cast<const G4Box*>(solid)) {
       const auto box = (G4Box*)solid;
       return box->GetSurfaceArea(); 
     }
     else {
-      if (std::find(flagged_solids.begin(), flagged_solids.end(), solid) == flagged_solids.end()) {
-        flagged_solids.push_back(const_cast<G4VSolid*>(solid));
+      if (flagged_solids.find(solid) == flagged_solids.end()) {
+        flagged_solids.insert(solid);
         printf("geo::get_bounding_volume_surface: WARNING "); 
         printf("get_bounding_volume_surface is only implemented for G4Box solids. "); 
         printf("Feel free to work on your solid's implementation and let me know!\n");
