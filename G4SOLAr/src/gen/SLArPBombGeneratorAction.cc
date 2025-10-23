@@ -83,9 +83,9 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   const G4ThreeVector vtx_lar_frame = geo::transform_frame_world_to_det( vtx ); 
 
-  status[0] = vtx_lar_frame.x()*10.0;
-  status[1] = vtx_lar_frame.y()*10.0;
-  status[2] = vtx_lar_frame.z()*10.0;
+  status[0] = vtx_lar_frame.x();
+  status[1] = vtx_lar_frame.y();
+  status[2] = vtx_lar_frame.z();
 
 #ifdef SLAR_DEBUG
   printf("SLArPBombGeneratorAction::GeneratePrimaries(): Generating %i %ss\n", 
