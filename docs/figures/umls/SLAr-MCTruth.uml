@@ -1,0 +1,56 @@
+@startuml
+skinparam defaultFontName DejaVu Sans Mono
+class SLArMCPrimaryInfo {
+    -Int_t fPDG
+    -Int_t fTrkID
+    -TString fGeneratorLabel
+    -Double_t fEnergy
+    -Double_t fTime
+    -Double_t fTotalEdep
+    -Int_t fTotalScintPhotons
+    -Int_t fTotalCerenkovPhotons
+    -Double_t fTotalLArEdep
+    -vector<Double_t> fVertex
+    -vector<Double_t> fMomentum
+    -vector<SLArEventTrajectory*> fTrajectories 
+  }
+  class SLArMCTruth {
+    -Int_t fEvNumber
+    -std::vector<SLArMCPrimaryInfo> fPrimaries
+  }
+
+  class SLArEventTrajectory {
+    -TString fParticleName 
+    -TString fCreatorProcess 
+    -TString fEndProcess
+    -int fPDGID
+    -int fTrackID
+    -int fParentID 
+    -int fOriginVolCopyNo 
+    -float fInitKineticEnergy
+    -float fTrackLength 
+    -float fTime 
+    -float fWeight
+    -TVector3 fInitMomentum
+    -float fTotalEdep 
+    -float fTotalNph 
+    -float fTotalNel
+    -std::vector<trj_point> fTrjPoints
+  }
+
+  class trj_point {
+    +float fX 
+    +float fY 
+    +float fZ
+    +float fKEnergy
+    +float fEdep
+    +int   fNph 
+    +int   fNel 
+    +int   fCopy 
+    +bool  fLAr
+  }
+
+  SLArMCTruth --* SLArMCPrimaryInfo : contains
+  SLArMCPrimaryInfo --* SLArEventTrajectory : contains
+  SLArEventTrajectory --* trj_point : contains
+@enduml

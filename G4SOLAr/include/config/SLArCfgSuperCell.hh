@@ -1,9 +1,9 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArCfgSuperCell
- * @created     : lunedì feb 10, 2020 18:11:46 CET
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArCfgSuperCell.hh
+ * @created     : Mon Feb 10, 2020 18:11:46 CET
  *
- * \brief SuperCell information container 
+ * @brief SuperCell information container 
  */
 
 #ifndef SLARCFGSUPERCELL_HH

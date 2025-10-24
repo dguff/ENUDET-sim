@@ -1,0 +1,36 @@
+@startuml
+skinparam defaultFontName DejaVu Sans Mono
+class SLArListEventPDS {
+  -Int_t fEvNumber = {};
+  -std::map<int, SLArEventSuperCellArray> fOpDetArrayMap;
+}
+
+class SLArEventSuperCellArray {
+  -int fNhits; 
+  -bool fIsActive; 
+  -UShort_t fLightBacktrackerRecordSize;
+  -std::map<int, SLArEventSuperCell> fSuperCellMap;
+}
+
+class SLArEventSuperCell {
+}
+
+class SLArEventHitsCollection<SLArEventPhotonHit> {
+  -int fIdx; 
+  -bool fIsActive; 
+  -UShort_t fNhits; 
+  -UShort_t fBacktrackerRecordSize;
+  -HitsCollection_t fHits; 
+  -BacktrackerVectorCollection_t fBacktrackerCollections;
+  -UShort_t fClockUnit; 
+}
+
+class HitsCollection_t <<typedef>> {
+  std::map<Int_t, UShort_t>
+}
+
+SLArListEventPDS --* SLArEventSuperCellArray : contains
+SLArEventSuperCellArray --* SLArEventSuperCell : contains
+SLArEventSuperCell --|> SLArEventHitsCollection : inherits
+SLArEventHitsCollection --* HitsCollection_t
+@enduml

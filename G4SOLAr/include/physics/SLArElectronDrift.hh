@@ -11,7 +11,7 @@
 #include <math.h>
 #include <vector>
 #include <functional>
-#include <physics/SLArLArProperties.hh>
+#include "physics/LiquidArgon/SLArLArProperties.hh"
 #include "G4ThreeVector.hh"
 
 class SLArCfgAnode;

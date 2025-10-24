@@ -1,0 +1,60 @@
+@startuml
+skinparam defaultFontName DejaVu Sans Mono
+
+set separator ::
+
+class gen::SLArPGunGeneratorAction
+class gen::SLArPBombGeneratorAction
+class gen::SLArMarleyGeneratorAction
+class gen::SLArDecay0GeneratorAction
+class gen::SLArExternalGeneratorAction
+
+abstract class gen::SLArBaseGenerator {
+    + virtual void GeneratePrimaries(G4Event*)
+    + virtual void SourceConfiguration(const rapidjson::Value&)
+    - gen::vertex::SLArVertexGenerator* fVtxGen;
+    - gen::direction::SLArDirectionGenerator* fDirGen;
+}
+
+abstract class gen::vertex::SLArVertexGenerator {
+    + virtual void ShootVertex(G4ThreeVector&)
+    + virtual void Config(const rapidjson::Value&)
+    + gen::time::SLArTimeGenerator* fTimeGen;
+}
+
+class gen::vertex::SLArPointVertexGenerator
+class gen::vertex::SLArGPSVertexGenerator
+class gen::vertex::SLArBulkVertexGenerator
+class gen::vertex::SLArBoxSurfaceVertexGenerator
+
+abstract class gen::direction::SLArDirectionGenerator {
+    + virtual void ShootDirection(G4ThreeVector&)
+    + virtual void Config(const rapidjson::Value&)}
+}
+
+class gen::direction::SLArFixedDirectionGenerator
+class gen::direction::SLArIsotropicDirectionGenerator
+class gen::direction::SLArGPSDirectionGenerator
+class gen::direction::SLArSunDirectionGenerator
+
+gen::SLArBaseGenerator --o gen::vertex::SLArVertexGenerator
+gen::SLArBaseGenerator --o gen::direction::SLArDirectionGenerator
+
+gen::SLArPGunGeneratorAction --|> gen::SLArBaseGenerator
+gen::SLArPBombGeneratorAction --|> gen::SLArBaseGenerator
+gen::SLArMarleyGeneratorAction --|> gen::SLArBaseGenerator
+gen::SLArDecay0GeneratorAction --|> gen::SLArBaseGenerator
+gen::SLArExternalGeneratorAction --|> gen::SLArBaseGenerator
+
+gen::vertex::SLArPointVertexGenerator --|> gen::vertex::SLArVertexGenerator
+gen::vertex::SLArGPSVertexGenerator --|> gen::vertex::SLArVertexGenerator
+gen::vertex::SLArBulkVertexGenerator --|> gen::vertex::SLArVertexGenerator
+gen::vertex::SLArBoxSurfaceVertexGenerator --|> gen::vertex::SLArVertexGenerator
+
+gen::direction::SLArFixedDirectionGenerator --|> gen::direction::SLArDirectionGenerator
+gen::direction::SLArIsotropicDirectionGenerator --|> gen::direction::SLArDirectionGenerator
+gen::direction::SLArGPSDirectionGenerator --|> gen::direction::SLArDirectionGenerator
+gen::direction::SLArSunDirectionGenerator --|> gen::direction::SLArDirectionGenerator
+
+@enduml
+

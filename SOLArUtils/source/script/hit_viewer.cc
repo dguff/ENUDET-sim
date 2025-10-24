@@ -20,7 +20,7 @@
 #include "rapidjson/filereadstream.h"
 
 #include "event/SLArMCEvent.hh"
-#include "SLArUnit.hpp"
+#include "geo/SLArUnit.hpp"
 
 #include "SLArEveDisplay.hh"
 
@@ -87,20 +87,16 @@ int main (int argc, char *argv[]) {
 int process_file(const TString input_file_path, const TString control_file_path)
 {
   TFile* mc_truth_file = nullptr;
-  TTree* mc_truth_tree = nullptr;
-  SLArMCEvent* ev = 0; 
 
   display::SLArEveDisplay* eve_display = new display::SLArEveDisplay();
   eve_display->LoadHitFile( input_file_path, "HitTree" ); 
 
   if (control_file_path.IsNull() == false) {
     mc_truth_file = new TFile(control_file_path); 
-    mc_truth_tree = mc_truth_file->Get<TTree>("EventTree"); 
-    mc_truth_tree->SetBranchAddress("MCEvent", &ev); 
 
     auto geometry_str = mc_truth_file->Get<TObjString>("geometry"); 
     rapidjson::Document d; 
-    d.Parse( geometry_str->GetString() ); 
+    d.Parse<rapidjson::kParseCommentsFlag>( geometry_str->GetString() ); 
     if (d.HasMember("TPC")) {
       for (const auto& jtpc : d["TPC"].GetArray()) {
         printf("found tpc with id %i\n", jtpc["copyID"].GetInt()); 
@@ -108,7 +104,7 @@ int process_file(const TString input_file_path, const TString control_file_path)
       eve_display->Configure( d.GetObj() ); 
     }
 
-    eve_display->LoadMCTruthFile( control_file_path, "EventTree" ); 
+    eve_display->LoadMCEventFile( control_file_path, "EventTree" ); 
   }
 
   eve_display->MakeGUI();

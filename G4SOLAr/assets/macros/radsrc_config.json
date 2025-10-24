@@ -1,19 +1,44 @@
 {
   "generator" : 
-  {
-    "type" : "radsrc", 
-    "label" : "uranium_gammas", 
-    "config" : {
-      "isotopes" : [ {"name" : "U238", "fraction" : 0.993}, {"name" : "U235", "fraction" : 0.007} ], 
-      "age" : 4543000000, 
-      "add_brem" : true,
-      "vertex_gen" : {
-        "type" : "bulk", 
-        "config" : {
-          "volume" : "polyurethane_1", 
-          "avoid_daughters" : false
+  [
+    {
+      "type" : "radsrc", 
+      "label" : "U_radgammas", 
+      "config" : {
+        "isotopes" : [ 
+          {"name" : "U238", "fraction" : 0.993}, 
+          {"name" : "U235", "fraction" : 0.007}
+        ], 
+        "age" : 4543000000, 
+        "add_brem" : true,
+        "n_particles" : 200,
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {
+            "volume" : "cathode_pv_15", 
+            "avoid_daughters" : false
+          }
         }
       }
-    }
-  }
+    },
+    {
+      "type" : "radsrc", 
+      "label" : "Th_radgammas", 
+      "config" : {
+        "isotopes" : [ 
+          {"name" : "Th232", "fraction" : 1.000}
+        ], 
+        "age" : 4543000000, 
+        "add_brem" : true,
+        "n_particles" : 200,
+        "vertex_gen" : {
+          "type" : "bulk", 
+          "config" : {
+            "volume" : "cathode_pv_15", 
+            "avoid_daughters" : false
+          }
+        }
+      }
+    } 
+  ]
 }

@@ -27,19 +27,19 @@ class SLArGenRecord : public TObject {
 
     inline UShort_t& GetGenCode() {return fGenCode;}
     inline TString& GetGenLabel() {return fGenLabel;}
-    inline std::vector<Float16_t>& GetGenStatus() {return fStatus;}
+    inline std::vector<Float_t>& GetGenStatus() {return fStatus;}
     inline const UShort_t& GetGenCode() const {return fGenCode;}
     inline const TString& GetGenLabel() const {return fGenLabel;}
-    inline const std::vector<Float16_t>& GetGenStatus() const {return fStatus;}
+    inline const std::vector<Float_t>& GetGenStatus() const {return fStatus;}
 
-    const Float16_t GetEnergy() const;
-    const std::array<Float16_t, 3> GetDirection();
+    const Float_t GetEnergy() const;
+    const std::array<Float_t, 3> GetDirection();
     void Reset();
 
   private : 
     UShort_t fGenCode; 
     TString  fGenLabel; 
-    std::vector<Float16_t> fStatus; 
+    std::vector<Float_t> fStatus; 
 
   public: 
     ClassDef(SLArGenRecord, 1)
