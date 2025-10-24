@@ -38,6 +38,8 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     struct GENIEConfig_t : public GenConfig_t {
       ExtSourceInfo_t tree_info; 
       G4int           tree_first_entry = 0; 
+      std::vector<G4int> selection_pdg = {};
+      std::vector<G4String> selection_interaction = {};
     };
     SLArGENIEGeneratorAction(const G4String label = "");
     SLArGENIEGeneratorAction(const G4String label, const G4String genie_file);

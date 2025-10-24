@@ -37,6 +37,40 @@ void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& confi
 
   fConfig.tree_info.Configure(config["genie_tree"]); 
 
+  if ( config.HasMember("selection") ) {
+    const auto& selection = config["selection"];
+    if ( selection.IsArray() == false ) {
+      G4Exception("SLArGENIEGeneratorAction::SourceConfiguration",
+          "InvalidConfiguration",
+          FatalException,
+          "The 'selection' field must be an array of selection criteria.");
+    }
+
+    for ( const auto& sel : selection.GetArray() ) {
+      if ( sel.IsObject() == false ) {
+        G4Exception("SLArGENIEGeneratorAction::SourceConfiguration",
+            "InvalidConfiguration",
+            FatalException,
+            "Each selection criterion must be a JSON object.");
+      }
+
+      const auto& criterion = sel.GetObject();
+      const auto& type = criterion["type"].GetString();
+      const auto& value = criterion["value"].GetArray();
+
+      if ( G4StrUtil::icompare(type, "PDG") ) {
+        for (const auto& v : value) {
+          fConfig.selection_pdg.push_back( v.GetInt() ); 
+        }
+      }
+      else if (G4StrUtil::icompare( type, "interaction") ) {
+        for (const auto& v : value ) {
+          fConfig.selection_interaction.push_back( type );
+        }
+      }
+    }
+  }
+
   if (config.HasMember("tree_first_entry")) {
     fConfig.tree_first_entry = config["tree_first_entry"].GetInt(); 
   }
@@ -126,6 +160,12 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
     }*/
 
     if (gVar.pdg[i] >= 2000000000) continue;
+
+    if (fConfig.selection_pdg.empty() == false) {
+      if ( std::find( fConfig.selection_pdg.begin(), 
+            fConfig.selection_pdg.end(), gVar.pdg[i]) == fConfig.selection_pdg.end() )
+        continue;
+    }
     
     if (gVar.status[i] == 1){ // 0 - incoming; 1 - outgoing; x - virtual
 
