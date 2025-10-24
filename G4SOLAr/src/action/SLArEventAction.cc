@@ -183,19 +183,9 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
       RecordEventReadoutTile( event, verbose );
     }
 
-<<<<<<< HEAD:G4SOLAr/src/SLArEventAction.cc
-    if (verbose > 1) printf("Recording SuperCell hits...\n");
-    RecordEventSuperCell( event, verbose );
-    if (verbose > 1) printf("DONE\n");
-    
-    if (verbose > 1) printf("Recording CRT hits...\n");
-    RecordEventCRT( event, verbose );
-    if (verbose > 1) printf("DONE\n");
-=======
     if (SLArAnaMgr->IsPDSOutputEnabled()) {
       RecordEventSuperCell( event, verbose );
     }
->>>>>>> enudet-main:G4SOLAr/src/action/SLArEventAction.cc
      
     // apply zero suppression to charge signal
     for (auto &evAnode : slar_ev_anode.GetAnodeMap()) {
