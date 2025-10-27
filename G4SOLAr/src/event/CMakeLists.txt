@@ -48,6 +48,7 @@ set(SLAR_EVT_HITS_HEADERS
   "${SLAR_EVT_INCLUDE_DIR}/SLArEventAnode.hh"
   "${SLAR_EVT_INCLUDE_DIR}/SLArEventSuperCell.hh"
   "${SLAR_EVT_INCLUDE_DIR}/SLArEventSuperCellArray.hh"
+  "${SLAR_EVT_INCLUDE_DIR}/SLArEventCRT.hh"
 )
 set(SLAR_EVT_HITS_SOURCES
   "${SLAR_EVT_SOURCE_DIR}/SLArEventGenericHit.cc"
@@ -61,6 +62,7 @@ set(SLAR_EVT_HITS_SOURCES
   "${SLAR_EVT_SOURCE_DIR}/SLArEventAnode.cc"
   "${SLAR_EVT_SOURCE_DIR}/SLArEventSuperCell.cc"
   "${SLAR_EVT_SOURCE_DIR}/SLArEventSuperCellArray.cc"
+  "${SLAR_EVT_SOURCE_DIR}/SLArEventCRT.cc"
 )
 
 add_library(SLArMCEventReadout SHARED

@@ -28,8 +28,8 @@
 /// \file SLArCRTSD.cc
 /// \brief Implementation of the SLArCRT class
 
-#include "detector/CRT/SLArCRTSD.hh"
-#include "detector/CRT/SLArCRTHit.hh"
+#include "SensitiveDetectors/SLArCRTSD.hh"
+#include "SensitiveDetectors/SLArCRTHit.hh"
 
 #include "G4HCofThisEvent.hh"
 #include "G4TouchableHistory.hh"
@@ -102,7 +102,8 @@ G4bool SLArCRTSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   hit->SetEkin(preStepPoint->GetKineticEnergy());
   hit->SetCRTNo(preStepPoint->GetTouchableHandle()->GetCopyNumber());
 
-  hit->Print();
+  // tests
+  // hit->Print();
 
   fHitsCollection->insert(hit);
     

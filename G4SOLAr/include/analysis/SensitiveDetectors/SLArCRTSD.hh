@@ -33,7 +33,7 @@
 
 #include "G4VSensitiveDetector.hh"
 
-#include "detector/CRT/SLArCRTHit.hh"
+#include "SensitiveDetectors/SLArCRTHit.hh"
 
 class G4Step;
 class G4HCofThisEvent;

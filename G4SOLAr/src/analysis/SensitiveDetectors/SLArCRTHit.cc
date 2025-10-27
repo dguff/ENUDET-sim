@@ -28,7 +28,7 @@
 /// \file SLArCRTHit.cc
 /// \brief Implementation of the SLArCRTHit class
 
-#include "detector/CRT/SLArCRTHit.hh"
+#include "SensitiveDetectors/SLArCRTHit.hh"
 
 #include "G4VVisManager.hh"
 #include "G4VisAttributes.hh"

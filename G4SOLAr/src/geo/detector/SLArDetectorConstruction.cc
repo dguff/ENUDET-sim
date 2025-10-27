@@ -24,7 +24,7 @@
 #include "detector/SuperCell/SLArDetSuperCellArray.hh"
 #include "SensitiveDetectors/SLArSuperCellSD.hh"
 
-#include "detector/CRT/SLArCRTSD.hh"
+#include "SensitiveDetectors/SLArCRTSD.hh"
 
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgBaseSystem.hh"
@@ -471,15 +471,6 @@ void SLArDetectorConstruction::ConstructCRT() // --JM
   for (auto &crt : fCRT) {
     crt.second->BuildMaterial(fMaterialDBFile);
     crt.second->BuildCRT();
-<<<<<<< HEAD:G4SOLAr/src/SLArDetectorConstruction.cc
- 
-    auto geoinfo = crt.second->GetGeoInfo();
-    crt.second->GetModPV(
-        "CRT_pv", 0,
-        G4ThreeVector(geoinfo->GetGeoPar("crt_pos_x"),
-                      geoinfo->GetGeoPar("crt_pos_y"),
-                      geoinfo->GetGeoPar("crt_pos_z")),
-=======
 
     auto geoinfo = crt.second->GetGeoInfo();
 
@@ -493,7 +484,6 @@ void SLArDetectorConstruction::ConstructCRT() // --JM
     crt.second->GetModPV(
         "CRT_pv", 0,
         det_pos + crt_pos,
->>>>>>> enudet-main:G4SOLAr/src/geo/detector/SLArDetectorConstruction.cc
         fWorldLog, 0);
     crt.second->SetVisAttributes();
   }
