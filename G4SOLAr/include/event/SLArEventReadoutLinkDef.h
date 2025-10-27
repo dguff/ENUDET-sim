@@ -40,6 +40,7 @@
 #pragma link C++ class std::map<int, SLArEventSuperCellArray>+;
 #pragma link C++ class SLArListEventPDS+;
 #pragma link C++ class SLArEventCRT++;
+#pragma link C++ class SLArListEventCRT++;
 
 #endif
 

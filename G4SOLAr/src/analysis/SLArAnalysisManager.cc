@@ -134,6 +134,10 @@ G4bool SLArAnalysisManager::CreateFileStructure()
     fEventTree->Branch("EventPDS", &fListEventPDS);
   }
 
+  if (fEnableEventCRTOutput) {
+    fEventTree->Branch("EventCRT", &fListEventCRT);
+  }
+
   if (fEnableGenTreeOutput) {
     fGenTree = new TTree("GenTree", "SoLAr-sim Gen Tree");
     fGenTree->SetDirectory(fRootFile);

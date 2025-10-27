@@ -31,6 +31,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdEnableMCTruthOutput(nullptr),
   fCmdEnableAnodeOutput(nullptr),
   fCmdEnablePDSOutput(nullptr),
+  fCmdEnableCRTOutput(nullptr),
   fCmdDisableSD(nullptr),
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
@@ -94,6 +95,10 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdEnablePDSOutput = 
     new G4UIcmdWithABool(UIManagerPath+"enablePDSOutput", this);
   fCmdEnablePDSOutput->SetGuidance("Enable PDS output");
+
+  fCmdEnableCRTOutput = 
+    new G4UIcmdWithABool(UIManagerPath+"enableCRTOutput", this);
+  fCmdEnableCRTOutput->SetGuidance("Enable CRT output");
 
   fCmdDisableSD = 
     new G4UIcmdWithAString(UIManagerPath+"disableSD", this);
@@ -182,6 +187,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdEnableMCTruthOutput) delete fCmdEnableMCTruthOutput;
   if (fCmdEnableAnodeOutput  ) delete fCmdEnableAnodeOutput  ;
   if (fCmdEnablePDSOutput    ) delete fCmdEnablePDSOutput    ;
+  if (fCmdEnableCRTOutput    ) delete fCmdEnableCRTOutput    ;
   if (fCmdDisableSD          ) delete fCmdDisableSD          ;
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
@@ -263,6 +269,9 @@ void SLArAnalysisManagerMsgr::SetNewValue
   }
   else if (cmd == fCmdEnablePDSOutput) {
     SLArAnaMgr->EnableEventPDSOutput( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+  }
+  else if (cmd == fCmdEnableCRTOutput) {
+    SLArAnaMgr->EnableEventCRTOutput( G4UIcmdWithABool::GetNewBoolValue(newVal) );
   }
   else if (cmd == fCmdDisableSD) {
     auto SDman = G4SDManager::GetSDMpointer();

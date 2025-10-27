@@ -25,6 +25,7 @@
 #include "event/SLArMCTruth.hh"
 #include "event/SLArEventAnode.hh"
 #include "event/SLArEventSuperCellArray.hh"
+#include "event/SLArEventCRT.hh"
 #include "event/SLArGenRecords.hh"
 
 #include "SLArBacktrackerManager.hh"
@@ -70,9 +71,11 @@ class SLArAnalysisManager
     inline void EnableMCTruthOutput(const bool enable) {fEnableMCTruthOutput = enable;}
     inline void EnableEventAnodeOutput(const bool enable) {fEnableEventAnodeOutput = enable;}
     inline void EnableEventPDSOutput(const bool enable) {fEnableEventPDSOutput = enable;}
+    inline void EnableEventCRTOutput(const bool enable) {fEnableEventCRTOutput = enable;}
     inline bool IsMCTruthOutputEnabled() const {return fEnableMCTruthOutput;}
     inline bool IsAnodeOutputEnabled() const {return fEnableEventAnodeOutput;}
     inline bool IsPDSOutputEnabled() const {return fEnableEventPDSOutput;}
+    inline bool IsCRTOutputEnabled() const {return fEnableEventCRTOutput;}
     void   WriteSysCfg();
     bool   IsPathValid(G4String path);
     template<typename T> 
@@ -129,11 +132,13 @@ class SLArAnalysisManager
       fListEventAnode.SetEventNumber(event_number);
       fListEventPDS.SetEventNumber(event_number);
       fListGenRecords.SetEventNumber(event_number);
+      fListEventCRT.SetEventNumber(event_number);
     }
     inline Int_t GetEventNumber() const {return fEventNumber;}
     inline SLArMCTruth& GetMCTruth()  {return fListMCPrimary;}
     inline SLArListEventAnode& GetEventAnode() {return fListEventAnode;}
     inline SLArListEventPDS& GetEventPDS() {return fListEventPDS;}
+    inline SLArListEventCRT& GetEventCRT() {return fListEventCRT;}
     inline SLArGenRecordsVector& GetGenRecords() {return fListGenRecords;}
     G4bool Save();
     inline void ResetEvent() {
@@ -141,6 +146,7 @@ class SLArAnalysisManager
       fListEventAnode.Reset();
       fListEventPDS.Reset();
       fListGenRecords.Reset();
+      // fListEventCRT.Reset(); // AB: not implemented. Needed?
       fEventNumber = -1;
     }
 
@@ -190,12 +196,14 @@ class SLArAnalysisManager
     bool   fEnableMCTruthOutput = true; 
     bool   fEnableEventAnodeOutput = true;
     bool   fEnableEventPDSOutput = true;
+    bool   fEnableEventCRTOutput = true;
     bool   fEnableGenTreeOutput = true;
     Int_t  fEventNumber = 0;
     SLArMCTruth fListMCPrimary;
     SLArGenRecordsVector fListGenRecords; 
     SLArListEventPDS fListEventPDS;
     SLArListEventAnode fListEventAnode;
+    SLArListEventCRT fListEventCRT;
 
 #ifdef SLAR_EXTERNAL
     SLArEventTrajectoryLite fExternalRecord;

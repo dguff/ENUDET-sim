@@ -14,6 +14,7 @@
 #include "SensitiveDetectors/SLArLArHit.hh"
 #include "SensitiveDetectors/SLArExtScorerSD.hh"
 #include "SensitiveDetectors/SLArExtHit.hh"
+#include "SensitiveDetectors/SLArCRTHit.hh"
 #include "SLArElectronDrift.hh"
 
 #include "G4Event.hh"
@@ -185,6 +186,10 @@ void SLArEventAction::EndOfEventAction(const G4Event* event)
 
     if (SLArAnaMgr->IsPDSOutputEnabled()) {
       RecordEventSuperCell( event, verbose );
+    }
+
+    if (SLArAnaMgr->IsCRTOutputEnabled()) {
+      RecordEventCRT( event, verbose );
     }
      
     // apply zero suppression to charge signal
@@ -469,7 +474,7 @@ G4int SLArEventAction::RecordEventCRT(const G4Event* ev, const G4int& verbose) {
   {
     // recover analysis manager
     SLArAnalysisManager* SLArAnaMgr = SLArAnalysisManager::Instance();
-    auto &ev_crt = SLArAnaMgr->GetEvent().GetEventCRT();
+    auto &ev_crt = SLArAnaMgr->GetEventCRT();
 
     for (const auto &id : fCRTHCollID) {
       SLArCRTHitsCollection* hHC1 
@@ -492,7 +497,7 @@ G4int SLArEventAction::RecordEventCRT(const G4Event* ev, const G4int& verbose) {
         crtEv.SetGlobalPos(glbPos.x(), glbPos.y(), glbPos.z());
         crtEv.SetDir(dir.x(), dir.y(), dir.z());
 
-        ev_crt.push_back(crtEv);
+        ev_crt.RegisterCRTHit(crtEv);
 
         n_hits++;
       }

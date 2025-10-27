@@ -49,6 +49,7 @@ class SLArAnalysisManagerMsgr : public G4UImessenger
     G4UIcmdWithABool*           fCmdEnableMCTruthOutput;
     G4UIcmdWithABool*           fCmdEnableAnodeOutput; 
     G4UIcmdWithABool*           fCmdEnablePDSOutput;
+    G4UIcmdWithABool*           fCmdEnableCRTOutput;
     G4UIcmdWithAString*         fCmdDisableSD;
     G4UIcmdWithABool*           fCmdStoreFullTrajectory;
     G4UIcmdWithAString*         fCmdEnableBacktracker;

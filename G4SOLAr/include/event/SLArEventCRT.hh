@@ -47,4 +47,35 @@ private:
     ClassDef(SLArEventCRT, 1);
 };
 
+class SLArListEventCRT : public TObject {
+  public: 
+    inline SLArListEventCRT() : fEvNumber(-1), TObject() {}
+
+    inline SLArListEventCRT(const SLArListEventCRT& ev) 
+      : fEvNumber(ev.fEvNumber), TObject(ev) 
+    {
+      for (const auto& p : ev.fCrtHits) {
+        fCrtHits.push_back( SLArEventCRT(p) );
+      }
+    }
+
+    inline ~SLArListEventCRT() { fCrtHits.clear(); }
+
+    inline void SetEventNumber(int ev) {fEvNumber = ev;}
+    inline int  GetEventNumber() const {return fEvNumber;}
+
+    inline std::vector<SLArEventCRT>& GetCRTHits() {return fCrtHits;}
+
+    inline void RegisterCRTHit(const SLArEventCRT& hit) {
+      fCrtHits.push_back( hit );
+    }
+
+  private: 
+    int fEvNumber; 
+    std::vector<SLArEventCRT> fCrtHits; 
+
+  public:
+    ClassDef(SLArListEventCRT, 1); 
+};
+
 #endif
