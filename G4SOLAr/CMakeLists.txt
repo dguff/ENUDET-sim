@@ -132,10 +132,12 @@ if (SLAR_USE_G4CASCADE)
   include( ${PROJECT_SOURCE_DIR}/cmake/G4CASCADE_setup.cmake )
 endif()
 
+message("ECosmic_DIR is" ${ECosmic_DIR})
 # 5. ENUBETCosmics
 if (NOT ECosmic_DIR)
-  set(ECosmic_DIR "${G4SOLAR_EXT_DIR}/ecosmics")
+set(ECosmic_DIR "${SOLARSIM_EXT_DIR}/ecosmics")
 endif()
+message("ECosmic_DIR is" ${ECosmic_DIR})
 find_package(ECosmic REQUIRED PATHS ${ECosmic_DIR} ${CMAKE_PREFIX_PATH} NO_DEFAULT_PATH)
 if (ECosmic_FOUND)
   message(STATUS "ECosmic found: include at ${ECosmic_INCLUDE_DIR}")
