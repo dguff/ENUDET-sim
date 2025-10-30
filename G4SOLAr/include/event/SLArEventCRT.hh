@@ -70,6 +70,11 @@ class SLArListEventCRT : public TObject {
       fCrtHits.push_back( hit );
     }
 
+    inline void Reset() {
+      fCrtHits.clear();
+      fEvNumber = -1;
+    }
+
   private: 
     int fEvNumber; 
     std::vector<SLArEventCRT> fCrtHits; 

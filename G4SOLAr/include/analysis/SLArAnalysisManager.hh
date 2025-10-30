@@ -146,7 +146,7 @@ class SLArAnalysisManager
       fListEventAnode.Reset();
       fListEventPDS.Reset();
       fListGenRecords.Reset();
-      // fListEventCRT.Reset(); // AB: not implemented. Needed?
+      fListEventCRT.Reset();
       fEventNumber = -1;
     }
 
