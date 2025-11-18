@@ -5,13 +5,13 @@
     "config" : {
       "selection" : [
         { "type" : "interaction", "value" : [ "numu_cc", "nue_cc" ] }, 
-        { "type" : "PDG", "value" : [  ] }
+        { "type" : "PDG", "value" : [ 13, -13 ] }
       ],
       "genie_tree" : {
-        "filename" : "/home/guff/Downloads/enubetMCG_v1.0.root",
-        "objname" : "enubetG"
+        "filename" : "/home/luca/nuSCOPE/Software/nuDet/data/nuSCOPE_test.root",
+        "objname" : "gRooTracker"
       },
-      "tree_first_entry" : 2
+      "tree_first_entry" : 0
     }
   }
 }

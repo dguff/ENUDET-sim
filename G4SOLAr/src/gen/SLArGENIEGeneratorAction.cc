@@ -58,14 +58,14 @@ void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& confi
       const auto& type = criterion["type"].GetString();
       const auto& value = criterion["value"].GetArray();
 
-      if ( G4StrUtil::icompare(type, "PDG") ) {
+      if ( G4StrUtil::icompare(type, "PDG") == 0 ) {
         for (const auto& v : value) {
           fConfig.selection_pdg.push_back( v.GetInt() ); 
         }
       }
-      else if (G4StrUtil::icompare( type, "interaction") ) {
+      else if (G4StrUtil::icompare( type, "interaction") == 0 ) {
         for (const auto& v : value ) {
-          fConfig.selection_interaction.push_back( type );
+          fConfig.selection_interaction.push_back( v.GetString() );
         }
       }
     }
