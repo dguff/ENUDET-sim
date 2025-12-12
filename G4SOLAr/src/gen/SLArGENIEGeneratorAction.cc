@@ -87,6 +87,21 @@ SLArGENIEGeneratorAction::SLArGENIEGeneratorAction(const G4String label, const G
 SLArGENIEGeneratorAction::~SLArGENIEGeneratorAction()
 {}
 
+/**
+ * @brief Configures the SLArGENIEGeneratorAction source from a JSON configuration.
+ *
+ * This function parses the provided RapidJSON configuration object to set up the generator action.
+ * It expects the configuration to contain at least a "genie_tree" field, and optionally a "selection" array
+ * of filter criteria, a "tree_first_entry" integer, and a "vertex_gen" object for vertex generation.
+ *
+ * The "selection" array, if present, should contain objects specifying filtering criteria such as neutrino PDG codes,
+ * target nuclei/nucleons, interaction current/process, and product PDG codes. Each filter is added to the generator's
+ * configuration.
+ *
+ * @param config The RapidJSON value containing the configuration for the generator action.
+ *
+ * @throws G4Exception If required fields are missing or if the configuration is malformed.
+ */
 void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& config) {
   assert( config.HasMember("genie_tree") ); 
   CopyConfigurationToString(config);
@@ -196,29 +211,38 @@ void SLArGENIEGeneratorAction::Configure() {
   fTransform = to_global;
 }
 
-/*
- *G4String SLArGENIEGeneratorAction::WriteConfig() const {
- *  G4String config_str = "";
- *
- *  rapidjson::Document d; 
- *  d.SetObject();
- *  rapidjson::StringBuffer buffer;
- *  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
- *  G4String gen_type = GetGeneratorType();
- *
- *  d.AddMember("type" , rapidjson::StringRef(gen_type.data()), d.GetAllocator()); 
- *  d.AddMember("label", rapidjson::StringRef(fLabel.data()), d.GetAllocator()); 
- *
- *  rapidjson::Document dtree = fConfig.tree_info.ExportConfig(); 
- *  rapidjson::Value jtree; jtree.CopyFrom(dtree, d.GetAllocator()); 
- *  d.AddMember("genie_tree_info", jtree, d.GetAllocator());
- *  d.AddMember("tree_first_entry", fConfig.tree_first_entry, d.GetAllocator()); 
- *
- *  d.Accept(writer);
- *  config_str = buffer.GetString();
- *  return config_str;
- *}
- */
+G4String SLArGENIEGeneratorAction::WriteConfig() const {
+  G4String config_str = SLArBaseGenerator::WriteConfig();
+
+  // Parse the base config and add GENIE-specific fields
+  rapidjson::Document doc_base;
+  doc_base.Parse( config_str.data() );
+
+  rapidjson::Document d; 
+  d.SetObject();
+  rapidjson::StringBuffer buffer;
+  rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+  
+  auto& dallocator = d.GetAllocator();
+  d.CopyFrom(doc_base, dallocator);
+
+  rapidjson::Value gen_tree_dict(rapidjson::kArrayType);
+  gen_tree_dict.PushBack( rapidjson::StringRef("genietree_entry"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("weight"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("nu_pdg"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("target_nucleus"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("target_nucleon"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("interaction_type"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("interaction_current"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("interaction_process"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("interaction_attributes"), dallocator );
+
+  d.AddMember("gen_tree_dictionary", gen_tree_dict, dallocator);
+
+  d.Accept(writer);
+  config_str = buffer.GetString();
+  return config_str;
+}
 
 
 //***********************************************************************
@@ -370,6 +394,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
     fCurrentEntry++;
     gVar.info.reset();
     m_gtree->GetEntry(fCurrentEntry);
+    gVar.EvtNum = fCurrentEntry;
 
     ParseEventEncoding( gVar.evtCode->GetString().Data(), gVar.info );
 
