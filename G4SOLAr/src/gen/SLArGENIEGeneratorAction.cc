@@ -28,7 +28,8 @@ GenieEventEncoding_t::interaction_types = {
 const std::unordered_map<std::string_view, GenieEventEncoding_t::ECurrent>
 GenieEventEncoding_t::interaction_currents = {
     {"CC", ECurrent::kCC},
-    {"NC", ECurrent::kNC}
+    {"NC", ECurrent::kNC},
+    {"CC+NC+interference", ECurrent::kInterference}
 };
 
 const std::unordered_map<std::string_view, GenieEventEncoding_t::EProc>
@@ -36,6 +37,7 @@ GenieEventEncoding_t::interaction_procs = {
     {"QES", EProc::kQES},
     {"RES", EProc::kRES},
     {"DIS", EProc::kDIS},
+    {"NuEEL", EProc::kNuEEL},
     {"COH", EProc::kCOH},
     {"MEC", EProc::kMEC}
 };

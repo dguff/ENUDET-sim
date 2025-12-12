@@ -27,9 +27,9 @@ struct GenieEventEncoding_t {
   //! Interaction type enum
   enum class EPType { kWeak = 1, kEM = 2, kHadronic = 3 , kUnknown = 0 };
   //! Interaction current enum
-  enum class ECurrent { kCC = 1, kNC = 2, kUnknownCurrent = 0 };
+  enum class ECurrent { kCC = 1, kNC = 2, kInterference = 3, kUnknownCurrent = 0 };
   //! Interaction process enum
-  enum class EProc { kQES = 1, kRES = 2, kDIS = 3, kCOH = 4, kMEC = 5, kUnknownProc = 0 };
+  enum class EProc { kQES = 1, kRES = 2, kDIS = 3, kNuEEL = 4, kCOH = 5, kMEC = 6, kUnknownProc = 0 };
 
   //! Interaction type dictionary
   static const std::unordered_map<std::string_view, EPType> interaction_types;
@@ -119,12 +119,7 @@ struct GenieEvent_t{
   TObjString* evtCode = nullptr;
   GenieEventEncoding_t info;
 
-  inline ~GenieEvent_t() {
-    if (evtCode) {
-      delete evtCode;
-      evtCode = nullptr;
-    }
-  }
+  inline ~GenieEvent_t() {}
 };
 
 class SLArGENIEGeneratorAction : public SLArBaseGenerator
