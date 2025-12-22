@@ -138,6 +138,7 @@ struct GenieEvent_t{
   double   x4[100][4] = {}; //! Particle 4-positions (x, y, z, t)
   double   vtx[4] = {}; //! Event vertex position (x, y, z, t)
   double   weight = {}; //! Event weight
+  double   nuEnergy = {}; //! Neutrino energy
   TObjString* evtCode = nullptr; //! GENIE event code string
   GenieEventEncoding_t info; //! Encoded event information
 

@@ -229,6 +229,7 @@ G4String SLArGENIEGeneratorAction::WriteConfig() const {
   rapidjson::Value gen_tree_dict(rapidjson::kArrayType);
   gen_tree_dict.PushBack( rapidjson::StringRef("genietree_entry"), dallocator );
   gen_tree_dict.PushBack( rapidjson::StringRef("weight"), dallocator );
+  gen_tree_dict.PushBack( rapidjson::StringRef("nu_energy"), dallocator );
   gen_tree_dict.PushBack( rapidjson::StringRef("nu_pdg"), dallocator );
   gen_tree_dict.PushBack( rapidjson::StringRef("target_nucleus"), dallocator );
   gen_tree_dict.PushBack( rapidjson::StringRef("target_nucleon"), dallocator );
@@ -393,6 +394,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
   while (select_event == false) {
     fCurrentEntry++;
     gVar.info.reset();
+    gVar.nuEnergy = {};
     m_gtree->GetEntry(fCurrentEntry);
     gVar.EvtNum = fCurrentEntry;
 
@@ -422,8 +424,12 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 
     if (gVar.pdg[i] >= 2000000000) continue;
     
-    if (gVar.status[i] == 1) { // 0 - incoming; 1 - outgoing; x - virtual
-
+    if (gVar.status[i] == 0) { // 0 - incoming; 1 - outgoing; x - virtual
+      if ( abs(gVar.pdg[i]) == 12 || abs(gVar.pdg[i]) == 14 || abs(gVar.pdg[i]) == 16 ) {
+        gVar.nuEnergy = gVar.p4[i][3];
+      }
+    }
+    else if (gVar.status[i] == 1) {
       G4PrimaryParticle *particle = new G4PrimaryParticle(gVar.pdg[i],
           gVar.p4[i][2]*CLHEP::GeV,
           gVar.p4[i][1]*CLHEP::GeV,
@@ -446,6 +452,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
   auto& status = record.GetGenStatus();
   status.push_back( static_cast<float>(gVar.EvtNum) );
   status.push_back( static_cast<float>(gVar.weight) ); 
+  status.push_back( static_cast<float>(gVar.nuEnergy) );
   status.push_back( static_cast<float>(gVar.info.pdgNu) ); 
   status.push_back( static_cast<float>(gVar.info.target) ); 
   status.push_back( static_cast<float>(gVar.info.targetN) );
