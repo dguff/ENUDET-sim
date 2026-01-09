@@ -391,7 +391,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 {
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
   G4bool select_event = false; 
-  while (select_event == false) {
+  while (select_event == false && fCurrentEntry < m_gtree->GetEntries()) {
     fCurrentEntry++;
     gVar.info.reset();
     gVar.nuEnergy = {};
