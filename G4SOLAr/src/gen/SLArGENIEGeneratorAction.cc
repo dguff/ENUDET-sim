@@ -403,6 +403,16 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
     if ( CheckSelection(gVar) ) select_event = true;
   }
 
+  if (fCurrentEntry == m_gtree->GetEntries()) {
+    G4Exception("SLArGENIEGeneratorAction::GeneratePrimaries",
+        "OutOfRange",
+        JustWarning,
+        "No more GENIE events available in the input tree.");
+
+    // terminate the run
+    G4RunManager::GetRunManager()->AbortRun( true );
+  }
+
   size_t particle_idx = 0; // Think this can be done in a better way
 
   HepGeom::Point3D<G4double> vtx(0.,0.,0.);
