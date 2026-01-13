@@ -3,10 +3,6 @@
     "type" : "genie", 
     "label" : "genie_test", 
     "config" : {
-      "selection" : [
-        { "type" : "interaction", "value" : [ "numu_cc", "nue_cc" ] }, 
-        { "type" : "PDG", "value" : [  ] }
-      ],
       "genie_tree" : {
         "filename" : "/home/guff/Downloads/enubetMCG_v1.0.root",
         "objname" : "enubetG"
