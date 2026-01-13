@@ -213,6 +213,17 @@ struct GenieEvent_t{
  * Additionally, one can require specific target nuclei via the `target_nuclei` field,
  * target nucleons via the `target_nucleon` field, and specific final-state
  * products via the `products_pdg` field.
+ *
+ * Here is a breakdown of the available selection criteria:
+ * | Label                  | Description                                                | Type          |
+ * |------------------------|------------------------------------------------------------|---------------|
+ * | nu_pdg                 | Neutrino PDG codes to select                               | Array of int  |
+ * | target_nucleus         | Target nucleus PDG codes to select                         | Array of int  |
+ * | target_nucleon         | Target nucleon numbers to select                           | Array of int  |
+ * | interaction_current    | Interaction current types to select (e.g., "CC", "NC")     | Array of str  |
+ * | interaction_process    | Interaction process types to select ("QES", "RES", "DIS", "NuEEL", "COH", "MEC") | Array of str  |
+ * | products_pdg           | Final-state product PDG codes to require                    | Array of int  |
+ * 
  **/
 
 class SLArGENIEGeneratorAction : public SLArBaseGenerator
