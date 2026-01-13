@@ -53,9 +53,16 @@ struct GenieEventEncoding_t {
       return interaction_types.at(proc_str.data());
     }
     else {
-      printf("Warning: Unknown interaction type '%s'\n", proc_str.data());
-      return EPType::kUnknown;
+      TString msg = Form("Unknown interaction type '%s'. Available options are: ", proc_str.data());
+      for (const auto& pair : interaction_types) {
+        msg += Form("'%s' ", pair.first.data());
+      }
+
+      G4Exception("GenieEventEncoding_t::GetInteractionType",
+          "InvalidTypeString", FatalException, msg.Data());
     }
+
+    return EPType::kUnknown;
   }
 
   //! Get interaction current from string (e.g., "CC", "NC", "CC+NC+interference")
@@ -65,9 +72,16 @@ struct GenieEventEncoding_t {
       return interaction_currents.at(proc_str.data());
     }
     else {
-      printf("GenieEventEncoding_t WARNING: Unknown interaction current '%s'\n", proc_str.data());
-      return ECurrent::kUnknownCurrent;
+      TString msg = Form("Unknown interaction current '%s'. Available options are: ", proc_str.data());
+      for (const auto& pair : interaction_currents) {
+        msg += Form("'%s' ", pair.first.data());
+      }
+
+      G4Exception("GenieEventEncoding_t::GetInteractionCurrent",
+          "InvalidCurrentString", FatalException, msg.Data());
     }
+
+    return ECurrent::kUnknownCurrent;
   }
 
   //! Get interaction process from string (e.g., "QES", "RES", "DIS", "NuEEL", "COH", "MEC")
@@ -77,9 +91,15 @@ struct GenieEventEncoding_t {
       return interaction_procs.at(proc_str.data());
     }
     else {
-      printf("GeniEventEnconding_t WARNING: Unknown interaction process '%s'\n", proc_str.data());
-      return EProc::kUnknownProc;
-    } 
+      TString msg = Form("Unknown interaction process '%s'. Available options are: ", proc_str.data());
+      for (const auto& pair : interaction_procs) {
+        msg += Form("'%s' ", pair.first.data());
+      }
+      G4Exception("GenieEventEncoding_t::GetInteractionProc",
+          "InvalidProcString", FatalException, msg.Data());
+    }
+
+    return EProc::kUnknownProc;
   }
 
   //! Parse the process string to extract type, current, and process

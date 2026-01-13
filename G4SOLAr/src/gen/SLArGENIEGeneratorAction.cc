@@ -57,7 +57,8 @@ void GenieEventEncoding_t::parse_process(const TString& proc_str)
 {
   TObjArray* matches = fType_rgx.MatchS(proc_str);
   if (matches->GetEntries() < 4) {
-    printf("Warning: Unable to parse process string '%s'\n", proc_str.Data());
+    G4Exception("GenieEventEncoding_t::parse_process",
+        "InvalidProcessString", FatalException, "Process string format is invalid.");
     return;
   }
   else {
