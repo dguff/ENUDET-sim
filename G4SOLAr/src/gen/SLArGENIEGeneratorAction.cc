@@ -358,6 +358,9 @@ G4bool SLArGENIEGeneratorAction::CheckSelection(const GenieEventEncoding_t& info
 };
 
 G4bool SLArGENIEGeneratorAction::CheckSelection(const GenieEvent_t& gEvent) const {
+  // return true if no filters are defined
+  if (fConfig.filters.empty()) return true;
+
   for (const auto& filter : fConfig.filters) {
     const G4bool pass_event_enc_cuts = CheckSelection( gEvent.info );
     
