@@ -83,9 +83,9 @@ void SLArPBombGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   const G4ThreeVector vtx_lar_frame = geo::transform_frame_world_to_det( vtx ); 
 
-  status[0] = vtx_lar_frame.x()*10.0;
-  status[1] = vtx_lar_frame.y()*10.0;
-  status[2] = vtx_lar_frame.z()*10.0;
+  status[0] = vtx_lar_frame.x();
+  status[1] = vtx_lar_frame.y();
+  status[2] = vtx_lar_frame.z();
 
 #ifdef SLAR_DEBUG
   printf("SLArPBombGeneratorAction::GeneratePrimaries(): Generating %i %ss\n", 
@@ -127,31 +127,18 @@ void SLArPBombGeneratorAction::SourceConfiguration(const rapidjson::Value& confi
 
   CopyConfigurationToString(config);
 
-  if (config.HasMember("n_particles")) {
-    fConfig.n_particles = config["n_particles"].GetInt();
-  }
-
-  if (config.HasMember("energy")) {
-    SourceEnergyConfig( config["energy"], fConfig.ene_config );
-  }
-
-
   if (config.HasMember("particle")) {
     fConfig.particle_name = config["particle"].GetString();
     SetParticle( fConfig.particle_name ); 
   }
 
-  if (config.HasMember("vertex_gen")) {
-    SetupVertexGenerator( config["vertex_gen"] ); 
-  }
-  else {
+  SourceCommonConfig(config, fConfig);
+
+  if (fVtxGen == nullptr) {
     fVtxGen = std::make_unique<vertex::SLArPointVertexGenerator>();
   }
 
-  if (config.HasMember("direction")) {
-    SetupDirectionGenerator( config["direction"] );
-  }
-  else{
+  if (fDirGen == nullptr) {
     fDirGen = std::make_unique<direction::SLArIsotropicDirectionGenerator>();
   }
 
