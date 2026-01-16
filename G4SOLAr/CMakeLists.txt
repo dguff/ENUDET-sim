@@ -283,7 +283,9 @@ list(APPEND SOLARSIM_RPATH
   "${SOLARSIM_LIB_DIR}"
   "${BXDECAY0_DIR}/lib"
   "${BXDECAY0_DIR}/lib64"
-  "${MARLEY_DIR}/build")
+  "${MARLEY_DIR}/build"
+  "${ECosmic_LIBRARY_DIR}"
+)
 
 set_target_properties(solar_sim PROPERTIES
   INSTALL_RPATH "${SOLARSIM_RPATH}"

@@ -1,0 +1,24 @@
+{
+  "generator" : {
+    "type" : "genie", 
+    "label" : "genie_test", 
+    "config" : {
+      "selection" : [
+        {
+          "nu_pdg" : [14],
+          "interaction_current" : ["CC"],
+          "interaction_process" : ["QE"]
+        },
+        {
+          "interaction_current" : ["NC"],
+          "interaction_process" : ["DIS"]
+        }
+      ],
+      "genie_tree" : {
+        "filename" : "/home/luca/nuSCOPE/Software/nuDet/data/nuSCOPE_test.root",
+        "objname" : "gRooTracker"
+      },
+      "tree_first_entry" : 0
+    }
+  }
+}

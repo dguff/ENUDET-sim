@@ -482,7 +482,8 @@ void SLArDetectorConstruction::ConstructCRT() // --JM
     // Transform the CRT position to the world coordinates
  
     crt.second->GetModPV(
-        "CRT_pv", 0,
+        Form("CRT_pv_%i", crt.second->GetID()),
+        0,
         det_pos + crt_pos,
         fWorldLog, 0);
     crt.second->SetVisAttributes();
