@@ -18,6 +18,7 @@ struct trj_point {
   float fX; 
   float fY; 
   float fZ;
+  float fT;
   float fKEnergy;
   float fEdep;
   int   fNph; 
@@ -25,12 +26,13 @@ struct trj_point {
   int   fCopy; 
   bool  fLAr;
 
-  trj_point() : fX(0.), fY(0.), fZ(0.), fKEnergy(0.), fEdep(0.), fNph(0), fNel(0), fCopy(0), fLAr(false) {}
+  trj_point() : fX(0.), fY(0.), fZ(0.), fT(0.), fKEnergy(0.), fEdep(0.), fNph(0), fNel(0), fCopy(0), fLAr(false) {}
 
-  trj_point(double x, double y, double z, double energy, double edep, int n_ph = 0, int n_el = 0, int copy = 0, bool in_lar = false) {
+  trj_point(double x, double y, double z, double t, double energy, double edep, int n_ph = 0, int n_el = 0, int copy = 0, bool in_lar = false) {
     fX = x; 
     fY = y; 
     fZ = z; 
+    fT = t;
     fKEnergy = energy;
     fEdep = edep; 
     fNph = n_ph; 
@@ -43,6 +45,7 @@ struct trj_point {
     fX = right.fX;
     fY = right.fY;
     fZ = right.fZ;
+    fT = right.fT;
     fKEnergy = right.fKEnergy;
     fEdep = right.fEdep;
     fNph = right.fNph; 
@@ -55,6 +58,7 @@ struct trj_point {
     fX = right.fX;
     fY = right.fY;
     fZ = right.fZ;
+    fT = right.fT;
     fKEnergy = right.fKEnergy;
     fEdep = right.fEdep;
     fNph = right.fNph; 
@@ -137,7 +141,7 @@ class SLArEventTrajectory : public TObject
     float                  fTotalNel         ; 
 
   public:
-    ClassDef(SLArEventTrajectory, 5);
+    ClassDef(SLArEventTrajectory, 6);
 };
 
 class SLArEventTrajectoryLite : public TObject {
