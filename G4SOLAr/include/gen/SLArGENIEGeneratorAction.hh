@@ -234,6 +234,7 @@ class SLArGENIEGeneratorAction : public SLArBaseGenerator
     struct GENIEConfig_t : public GenConfig_t {
       ExtSourceInfo_t tree_info; 
       G4int           tree_first_entry = 0; 
+      G4int           tree_last_entry = 99999999;
 
       struct Filter_t {
         std::vector<G4int> nu_pdgs;

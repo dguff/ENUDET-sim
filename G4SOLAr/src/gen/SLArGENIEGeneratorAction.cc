@@ -93,7 +93,7 @@ SLArGENIEGeneratorAction::~SLArGENIEGeneratorAction()
  *
  * This function parses the provided RapidJSON configuration object to set up the generator action.
  * It expects the configuration to contain at least a "genie_tree" field, and optionally a "selection" array
- * of filter criteria, a "tree_first_entry" integer, and a "vertex_gen" object for vertex generation.
+ * of filter criteria, "tree_first_entry" and "tree_last_entry" integers, and a "vertex_gen" object for vertex generation.
  *
  * The "selection" array, if present, should contain objects specifying filtering criteria such as neutrino PDG codes,
  * target nuclei/nucleons, interaction current/process, and product PDG codes. Each filter is added to the generator's
@@ -178,6 +178,9 @@ void SLArGENIEGeneratorAction::SourceConfiguration(const rapidjson::Value& confi
 
   if (config.HasMember("tree_first_entry")) {
     fConfig.tree_first_entry = config["tree_first_entry"].GetInt(); 
+  }
+  if (config.HasMember("tree_last_entry")) {
+    fConfig.tree_last_entry = config["tree_last_entry"].GetInt(); 
   }
   if (config.HasMember("vertex_gen")) {
     SetupVertexGenerator( config["vertex_gen"] ); 
@@ -395,7 +398,7 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
 {
   auto& gen_records = SLArAnalysisManager::Instance()->GetGenRecords();
   G4bool select_event = false; 
-  while (select_event == false && fCurrentEntry < m_gtree->GetEntries()) {
+  while (select_event == false && fCurrentEntry < m_gtree->GetEntries() && fCurrentEntry < fConfig.tree_last_entry) {
     fCurrentEntry++;
     gVar.info.reset();
     gVar.nuEnergy = {};
@@ -412,6 +415,16 @@ void SLArGENIEGeneratorAction::GeneratePrimaries(G4Event *ev)
         "OutOfRange",
         JustWarning,
         "No more GENIE events available in the input tree.");
+
+    // terminate the run
+    G4RunManager::GetRunManager()->AbortRun( true );
+  }
+
+  if (fCurrentEntry == fConfig.tree_last_entry) {
+    G4Exception("SLArGENIEGeneratorAction::GeneratePrimaries",
+        "RunCompleted",
+        JustWarning,
+        "All the requested GENIE events have been processed.");
 
     // terminate the run
     G4RunManager::GetRunManager()->AbortRun( true );
