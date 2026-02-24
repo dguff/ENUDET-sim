@@ -7,7 +7,7 @@
         {
           "nu_pdg" : [14],
           "interaction_current" : ["CC"],
-          "interaction_process" : ["QE"]
+          "interaction_process" : ["QES"]
         },
         {
           "interaction_current" : ["NC"],
@@ -18,7 +18,8 @@
         "filename" : "/home/luca/nuSCOPE/Software/nuDet/data/nuSCOPE_test.root",
         "objname" : "gRooTracker"
       },
-      "tree_first_entry" : 0
+      "tree_first_entry" : 0,
+      "tree_last_entry"  : 9
     }
   }
 }
