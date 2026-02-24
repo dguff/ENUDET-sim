@@ -192,7 +192,8 @@ struct GenieEvent_t{
  *         "filename" : "nuSCOPE_test.root",
  *         "objname" : "gRooTracker"
  *       },
- *       "tree_first_entry" : 0
+ *       "tree_first_entry" : 0,
+ *       "tree_last_entry" : 99,
  *       "selection" : [
  *         {
  *           "nu_pdg" : [12],
