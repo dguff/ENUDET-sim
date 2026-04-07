@@ -66,7 +66,7 @@ void SLArSteppingVerbose::StepInfo()
              << std::setw( 9) << "KineE"      << " "
              << std::setw( 9) << "dEStep"     << " "
              << std::setw(10) << "StepLeng"
-             << std::setw(10) << "TrakLeng"
+             << std::setw(10) << "TrackLeng"
              << std::setw(10) << "Volume"    << "  "
              << std::setw(10) << "Process"   << G4endl;
     }
