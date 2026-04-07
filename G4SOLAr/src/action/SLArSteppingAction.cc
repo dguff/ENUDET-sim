@@ -54,6 +54,7 @@ trj_point SLArSteppingAction::set_evtrj_point(const G4StepPoint* point, const in
   step_point.fX = pos_det_frame.x(); 
   step_point.fY = pos_det_frame.y(); 
   step_point.fZ = pos_det_frame.z(); 
+  step_point.fT = point->GetGlobalTime();
   step_point.fKEnergy = point->GetKineticEnergy(); 
   step_point.fEdep = 0.; 
   const auto physicalVol = point->GetPhysicalVolume();
