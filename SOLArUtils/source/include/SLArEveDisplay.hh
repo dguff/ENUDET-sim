@@ -33,6 +33,7 @@
 #include "event/SLArMCTruth.hh"
 #include "event/SLArEventAnode.hh"
 #include "event/SLArEventSuperCellArray.hh"
+#include "event/SLArEventCRT.hh"
 
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgSuperCellArray.hh"
@@ -41,15 +42,33 @@
 namespace display {
 
   /**
-   * @class GeoTPC_t
-   * @brief Basic geometry attributes of TPC volume
+   * @class GeoBox_t
+   * @brief Basic geometry attributes of a box volume, to be used as base struct for different detector volumes (TPC, CRT, etc..)
    */
-  struct GeoTPC_t {
+  struct GeoBox_t {
     std::unique_ptr<TEveFrameBox> fVolume;
     ROOT::Math::XYZVectorD fPosition = {};
     ROOT::Math::XYZVectorD fDimension = {};
     Int_t fID = {};
+
+    inline void Print() const {
+      printf("ID: %i, pos (%.2f, %.2f, %.2f), dim (%.2f, %.2f, %.2f)\n", 
+          fID, fPosition.x(), fPosition.y(), fPosition.z(), 
+          fDimension.x(), fDimension.y(), fDimension.z());
+    }
   };
+
+  /**
+   * @class GeoTPC_t
+   * @brief Basic geometry attributes of TPC volume
+   */
+  struct GeoTPC_t : public GeoBox_t {};
+
+  /**
+   * @class GeoCRTPanel_t
+   * @brief Basic geometry attributes of CRT panel volume. For now, we assume CRT panels to be box volumes. 
+   */
+  struct GeoCRTPanel_t : public GeoBox_t {};
 
   struct MCParticleSelector_t {
     TString fName = {}; 
@@ -115,6 +134,7 @@ namespace display {
       int  ReadMCTruth();
       int  ReadTracks();
       int  ReadOpHits();
+      int  ReadCRTHits();
       int  ReadOpHitsFromOpDetArray(const int idx_array, const SLArEventSuperCellArray& ev_opdet_array); 
       int  ReadOpHitsFromAnode(const int tpc_id, const SLArEventAnode& ev_anode);
       void ResetHits();  
@@ -143,20 +163,24 @@ namespace display {
       SLArMCTruth* fEvMCTruth = {};
       SLArListEventAnode* fEvAnodeList = {};
       SLArListEventPDS* fEvPDSList = {};
+      SLArListEventCRT* fEvCRTList = {};
       bool fIncludeMCTruth = true;
       bool fIncludeTPCHits = true;
       bool fIncludeOpHits = true;
+      bool fIncludeCRTHits = true;
       std::map<int, std::unique_ptr<SLArCfgAnode>> fCfgAnodes = {}; 
       std::unique_ptr<SLArCfgBaseSystem<SLArCfgSuperCellArray>> fCfgPDS = {}; 
       std::unique_ptr<TTimer> fTimer = {};
       std::unique_ptr<TEveManager> fEveManager = {};
       std::vector<std::unique_ptr<TEveBoxSet>> fHitSet = {};
+      std::map<int, std::unique_ptr<TEveBoxSet>> fCRTHitSet = {};
       std::vector<std::unique_ptr<TEveTrackList>> fTrackLists = {}; 
       std::map<int, std::unique_ptr<TEveBoxSet>> fPhotonDetectors = {}; 
       TEveTrackPropagator* fPropagator = {};
       std::unique_ptr<TEveRGBAPalette> fPaletteQHits = {};
       std::unique_ptr<TEveRGBAPalette> fPaletteOpHits = {};
       std::vector<GeoTPC_t> fTPCs;
+      std::map<int,GeoCRTPanel_t> fCRTPanels;
 
       Long64_t  fCurEvent = {};
       Long64_t  fLastEvent = {};
@@ -179,6 +203,7 @@ namespace display {
 
       std::map<TString, MCParticleSelector_t> fParticleSelector; 
 
+      void ConfigureCRT(const rapidjson::Value& crt_config);
       void ConfigureTPC(const rapidjson::Value& tpc_config);
 
       inline Int_t GetTPCindex(const Int_t itpc) {
