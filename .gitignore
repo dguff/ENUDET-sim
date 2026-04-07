@@ -40,6 +40,10 @@
 *.pdf
 *.jpeg
 
+# Setup scripts
+setup_solarsim.sh
+setup_enudetsim.sh
+
 # External dependencies
 G4SOLAr/extern
 G4SOLAr/include/physics/cascade/
