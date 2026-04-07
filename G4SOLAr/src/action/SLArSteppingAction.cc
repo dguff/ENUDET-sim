@@ -54,6 +54,7 @@ trj_point SLArSteppingAction::set_evtrj_point(const G4StepPoint* point, const in
   step_point.fX = pos_det_frame.x(); 
   step_point.fY = pos_det_frame.y(); 
   step_point.fZ = pos_det_frame.z(); 
+  step_point.fT = point->GetGlobalTime();
   step_point.fKEnergy = point->GetKineticEnergy(); 
   step_point.fEdep = 0.; 
   const auto physicalVol = point->GetPhysicalVolume();
@@ -114,9 +115,9 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
 
     if (stepMngr->GetfStepStatus() != fAtRestDoItProc) {
       G4ProcessVector* process_vector = stepMngr->GetfPostStepDoItVector(); 
-      for (size_t iproc = 0; iproc < stepMngr->GetMAXofPostStepLoops(); iproc++) {
+      for (size_t iproc = 0; iproc < process_vector->size(); iproc++) {
         G4VProcess* proc = (*process_vector)[iproc]; 
-
+        if (!proc) continue;
         if (proc->GetProcessName() == "Scintillation") {
           SLArScintillation* scint_process = (SLArScintillation*)proc; 
 
@@ -163,27 +164,33 @@ void SLArSteppingAction::UserSteppingAction(const G4Step* step)
     G4String terminator; 
 
 #ifdef SLAR_EXTERNAL
-   if (thePostPoint->GetStepStatus() == fGeomBoundary) {
-      if ( G4StrUtil::contains(thePostPV->GetLogicalVolume()->GetMaterial()->GetName(), "LAr") )
-      {
-        track->SetTrackStatus( fStopAndKill ); 
-        
-        auto& ext_record = SLArAnalysisManager::Instance()->GetExternalRecord(); 
-        auto iev = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEvent();
-        ext_record.SetEvNumber( iev ); 
-        ext_record.SetValues( *trajectory ); 
-        ext_record.SetEnergyAtScorer( thePrePoint->GetKineticEnergy() ); 
-        ext_record.SetScorerVertex(  thePostPoint->GetPosition().x(), 
-                                      thePostPoint->GetPosition().y(), 
-                                      thePostPoint->GetPosition().z()); 
-
-        SLArAnalysisManager::Instance()->GetExternalsTree()->Fill(); 
-
-        ext_record.Reset(); 
-
-        terminator = "SLArUserInterfaceKiller";
-      }
-   }
+/*  if (thePostPoint->GetStepStatus() == fGeomBoundary) {
+ *    if ( G4StrUtil::contains(thePostPV->GetLogicalVolume()->GetMaterial()->GetName(), "LAr") )
+ *     {
+ *       track->SetTrackStatus( fStopAndKill ); 
+ *
+ *        
+ *        auto& ext_record = SLArAnalysisManager::Instance()->GetExternalRecord(); 
+ *        auto iev = G4RunManager::GetRunManager()->GetCurrentRun()->GetNumberOfEvent();
+ *        ext_record.SetEvNumber( iev ); 
+ *        ext_record.SetValues( *trajectory ); 
+ *        ext_record.SetEnergyAtScorer( thePrePoint->GetKineticEnergy() ); 
+ *        ext_record.SetScorerVertex(  thePostPoint->GetPosition().x(), 
+ *                                      thePostPoint->GetPosition().y(), 
+ *                                      thePostPoint->GetPosition().z()); 
+ *
+ *        printf("SLArSteppingAction::UserSteppingAction() - track %i reached the end of the world at [%.0f , %0.f, %0.f] - recording external info and killing track\n", 
+ *            track->GetTrackID(), 
+ *            thePostPoint->GetPosition().x(), thePostPoint->GetPosition().y(), thePostPoint->GetPosition().z());
+ *        SLArAnalysisManager::Instance()->GetExternalsTree()->Fill(); 
+ *
+ *        ext_record.Reset(); 
+ *
+ *
+ *       terminator = "SLArUserInterfaceKiller";
+ *     }
+ *  }
+ */  
 #endif 
 
     if (track->GetTrackStatus() == fStopAndKill) {
