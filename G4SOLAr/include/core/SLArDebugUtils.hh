@@ -1,0 +1,76 @@
+/**
+ * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @file        : SLArDebugUtils
+ * @created     : Thursday Oct 30, 2025 15:07:23 CET
+ */
+
+#ifndef SLARDEBUGUTILS_HH
+
+#define SLARDEBUGUTILS_HH
+
+#include "G4Exception.hh"
+#include "G4String.hh"
+#include "rapidjson/document.h"
+#include "rapidjson/allocators.h"
+
+namespace debug {
+  inline const char* JsonTypeName(rapidjson::Type type) {
+    switch (type) {
+      case rapidjson::kNullType:   return "Null";
+      case rapidjson::kFalseType:  return "False";
+      case rapidjson::kTrueType:   return "True";
+      case rapidjson::kObjectType: return "Object";
+      case rapidjson::kArrayType:  return "Array";
+      case rapidjson::kStringType: return "String";
+      case rapidjson::kNumberType: return "Number";
+      default:                     return "Unknown";
+    }
+  }
+
+  inline void require_json_member(
+      const rapidjson::Value& obj,
+      const char* member_name)
+  {
+    if (obj.HasMember(member_name) == false) {
+      G4String err_msg = G4String("Missing required JSON member: ") + member_name;
+      G4Exception("debug::require_json_member", "JsonDebug001", FatalException, err_msg);
+    }
+  }
+
+  inline void require_json_type( 
+      const rapidjson::Value& obj, 
+      rapidjson::Type expected_type) 
+  {
+    if (obj.GetType() != expected_type) {
+      G4String err_msg = G4String("Unexpected JSON value type. Expected: ") + 
+        JsonTypeName(expected_type) + 
+        G4String(", got: ") + 
+        JsonTypeName(obj.GetType());
+      G4Exception("debug::require_json_type", "JsonDebug002", FatalException, err_msg);
+    }
+  }
+
+  inline bool check_json_value_field(const rapidjson::Value& j, const G4String& field) {
+    if (j.HasMember("val") == false) {
+      G4String msg = "SLArGPSDirectionGenerator::Config ERROR: ";
+      msg += "Field \"" + field + "\" must have a \"val\" field\n";
+      G4Exception("debug::check_json_value_field", "JsonDebug003", FatalException, msg);
+    }
+
+    const auto& jval = j["val"];
+    if (jval.IsNumber() == false && jval.IsArray() == false) {
+      G4String msg = "SLArGPSDirectionGenerator::CheckJSONFieldIsSValue ERROR: ";
+      msg += "Field \"val\" must be a number or an array\n";
+      G4Exception("debug::check_json_value_field", "JsonDebug004", FatalException, msg);
+    }
+
+    if (j.HasMember("unit")) {
+      debug::require_json_type(j["unit"], rapidjson::kStringType);
+    }
+    return true;
+  }
+
+}
+
+#endif /* end of include guard SLARDEBUGUTILS_HH */
+

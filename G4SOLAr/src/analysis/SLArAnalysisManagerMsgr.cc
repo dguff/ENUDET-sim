@@ -28,6 +28,7 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdWriteCfgFile(nullptr), fCmdPlotXSec(nullptr), 
   fCmdGeoAnodeDepth(nullptr), 
   fCmdGeoFieldCageVis(nullptr),
+  fCmdGeoCryoSupportVis(nullptr),
   fCmdEnableMCTruthOutput(nullptr),
   fCmdEnableAnodeOutput(nullptr),
   fCmdEnablePDSOutput(nullptr),
@@ -35,7 +36,6 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdEnableBacktracker(nullptr),
   fCmdRegisterBacktracker(nullptr), 
   fCmdSetZeroSuppressionThrs(nullptr), 
-  fCmdElectronLifetime(nullptr),
   fCmdXSecEMin(nullptr),
   fCmdXSecEMax(nullptr),
   fCmdXSecNPoints(nullptr),
@@ -118,15 +118,15 @@ SLArAnalysisManagerMsgr::SLArAnalysisManagerMsgr() :
   fCmdSetZeroSuppressionThrs->SetGuidance("Set charge readout zero suppression threshold");
   fCmdSetZeroSuppressionThrs->SetParameterName("threshold", false);
 
-  fCmdElectronLifetime = 
-    new G4UIcmdWithADoubleAndUnit(UIPhysPath+"setElectronLifetime", this); 
-  fCmdElectronLifetime->SetGuidance("Set electrons lifetime in LAr"); 
-  fCmdElectronLifetime->SetParameterName("electron_lifetime", false); 
-  
   fCmdGeoAnodeDepth = 
     new G4UIcmdWithAnInteger(UIGeometryPath+"setAnodeVisDepth", this);
   fCmdGeoAnodeDepth->SetGuidance("Set visualization depth for SoLAr anode");
   fCmdGeoAnodeDepth->SetParameterName("depth", false);
+
+  fCmdGeoCryoSupportVis = 
+    new G4UIcmdWithABool(UIGeometryPath+"setCryoSupportVisibility", this);
+  fCmdGeoCryoSupportVis->SetGuidance("Set cryostat support structure visibility");
+  fCmdGeoCryoSupportVis->SetParameterName("vis", false, true);
 
   fCmdGeoFieldCageVis =
     new G4UIcmdWithABool(UIGeometryPath+"setFieldCageVisibility", this);
@@ -178,6 +178,7 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdPlotXSec           ) delete fCmdPlotXSec           ; 
   if (fCmdGeoAnodeDepth      ) delete fCmdGeoAnodeDepth      ; 
   if (fCmdGeoFieldCageVis    ) delete fCmdGeoFieldCageVis    ; 
+  if (fCmdGeoCryoSupportVis  ) delete fCmdGeoCryoSupportVis  ;
   if (fCmdStoreFullTrajectory) delete fCmdStoreFullTrajectory;
   if (fCmdEnableMCTruthOutput) delete fCmdEnableMCTruthOutput;
   if (fCmdEnableAnodeOutput  ) delete fCmdEnableAnodeOutput  ;
@@ -186,7 +187,6 @@ SLArAnalysisManagerMsgr::~SLArAnalysisManagerMsgr()
   if (fCmdEnableBacktracker  ) delete fCmdEnableBacktracker  ;
   if (fCmdRegisterBacktracker) delete fCmdRegisterBacktracker;
   if (fCmdSetZeroSuppressionThrs) delete fCmdSetZeroSuppressionThrs;
-  if (fCmdElectronLifetime)    delete fCmdElectronLifetime   ; 
   if (fCmdAddExtScorer       ) delete fCmdAddExtScorer       ; 
   if (fCmdXSecEMin           ) delete fCmdXSecEMin           ;
   if (fCmdXSecEMax           ) delete fCmdXSecEMax           ;
@@ -251,6 +251,10 @@ void SLArAnalysisManagerMsgr::SetNewValue
       auto tpc = tpc_.second;
       tpc->SetFieldCageVisibility( G4UIcmdWithABool::GetNewBoolValue(newVal) );
     }
+  }
+  else if (cmd == fCmdGeoCryoSupportVis) {
+    fConstr_->GetCryostat()->SetSupportStructureVisibility( G4UIcmdWithABool::GetNewBoolValue(newVal) );
+    fConstr_->GetCryostat()->SetVisAttributes();
   }
   else if (cmd == fCmdStoreFullTrajectory) {
     SLArAnaMgr->SetStoreTrajectoryFull( G4UIcmdWithABool::GetNewBoolValue(newVal) );
@@ -327,13 +331,6 @@ void SLArAnalysisManagerMsgr::SetNewValue
     }
     return;
   }
-  else if ( cmd == fCmdElectronLifetime ) {
-    auto detector = 
-      (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction(); 
-    auto& lar_properties = detector->GetLArProperties(); 
-    lar_properties.SetElectronLifetime( fCmdElectronLifetime->GetNewDoubleValue( newVal ) ); 
-  }
-
   else if (cmd == fCmdSetZeroSuppressionThrs) {
     int thrs = std::atoi( newVal ); 
     for (auto& anode_itr : SLArAnaMgr->GetEventAnode().GetAnodeMap()) {
