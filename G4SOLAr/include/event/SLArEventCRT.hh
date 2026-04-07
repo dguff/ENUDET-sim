@@ -19,21 +19,21 @@ public:
     SLArEventCRT();
     virtual ~SLArEventCRT();
 
-    void SetCRTNo(int idx) { fCRTNo = idx; }
-    void SetPDG(int pdg) { fPDG = pdg; }
-    void SetTime(double time) { fTime = time; }
-    void SetEkin(double ekin) { fEkin = ekin; }
+    inline void SetCRTNo(int idx) { fCRTNo = idx; }
+    inline void SetPDG(int pdg) { fPDG = pdg; }
+    inline void SetTime(double time) { fTime = time; }
+    inline void SetEkin(double ekin) { fEkin = ekin; }
     void SetLocalPos(double x, double y, double z);
     void SetGlobalPos(double x, double y, double z);
     void SetDir(double dx, double dy, double dz);
 
-    int GetCRTNo() { return fCRTNo; }
-    int GetPDG() { return fPDG; }
-    double GetTime() { return fTime; }
-    double GetEkin() { return fEkin; }
-    ROOT::Math::XYZPoint GetLocalPos() { return fLocalPos; };
-    ROOT::Math::XYZPoint GetGlobalPos() { return fGlobalPos; };
-    ROOT::Math::XYZVector GetDir() { return fDirection; };
+    inline int GetCRTNo() const { return fCRTNo; }
+    inline int GetPDG() const { return fPDG; }
+    inline double GetTime() const { return fTime; }
+    inline double GetEkin() const { return fEkin; }
+    inline ROOT::Math::XYZPoint GetLocalPos() const { return fLocalPos; };
+    inline ROOT::Math::XYZPoint GetGlobalPos() const { return fGlobalPos; };
+    inline ROOT::Math::XYZVector GetDir() const { return fDirection; };
 
 private:
     int fCRTNo;
