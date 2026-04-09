@@ -1,3 +1,10 @@
+/**
+ * @author      : Antonio Branca (antonio.branca@mib.infn.it)
+ * @file        : SLArEventCRT.cc
+ * @created     : 2025-03-26 15:00
+ */
+
+
 #include "event/SLArEventCRT.hh"
 
 ClassImp(SLArEventCRT);

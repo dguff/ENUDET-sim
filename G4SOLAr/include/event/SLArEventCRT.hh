@@ -1,6 +1,6 @@
 /**
  * @author      : Antonio Branca (antonio.branca@mib.infn.it)
- * @file        : SLArEventCRT
+ * @file        : SLArEventCRT.hh
  * @created     : 2025-03-26 15:00
  */
 
