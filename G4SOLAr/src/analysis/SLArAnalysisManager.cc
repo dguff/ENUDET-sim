@@ -17,6 +17,7 @@
 
 #include "SLArAnalysisManager.hh"
 #include "SLArBacktrackerManager.hh"
+#include "detector/SLArDetectorConstruction.hh"
 
 #include "SLArEventAnode.hh"
 #include "TObjString.h"
@@ -132,6 +133,13 @@ G4bool SLArAnalysisManager::CreateFileStructure()
 
   if (fEnableEventPDSOutput) {
     fEventTree->Branch("EventPDS", &fListEventPDS);
+  }
+
+  const auto detector = (SLArDetectorConstruction*)G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+  G4bool isCRTGeometryDefined = detector->GetDetCRTs().size() > 0;
+  
+  if (isCRTGeometryDefined && fEnableEventCRTOutput) {
+    fEventTree->Branch("EventCRT", &fListEventCRT);
   }
 
   if (fEnableGenTreeOutput) {

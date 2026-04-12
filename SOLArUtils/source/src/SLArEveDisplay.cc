@@ -153,6 +153,14 @@ namespace display {
       else {
         fMCEventTree->SetBranchAddress("EventPDS"  , &fEvPDSList);
       }
+
+      if (fMCEventTree->GetBranch("EventCRT") == nullptr) {
+        printf("WARNING: branch EventCRT not found in %s\n", file_path.Data());
+        fIncludeCRTHits = false;
+      }
+      else {
+        fMCEventTree->SetBranchAddress("EventCRT"  , &fEvCRTList);
+      }
     }
 
     for (const auto &itr : *fMCEventFile->GetListOfKeys()) {
@@ -201,8 +209,103 @@ namespace display {
       }
     }
 
+    if ( config.HasMember("CRT")) {
+      if ( config["CRT"].IsArray() == false ) {
+        const char* crt_msg = "CRT configuration should be an array of CRT elements";
+        throw std::runtime_error(crt_msg);
+      }
+
+      for (const auto& jcrt : config["CRT"].GetArray()) {
+        ConfigureCRT( jcrt );
+      }
+    }
+
     return;
   }
+
+  void SLArEveDisplay::ConfigureCRT(const rapidjson::Value& crt_config) {
+
+    assert( crt_config.HasMember("copyID") );
+    assert( crt_config.HasMember("position") ); 
+    assert( crt_config.HasMember("dimensions") ); 
+
+    GeoCRTPanel_t geo_crt;
+
+    geo_crt.fID = crt_config["copyID"].GetInt();
+
+    const auto& jpos = crt_config["position"].GetObj(); 
+    double pos_unit = unit::Unit2Val( jpos["unit"] );
+    geo_crt.fPosition.SetX( jpos["xyz"].GetArray()[0].GetDouble() * pos_unit ); 
+    geo_crt.fPosition.SetY( jpos["xyz"].GetArray()[1].GetDouble() * pos_unit ); 
+    geo_crt.fPosition.SetZ( jpos["xyz"].GetArray()[2].GetDouble() * pos_unit ); 
+
+    const auto& jdims = crt_config["dimensions"].GetArray(); 
+    for (const auto& jdim : jdims) {
+      TString var_name = jdim["name"].GetString();
+      if      ( var_name == "crt_x") geo_crt.fDimension.SetX(unit::ParseJsonVal( jdim )); 
+      else if ( var_name == "crt_y") geo_crt.fDimension.SetY(unit::ParseJsonVal( jdim )); 
+      else if ( var_name == "crt_z") geo_crt.fDimension.SetZ(unit::ParseJsonVal( jdim )); 
+    }
+
+    geo_crt.fVolume = std::make_unique<TEveFrameBox>();
+    geo_crt.fVolume->SetAABoxCenterHalfSize( 
+        geo_crt.fPosition.x(), geo_crt.fPosition.y(), geo_crt.fPosition.z(), 
+        0.5*geo_crt.fDimension.x(), 0.5*geo_crt.fDimension.y(), 0.5*geo_crt.fDimension.z()); 
+    geo_crt.fVolume->SetFrameColor( kCyan-8 ); 
+    printf("Adding CRT at (%.2f %.2f, %.2f) with size (%.2f %.2f, %.2f)\n\n", 
+        geo_crt.fPosition.x(), geo_crt.fPosition.y(), geo_crt.fPosition.z(), 
+        0.5*geo_crt.fDimension.x(), 0.5*geo_crt.fDimension.y(), 0.5*geo_crt.fDimension.z()); 
+
+    auto diff = geo_crt.fPosition - 0.5*geo_crt.fDimension;
+    auto sum  = geo_crt.fPosition + 0.5*geo_crt.fDimension;
+
+    if (diff.x() < fXmin) {
+      if (diff.x() < 0 ) fXmin = 1.3*(diff.x());
+      else               fXmin = 0.7*(diff.x());
+    } 
+    if (diff.y() < fYmin) {
+      if (diff.y() < 0 ) fYmin = 1.3*(diff.y());
+      else               fYmin = 0.7*(diff.y());
+    } 
+    if (diff.z() < fZmin) {
+      if (diff.z() < 0 ) fZmin = 1.3*(diff.z());
+      else               fZmin = 0.7*(diff.z());
+    } 
+
+    if (sum.x() < fXmax) {
+      if (sum.x() < 0 ) fXmax = 1.3*(sum.x());
+      else              fXmax = 0.7*(sum.x());
+    } 
+    if (sum.y() < fYmax) {
+      if (sum.y() < 0 ) fYmax = 1.3*(sum.y());
+      else              fYmax = 0.7*(sum.y());
+    } 
+    if (sum.z() < fZmax) {
+      if (sum.z() < 0 ) fZmax = 1.3*(sum.z());
+      else              fZmax = 0.7*(sum.z());
+    } 
+
+    fCRTPanels.insert({ geo_crt.fID, std::move(geo_crt)} ); 
+
+    TString name = Form("hitsCRT%i", geo_crt.fID); 
+    TString titl = Form("CRT %i hits", geo_crt.fID);
+    fCRTHitSet.emplace(geo_crt.fID, std::make_unique<TEveBoxSet>(name, titl));
+    auto& boxset = fCRTHitSet.at(geo_crt.fID);
+    boxset->Reset(TEveBoxSet::kBT_AABox, false, 100);
+    boxset->UseSingleColor();
+    boxset->SetMainColor(kCyan);
+    fEveManager->AddElement( boxset.get() );
+
+    bool verbose = true;
+    if (verbose) {
+      printf("Added CRT panel with copyID %i at (%.2f, %.2f, %.2f) with size (%.2f, %.2f, %.2f)\n", 
+          geo_crt.fID, geo_crt.fPosition.x(), geo_crt.fPosition.y(), geo_crt.fPosition.z(), 
+          geo_crt.fDimension.x(), geo_crt.fDimension.y(), geo_crt.fDimension.z());
+    }
+
+    return;
+  }
+
 
   void SLArEveDisplay::ConfigureTPC(const rapidjson::Value& tpc_config) {
 
@@ -294,6 +397,10 @@ namespace display {
       fEveManager->AddElement( ophit_set.second.get() ); 
     }
 
+    for (auto& crt_hits : fCRTHitSet) {
+      crt_hits.second->SetFrame( fCRTPanels.at(crt_hits.first).fVolume.get() );
+    }
+
     fEveManager->GetEditor(); 
 
     fEveManager->Redraw3D( false, true ); 
@@ -336,6 +443,7 @@ namespace display {
     if (fEvMCTruth) fEvMCTruth->Reset();
     if (fEvAnodeList) fEvAnodeList->Reset();
     if (fEvPDSList) fEvPDSList->Reset();
+    if (fEvCRTList) fEvCRTList->Reset();
 
     fMCEventTree->GetEntry( fCurEvent ); 
 
@@ -346,6 +454,10 @@ namespace display {
 
     if (fIncludeOpHits) {
       ReadOpHits();
+    }
+
+    if (fIncludeCRTHits) {
+      ReadCRTHits();
     }
 
     return 0;
@@ -468,6 +580,55 @@ namespace display {
     return 1;
   }
 
+  int SLArEveDisplay::ReadCRTHits() {
+    int nhits = 0; 
+    const auto& crt_list = fEvCRTList->GetCRTHits(); 
+    double size = 50.0; // mm
+
+    for (const auto& crt_hit : crt_list) {
+      int panel_id = crt_hit.GetCRTNo();
+      printf("Adding CRT hit on panel %i at (%.2f, %.2f, %.2f) with Ekin = %g MeV\n", 
+          panel_id, crt_hit.GetLocalPos().x(), crt_hit.GetLocalPos().y(), crt_hit.GetLocalPos().z(), crt_hit.GetEkin());
+      auto& hitset = fCRTHitSet.at(panel_id);
+      printf("hitset ptr: %p\n", hitset.get());
+      double w = size, l = size, h = size;
+      const auto& geo_crt = fCRTPanels.at(panel_id);
+      printf("geo_crt printout...\n"); 
+      geo_crt.Print();
+      if ( geo_crt.fDimension.x() < geo_crt.fDimension.y() && geo_crt.fDimension.x() < geo_crt.fDimension.z() ) {
+        w = geo_crt.fDimension.x();
+        if (crt_hit.GetLocalPos().x() > 0) w *= -1;
+      }
+      else if ( geo_crt.fDimension.y() < geo_crt.fDimension.x() && geo_crt.fDimension.y() < geo_crt.fDimension.z() ) {
+        h = geo_crt.fDimension.y();
+        if (crt_hit.GetLocalPos().y() > 0) h *= -1;
+      }
+      else {
+        l = geo_crt.fDimension.z();
+        if (crt_hit.GetLocalPos().z() > 0) l *= -1;
+      }
+
+      printf("Adding box at (%.2f, %.2f, %.2f) with size (%.2f, %.2f, %.2f)\n", 
+          geo_crt.fPosition.x() + crt_hit.GetLocalPos().x(), 
+          geo_crt.fPosition.y() + crt_hit.GetLocalPos().y(),
+          geo_crt.fPosition.z() + crt_hit.GetLocalPos().z(),
+          w, h, l);
+      hitset->AddBox( 
+          geo_crt.fPosition.x() + crt_hit.GetLocalPos().x(), 
+          geo_crt.fPosition.y() + crt_hit.GetLocalPos().y(),
+          geo_crt.fPosition.z() + crt_hit.GetLocalPos().z(),
+          w, h, l ); 
+      hitset->DigitValue( crt_hit.GetEkin() ); 
+      nhits++;
+    }
+
+    for (auto& crt_hitset_itr : fCRTHitSet) {
+      crt_hitset_itr.second->RefitPlex();
+    }
+
+    return nhits;
+  }
+
   int SLArEveDisplay::ReadTracks() {
     const auto& primaries = fEvMCTruth->GetPrimaries();
     printf("SLArEveDisplay::ReadTracks - found %zu primaries\n", primaries.size());
@@ -572,7 +733,12 @@ namespace display {
 
     for (auto& hitset_itr : fPhotonDetectors) {
       printf("deleting ophits...\n");
-      hitset_itr.second->Reset(TEveBoxSet::kBT_AABox, false, 100);
+      hitset_itr.second->Reset(TEveBoxSet::kBT_AABox, false, hitset_itr.second->GetNItems() );
+    }
+
+    for (auto& hitset_itr : fCRTHitSet) {
+      printf("deleting CRT hits...\n");
+      hitset_itr.second->Reset(TEveBoxSet::kBT_AABox, false, hitset_itr.second->GetNItems() );
     }
 
     fTrackLists.clear();

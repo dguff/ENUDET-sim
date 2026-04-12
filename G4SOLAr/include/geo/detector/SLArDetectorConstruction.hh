@@ -80,6 +80,8 @@ class SLArDetectorConstruction : public G4VUserDetectorConstruction
     inline SLArDetReadoutTile* GetReadoutTile() const {return fReadoutTile;}
     //! Return TPC with given id
     SLArDetTPC* GetDetTPC(G4int tpcid);
+    //! Return SLArDetectorConstruction::fCRTs map
+    inline std::map<G4int, SLArDetCRT*>& GetDetCRTs() {return fCRT;}
     //! Return Cryostat detector object
     inline SLArDetCryostat* GetCryostat() {return fCryostat;}
     //! Return Cryostat detector object

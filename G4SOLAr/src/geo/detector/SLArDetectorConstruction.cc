@@ -26,6 +26,8 @@
 #include "detector/SuperCell/SLArDetSuperCellArray.hh"
 #include "SensitiveDetectors/SLArSuperCellSD.hh"
 
+#include "SensitiveDetectors/SLArCRTSD.hh"
+
 #include "config/SLArCfgAnode.hh"
 #include "config/SLArCfgBaseSystem.hh"
 #include "config/SLArCfgReadoutTile.hh"
@@ -684,13 +686,16 @@ G4VPhysicalVolume* SLArDetectorConstruction::Construct()
     tpc.second->SetVisAttributes(); 
   }
 
-  G4cout << "\nSLArDetectorConstruction: Building the CRT" << G4endl;
-  ConstructCRT();
+  // 6. Build and place Cosmic Ray Tagger (CRT) system
+  if (fCRT.empty() == false) {
+    G4cout << "\nSLArDetectorConstruction: Building the CRT" << G4endl;
+    ConstructCRT();
+  }
 
-  // 6. Build and place the "conventional" Photon Detection System 
+  // 7. Build and place the "conventional" Photon Detection System 
   if (fSuperCell) BuildAndPlaceSuperCells();
 
-  // 7. Build and place the "pixel-based" readout system 
+  // 8. Build and place the "pixel-based" readout system 
   BuildAndPlaceAnode(); 
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -782,6 +787,14 @@ void SLArDetectorConstruction::ConstructSDandField()
     SetSensitiveDetector(tpc.second->GetModLV(), tpcSD);
     iTPC++; 
   }
+
+  // Set CRT SD
+ for (const auto crt : fCRT) {
+   auto crtSD 
+     = new SLArCRTSD(SDname = "/crt"+std::to_string(crt.first), crt.first);
+   SDman->AddNewDetector(crtSD);
+   SetSensitiveDetector(crt.second->GetModLV(), crtSD);
+ }
 
 #endif
 
