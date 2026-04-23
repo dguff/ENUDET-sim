@@ -1,4 +1,5 @@
-"TPC" : [
+{
+  "TPC" : [
     {"copyID" : 10, 
       "position": {"xyz" : [0, 110.05, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, -1, 0]},
@@ -36,12 +37,12 @@
   ],
   "Cathode" : [
     {"copyID": 99, 
-     "position" : {"xyz": [0, 0, 0], "unit" : "cm"}, 
-     "dimensions" : [
-       {"name" : "dim_x", "val" :  4.00, "unit" : "m"},
-       {"name" : "dim_y", "val" :  1.00, "unit" : "mm" },
-       {"name" : "dim_z", "val" : 20.00, "unit" : "m" }
-     ]
+      "position" : {"xyz": [0, 0, 0], "unit" : "cm"}, 
+      "dimensions" : [
+        {"name" : "dim_x", "val" :  4.00, "unit" : "m"},
+        {"name" : "dim_y", "val" :  1.00, "unit" : "mm" },
+        {"name" : "dim_z", "val" : 20.00, "unit" : "m" }
+      ]
     }
   ],
   "Anode" : [
@@ -70,3 +71,4 @@
       ]
     }
   ]
+}
