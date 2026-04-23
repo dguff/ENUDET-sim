@@ -1,3 +1,4 @@
+{
 "World" : {
   "copyID" : 0,
   "dimensions" : [
@@ -20,4 +21,5 @@
     {"name" : "height_vault", "val" : 27830, "unit" : "mm"},
     {"name" : "inner_size_z", "val" : 69400, "unit" : "mm"}
   ]
+}
 }

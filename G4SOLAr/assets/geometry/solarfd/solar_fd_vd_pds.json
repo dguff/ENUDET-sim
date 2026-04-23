@@ -1,3 +1,4 @@
+{
 "SuperCell" : {
   "dimensions" : [
     {"name" : "cell_z"   , "val" : 60.0, "unit" : "cm"}, 
@@ -178,3 +179,4 @@
     ]
   }
 ]
+}

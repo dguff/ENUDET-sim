@@ -1,3 +1,4 @@
+{
 "Cryostat" : {
   "Cryostat_structure" : [
     {"id" : 21 , "name" : "outer_frame"     , "material" : "Steel"               , "thickness" : {"val":  1.0 , "unit" : "cm"}, "importance" :  2} ,
@@ -20,4 +21,5 @@
     "steel_minor_width" : {"val" : 20, "unit" : "cm"}, 
     "main_spacing" : {"val" : 150, "unit" : "cm"}
   }
+}
 }
