@@ -1,5 +1,6 @@
 // nuSCOPE CRT geometry configuration file
 // position of each module is defined with respect to the LAr target center
+{
 "CRT" : [
   {"copyID" : 60,
     "position": {"xyz" : [0, 4.5, 0], "unit" : "m"},
@@ -42,3 +43,4 @@
     ]
   }
 ]
+}

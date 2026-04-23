@@ -7,5 +7,6 @@
   "Anode" : {"@include" : "nuSCOPE_tpc_vd.json::.Anode"},
   "ReadoutTile" : {"@include" : "tile_bern_v2_full_pixel_unitcell4x4_4x4megatile.json::.ReadoutTile"},
   "SuperCell" : {"@include" : "nuSCOPE_pds_vd.json::.SuperCell"},
-  "PhotoDetectionSystem" : {"@include" : "nuSCOPE_pds_vd.json::.PhotoDetectionSystem"}
+  "PhotoDetectionSystem" : {"@include" : "nuSCOPE_pds_vd.json::.PhotoDetectionSystem"},
+  "CRT" : {"@include" : "nuSCOPE_CRT.json::.CRT"}
 }
