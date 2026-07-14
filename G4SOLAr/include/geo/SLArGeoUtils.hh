@@ -1,5 +1,5 @@
 /**
- * @author      Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @author      Daniele Guffanti (University and INFN Milano-Bicocca)
  * @file        SLArGeoUtils.hpp
  * @created     Wed Apr 19, 2023 08:08:00 CEST
  */
@@ -19,7 +19,7 @@
 #include "G4Transform3D.hh"
 #include "G4LogicalVolume.hh"
 #include "G4RunManager.hh"
-//#include "geo/VolumeStruct.hh"
+#include "G4Exception.hh"
 
 #include "rapidjson/document.h"
 #include "rapidjson/allocators.h"
@@ -27,6 +27,32 @@
 class G4VSolid;
 
 namespace geo {
+  enum EGeoShape {kBox = 0, kTub = 1, kSphere = 2, kUndefined = 99};
+  static const std::map<EGeoShape, G4String> GeoShapeName = {
+    {EGeoShape::kBox, "box"},
+    {EGeoShape::kTub, "tub"}, 
+    {EGeoShape::kSphere, "sphere"},
+    {EGeoShape::kUndefined, "undefined"}
+  };
+
+  static EGeoShape get_geo_shape_code(const G4String& shape_str) {
+    for (const auto& kv : GeoShapeName) {
+      if (kv.second == shape_str) return kv.first;
+    }
+    const char* valid_shapes = "Valid shapes are: box, tub, sphere";
+    G4Exception("geo::get_geo_shape_code", "GeoUtils000", FatalException,
+        ("Invalid shape string: " + shape_str + "\n" + valid_shapes).data());
+    return EGeoShape::kUndefined;
+  }
+
+  static G4String get_geo_shape_str(EGeoShape shape_code) {
+    auto it = GeoShapeName.find(shape_code);
+    if (it != GeoShapeName.end()) return it->second;
+    G4Exception("geo::get_geo_shape_str", "GeoUtils000", FatalException,
+        ("Invalid shape code: " + std::to_string(shape_code)).data());
+    return "undefined";
+  }
+
   enum EBoxFace {kXplus=0, kXminus=1, kYplus=2, kYminus=3, kZplus=4, kZminus=5}; 
 
   static EBoxFace get_face_from_name(const G4String& side_name) {
@@ -69,6 +95,8 @@ namespace geo {
 
   double get_bounding_volume_surface(const G4VSolid* solid);
 
+  G4ThreeVector get_bounding_volume_size(const G4VSolid* solid);
+
   inline std::vector<G4VPhysicalVolume*> GetPhysicalVolumes(const G4LogicalVolume* lv) 
   {
     G4PhysicalVolumeStore* pvs = G4PhysicalVolumeStore::GetInstance();
@@ -98,7 +126,7 @@ namespace geo {
 
   std::vector<G4Transform3D> get_volume_transforms(
       const G4String& target_pv_name,
-      const G4String& mother_pv_name);
+      const G4String& reference_pv_name);
 
   void collect_volume_transforms(
       const G4LogicalVolume* logicalVolume,
@@ -148,6 +176,25 @@ namespace geo {
     return transform_frame_world_to_det(pos);
   }
 
+  inline static const std::vector<int> navigate_vol_hierarchy(const G4StepPoint* step)
+  {
+    std::vector<int> copyNumbers;
+    if (!step) return copyNumbers;
+
+    const G4TouchableHistory* touchable = 
+        dynamic_cast<const G4TouchableHistory*>(step->GetTouchable());
+    if (!touchable) return copyNumbers;
+
+    int depth = touchable->GetHistoryDepth();
+
+    // Loop over all levels: depth = 0 is the current volume, 
+    // depth = last is the World volume
+    for (int i = 0; i <= depth; i++) {
+        int copyNo = touchable->GetCopyNumber(i);
+        copyNumbers.push_back(copyNo);
+    }
+    return copyNumbers;
+  }
 
 }
 

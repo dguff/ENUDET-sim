@@ -1,7 +1,7 @@
 /**
- * @author      : guff (guff@guff-gssi)
- * @file        : SLArGeoInfo
- * @created     : giovedì ago 01, 2019 10:32:45 CEST
+ * @author      : Daniele Guffanti (University and INFN Milano-Bicocca)
+ * @file        : SLArGeoInfo.cc
+ * @created     : Thur Aug 01, 2019 10:32:45 CEST
  */
 
 #include "SLArGeoInfo.hh"
@@ -76,9 +76,9 @@ G4double SLArGeoInfo::GetGeoPar(G4String str)
   G4double out = 0;
   if (!Contains(str))
   {
-    G4cerr << "SLArGeoInfo::GetGeoPar() Par " 
-           << str << " not found in parameter map" << G4endl;
-    exit(EXIT_FAILURE);
+    const G4String err_msg = "SLArGeoInfo::GetGeoPar() ERROR: Par " 
+                    + str + " not found in parameter map";
+    G4Exception("SLArGeoInfo::GetGeoPar()", "GeoInfo000", FatalException, err_msg);
   }
   else {
     out = fGeoPar.find(str)->second;
@@ -92,8 +92,9 @@ std::pair<G4String, G4double> SLArGeoInfo::GetGeoPair(G4String str)
   std::pair<G4String,G4double> out;
   if (!Contains(str))
   {
-    G4cerr << "SLArGeoInfo::GetGeoPar() Par " 
-           << str << " not found in parameter map" << G4endl;
+    const G4String err_msg = "SLArGeoInfo::GetGeoPair() ERROR: Par " 
+                    + str + " not found in parameter map";
+    G4Exception("SLArGeoInfo::GetGeoPair()", "GeoInfo001", FatalException, err_msg);
   }
   else {
     out = *fGeoPar.find(str);

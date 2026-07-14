@@ -1,5 +1,5 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @author      : Daniele Guffanti (University and INFN Milano-Bicocca)
  * @file        : SLArDetShielding.hh
  * @created     : Thursday Oct 30, 2025 14:00:34 CET
  */
@@ -10,7 +10,7 @@
 #include "detector/SLArBaseDetModule.hh"
 #include "detector/Hall/SLArDetShielding.hh"
 
-SLArDetShielding::SLArDetShielding()
+SLArDetShielding::SLArDetShielding() : SLArBaseDetModule()
 {}
 
 SLArDetShielding::~SLArDetShielding()
@@ -48,6 +48,9 @@ void SLArDetShielding::Init(const rapidjson::Value& config)
 
   fGeoInfo->ReadFromJSON( config["dimensions"].GetArray() );
 
+  debug::require_json_member(config, {"materials", "base_material"});
+  fMatInfo.ReadFromJSON(config);
+
   unsigned int layer_id = 1;
   G4double shielding_tk = 0.0; 
   for (const auto &jlayer : config["layers"].GetArray()) {
@@ -76,6 +79,8 @@ void SLArDetShielding::BuildMaterials(G4String db_file)
     mat->BuildMaterialFromDB(db_file);
     layer.fMaterial = mat->GetMaterial();
   }
+
+  fBaseMaterial.SetMaterialID( fMatInfo.GetMaterial("base_material") );
   fBaseMaterial.BuildMaterialFromDB(db_file);
   return;
 }
