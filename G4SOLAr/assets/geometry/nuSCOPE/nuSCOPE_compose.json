@@ -1,12 +1,25 @@
 {
-  "World" : {"@include" : "nuscope_experimental_hall.json::.World"},
-  "Cavern" : {"@include" : "nuscope_experimental_hall.json::.Cavern"},
+  "World" : {"@include" : "nuSCOPE_experimental_hall.json::.World"},
+  "Cavern" : {"@include" : "nuSCOPE_experimental_hall.json::.Cavern"},
   "Cryostat" : {"@include" : "nuSCOPE_cryostat.json::.Cryostat"},
-  "TPC" : {"@include" : "nuSCOPE_tpc_vd.json::.TPC"},
-  "Cathode" : {"@include" : "nuSCOPE_tpc_vd.json::.Cathode"},
-  "Anode" : {"@include" : "nuSCOPE_tpc_vd.json::.Anode"},
-  "ReadoutTile" : {"@include" : "tile_bern_v2_full_pixel_unitcell4x4_4x4megatile.json::.ReadoutTile"},
-  "SuperCell" : {"@include" : "nuSCOPE_pds_vd.json::.SuperCell"},
-  "PhotoDetectionSystem" : {"@include" : "nuSCOPE_pds_vd.json::.PhotoDetectionSystem"},
+  "TPC" : {"@include" : "nuSCOPE_tpc_single.json::.TPC"},
+  "Cathode" : {"@include" : "nuSCOPE_tpc_single.json::.Cathode"},
+  "Anode" : {"@include" : "nuSCOPE_tpc_single.json::.Anode"},
+  "ReadoutTile" : {"@include" : "tile_model_36x48_full_coverage.json::.ReadoutTile",
+    "tile_assembly" : [
+      {
+        "name" : "StdReadoutPlane",
+        "tile_model" : "StandardTile36x48",
+        "base_material" : "LAr",
+        "copyID" : 2000,
+        "dimensions" : [
+          {"name" : "rdoutplane_x", "val" : 396.0, "unit" : "cm"}, 
+          {"name" : "rdoutplane_z", "val" :  96.0, "unit" : "cm"}
+        ]
+      }
+    ]
+  },
+  "OpDetModules" : {"@include" : "nuSCOPE_pds_single.json::.OpDetModules"},
+  "PhotoDetectionSystem" : {"@include" : "nuSCOPE_pds_single.json::.PhotoDetectionSystem"},
   "CRT" : {"@include" : "nuSCOPE_CRT.json::.CRT"}
 }

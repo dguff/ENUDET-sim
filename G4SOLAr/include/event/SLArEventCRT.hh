@@ -65,6 +65,7 @@ class SLArListEventCRT : public TObject {
     inline int  GetEventNumber() const {return fEvNumber;}
 
     inline std::vector<SLArEventCRT>& GetCRTHits() {return fCrtHits;}
+    inline const std::vector<SLArEventCRT>& GetCRTHits() const {return fCrtHits;}
 
     inline void RegisterCRTHit(const SLArEventCRT& hit) {
       fCrtHits.push_back( hit );

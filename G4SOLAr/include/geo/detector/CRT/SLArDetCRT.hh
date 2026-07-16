@@ -24,7 +24,7 @@ public:
   virtual ~SLArDetCRT();
 
   void BuildCRT();
-  void BuildMaterial(G4String);
+  void BuildMaterials(G4String);
   void BuildDefaultGeoParMap();
 
   void SetVisAttributes();

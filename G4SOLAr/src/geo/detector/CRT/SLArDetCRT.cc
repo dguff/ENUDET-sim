@@ -12,9 +12,7 @@
 
 // - - - - - - - - - - - - - - -
 SLArDetCRT::SLArDetCRT() : SLArBaseDetModule(), fMatCRT(nullptr)
-{
-    fGeoInfo = new SLArGeoInfo();
-}
+{}
 // - - - - - - - - - - - - - - -
 
 // - - - - - - - - - - - - - - -
@@ -31,14 +29,14 @@ SLArDetCRT::~SLArDetCRT()
 //****************************************************************************
 
 // - - - - - - - - - - - - - - -
-void SLArDetCRT::BuildMaterial(G4String db_file)
+void SLArDetCRT::BuildMaterials(G4String db_file)
 {
     /*
         The material here needs to change, but it's not in the database.
         --JM
     */
     fMatCRT = new SLArMaterial();
-    fMatCRT->SetMaterialID("Steel");
+    fMatCRT->SetMaterialID(fMatInfo.GetMaterial("base_material"));
     fMatCRT->BuildMaterialFromDB(db_file);
 }
 // - - - - - - - - - - - - - - -
@@ -81,14 +79,16 @@ void SLArDetCRT::Init(const rapidjson::Value& jconf)
 {
 
   // Get basic information
-  assert(jconf.IsObject());
+  debug::require_json_type(jconf, rapidjson::kObjectType);
   auto jcrt = jconf.GetObject();
-  assert(jcrt.HasMember("dimensions"));
-  assert(jcrt.HasMember("position"  ));
-  assert(jcrt.HasMember("copyID"    ));
+  debug::require_json_member(jcrt, "dimensions");
+  debug::require_json_member(jcrt, "position"  );
+  debug::require_json_member(jcrt, "copyID"    );
+  debug::require_json_member(jcrt, {"materials", "base_material"});
 
   SetID(jcrt["copyID"].GetInt());
   fGeoInfo->ReadFromJSON(jcrt["dimensions"].GetArray());
+  fMatInfo.ReadFromJSON(jcrt);
 
   const auto jposition = jcrt["position"].GetObj(); 
   G4double vunit = 1.0;

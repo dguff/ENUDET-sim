@@ -1,5 +1,5 @@
 /**
- * @author      : Daniele Guffanti (daniele.guffanti@mib.infn.it)
+ * @author      : Daniele Guffanti (University and INFN Milano-Bicocca)
  * @file        : SLArDetExpHall.cc
  * @created     : Tuesday Nov 12, 2024 16:22:08 CET
  */
@@ -14,7 +14,7 @@
 #include "detector/Hall/SLArDetExpHall.hh"
 #include "TMath.h"
 
-SLArDetExpHall::SLArDetExpHall()
+SLArDetExpHall::SLArDetExpHall() : SLArBaseDetModule()
 {
     
 }
@@ -54,9 +54,8 @@ void SLArDetExpHall::Init(const rapidjson::Value& config)
   assert(config.HasMember("dimensions"));
   fGeoInfo->ReadFromJSON(config["dimensions"].GetArray());
 
-  if (config.HasMember("base_material")) {
-    SLArMaterial mat(config["base_material"].GetString());
-  }
+  debug::require_json_member(config, {"materials", "base_material"});
+  fMatInfo.ReadFromJSON(config);
 }
 
 void SLArDetExpHall::BuildMaterials(G4String db_file)
@@ -66,6 +65,7 @@ void SLArDetExpHall::BuildMaterials(G4String db_file)
     layer.fMaterial.BuildMaterialFromDB(db_file);
   }
 
+  fBaseMaterial.SetMaterialID( fMatInfo.GetMaterial("base_material") );
   fBaseMaterial.BuildMaterialFromDB(db_file);
 
   return;

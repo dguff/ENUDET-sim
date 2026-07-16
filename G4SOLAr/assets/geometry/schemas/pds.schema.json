@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PhotoDetectionSystem",
+  "$id": "pds.schema.json",
+
+  "$defs" : {
+    "pds_wall_dim" : {
+      "type": "array", 
+      "items" : {"$ref": "common.schema.json#/$defs/named_val_w_unit"},
+      "minItems" : 3,
+      "maxItems" : 3,
+      "additionalItems" : false,
+      "allOf" : [
+        {"contains" : {"properties" : {"name" : {"const" : "dim_x"}}}},
+        {"contains" : {"properties" : {"name" : {"const" : "dim_y"}}}},
+        {"contains" : {"properties" : {"name" : {"const" : "dim_z"}}}}
+      ]
+    },
+
+    "replication_axis_obj" : {
+      "type" : "object",
+      "required" : ["replica_axis", "spacing"],
+      "properties" : {
+        "replica_axis" : {"type" : "string", "enum" : ["x", "y", "z"]},
+        "spacing" : {"$ref" : "common.schema.json#/$defs/val_w_unit"}
+      }
+    },
+
+    "replication_obj" : {
+      "type" : "array", 
+      "items" : {"$ref" : "#/$defs/replication_axis_obj"}
+    }, 
+
+    "explicit_opdet_placement_obj" : {
+      "type" : "object",
+      "required" : ["id", "xyz"],
+      "properties" : {
+        "id" : {"type" : "integer"},
+        "photodet_model" : {"type" : "string"},
+        "xyz" : {"type" : "array", "items" : {"type" : "number"}, "minItems" : 3, "maxItems" : 3, "additionalItems" : false},
+        "unit" : {"type" : "string"}
+      }
+    },
+
+    "explicit_placements_obj" : {
+      "type" : "array", 
+      "items" : {"$ref" : "#/$defs/explicit_opdet_placement_obj"}
+    }
+  },
+  
+  "type" : "object",
+  "oneOf" : [
+    {
+      "required" : ["base_material"],
+      "properties" : {"base_material" : {"$ref":"common.schema.json#/$defs/base_material"}}
+    },
+    {
+      "required" : ["materials"],
+      "properties" : {"materials":{"$ref":"common.schema.json#/$defs/materials"}}
+    }
+  ],
+  "required" : ["copyID", "tpcID", "name", "position", "normal", "rot", "photodet_model", "dimensions" ], 
+  "additionalProperties" : true,
+  "properties" : {
+    "copyID" : {"type" : "integer"},
+    "tpcID" : {"type" : "integer"},
+    "name" : {"type" : "string"},
+    "position" : {"$ref" : "common.schema.json#/$defs/vec3_w_unit"},
+    "normal" : {"$ref" : "common.schema.json#/$defs/vec3"},
+    "rot" : {"$ref" : "common.schema.json#/$defs/rot3_w_unit"},
+    "photodet_model" : {"type" : "string"},
+    "dimensions" : {"$ref" : "#/$defs/pds_wall_dim"}
+  },
+  "oneOf": [
+    {
+      "title": "Parameterised placement",
+      "description": "Optical detectors are tiled automatically using one or two replication axes.",
+      "required": [
+        "replication_data"
+      ],
+      "properties": {
+        "replication_data": {
+          "$ref": "#/$defs/replication_obj"
+        },
+        "opdet_positions": {
+          "not": {}
+        }
+      }
+    },
+    {
+      "title": "Explicit placement",
+      "description": "Each optical detector is positioned individually by its local coordinates.",
+      "required": [
+        "opdet_positions"
+      ],
+      "properties": {
+        "opdet_positions": {
+          "$ref": "#/$defs/explicit_placements_obj"
+        },
+        "replication_data": {
+          "not": {}
+        }
+      }
+    }
+  ]
+}
