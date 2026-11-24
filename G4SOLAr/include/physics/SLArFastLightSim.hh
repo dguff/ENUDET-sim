@@ -145,14 +145,15 @@ class SLArFastLightSim {
     /**
      * @brief Enumeration of the available fast light simulation types.
      */
-    enum EFLSType {kUndefined = 0, kLUT = 1};
+    enum EFLSType {kUndefined = 0, kLUT = 1, kNewModel = 2};
     
     /**
      * @brief Mapping of the `EFLSType` enumeration values to their string representations
      */
     const std::map<EFLSType, G4String> EFLSTypeNames = {
       {kUndefined, "Undefined"},
-      {kLUT, "LUT"}
+      {kLUT, "LUT"},
+      {kNewModel, "NewModel"}
     };
 
     inline const EFLSType GetType() const {return fType;}

@@ -10,7 +10,7 @@
 #include "physics/SLArFLSPhotonLibrary.hh"
 #include "analysis/SLArAnalysisManager.hh"
 #include "event/SLArEventAnode.hh"
-#include "action/SLArRunAction.hh"
+// #include "action/SLArRunAction.hh"  // unused in this file (commented out to silence clangd unused-includes warning)
 #include "geo/detector/SLArDetectorConstruction.hh"
 #include "geo/SLArUnit.hpp"
 

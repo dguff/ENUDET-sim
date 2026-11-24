@@ -14,6 +14,9 @@
 #include "geo/SLArGeoUtils.hh"
 
 #include "SLArFLSPhotonLibrary.hh"
+#ifdef SLAR_USE_NEW_MODEL
+#include "SLArFLSNewModel.hh"
+#endif
 
 #include "G4Run.hh"
 #include "G4RunManager.hh"
@@ -86,10 +89,15 @@ void SLArRunAction::BeginOfRunAction(const G4Run* aRun)
   stepping->SetPointTransformation(fTransformWorld2Det);
   fElectronDrift->SetLArTargetTransform(fTransformWorld2Det);
 
-  // Initialize fast light simulator if enabled and configured
+  // Initialize fast light simulator if enabled and configured.
+  // The geometry is already built at this point (runManager->Initialize() ran Construct()),
+  // and the dispatcher is a member of this run action, so the modules stay active until the
+  // application closes. Initialize only once (BeginOfRunAction is called for every run).
   if (fFastLightSimEnabled && !fFLSConfigPath.empty()) {
-    InitializeFastLightSim();
-    fFastLightSimDispatcher->Print();
+    if (!fFastLightSimDispatcher) {
+      InitializeFastLightSim();
+      fFastLightSimDispatcher->Print();
+    }
   }
   else if (!fFastLightSimEnabled) {
     G4cout << "SLArRunAction: Fast light simulation disabled, using full optical tracking" << G4endl;
@@ -296,7 +304,13 @@ void SLArRunAction::InitializeFastLightSim() {
         // simulator = std::make_unique<SLArSemiAnalyticalSim>(module);
         // (future implementation)
         throw std::runtime_error("SemiAnalytical simulator not yet implemented");
-      }   
+      }
+#ifdef SLAR_USE_NEW_MODEL
+      else if (type == "NewModel") {
+        simulator = std::make_unique<SLArFLSNewModel>();
+        simulator->Initialize(jmodule["config"]);
+      }
+#endif
       else if (type == "PhotonLibrary") {
         simulator = std::make_unique<SLArFLSPhotonLibrary>();
         simulator->Initialize(jmodule["config"]);

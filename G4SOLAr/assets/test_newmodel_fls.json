@@ -1,0 +1,12 @@
+{
+  "modules" : [
+    {
+      "type" : "NewModel",
+      "label" : "newmodel",
+      "config" : {}
+    }
+  ],
+  "volume_mapping" : [
+    {"module" : "newmodel", "volumes" : ["TPC10", "TPC11", "target_lar_pv"]}
+  ]
+}

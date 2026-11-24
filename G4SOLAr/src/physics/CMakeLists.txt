@@ -9,6 +9,7 @@ set(SLAR_PHYSICS_HEADERS
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArOpticalPhysics.hh"
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArFastLightSim.hh"
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArFLSPhotonLibrary.hh"
+  "${SLAR_PHYSICS_INCLUDE_DIR}/SLArFLSNewModel.hh"
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArFastLightSimMessenger.hh"
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArPhysicsList.hh"
   "${SLAR_PHYSICS_INCLUDE_DIR}/SLArPhysicsListMessenger.hh"
@@ -25,6 +26,7 @@ set(SLAR_PHYSICS_SOURCES
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArOpticalPhysics.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFastLightSim.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFLSPhotonLibrary.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/SLArFLSNewModel.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFastLightSimMessenger.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArPhysicsList.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArPhysicsListMessenger.cc"
@@ -33,6 +35,10 @@ set(SLAR_PHYSICS_SOURCES
 )
 
 add_subdirectory( LiquidArgon )
+
+if (SLAR_USE_NEW_MODEL)
+  add_subdirectory( lmfast )
+endif()
 
 if (SLAR_USE_G4CASCADE) 
   add_subdirectory( cascade )

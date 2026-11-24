@@ -28,6 +28,8 @@ option(SLAR_EXTERNAL_PARTICLE "Define external background particle of interest" 
 option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
 option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
 option(SLAR_USE_G4CASCADE "Use G4CASCADE for hadronic interactions" ON)
+option(SLAR_USE_NEW_MODEL "Build the NewModel fast light simulation module (LMFast core; requires FFTW3 and Eigen3)" ON)
+option(SLAR_LMFAST_NATIVE_ARCH "Compile the LMFast core with -march=native -mavx2" OFF)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
@@ -59,6 +61,14 @@ if (DEFINED ENV{RADSRC_HOME})
   message(STATUS "Found RadSrc package at $ENV{RADSRC_HOME}. Building RadSrc interface classes")
   set(RADSRC_INCLUDE_DIR $ENV{RADSRC_HOME}/src/libradsrc)
   set(RADSRC_LIBRARIES $ENV{RADSRC_HOME}/lib/libradsrc.a)
+endif()
+
+# 5. FFTW3 & Eigen3 (required by the NewModel fast light sim module, i.e. the LMFast core
+#    vendored in src/physics/lmfast). Set -DFFTW3_DIR=... / -DEigen3_DIR=... if needed.
+if (SLAR_USE_NEW_MODEL)
+  find_package(FFTW3 REQUIRED)
+  find_package(Eigen3 REQUIRED)
+  message(STATUS "SLAR_USE_NEW_MODEL is ON: FFTW3 at ${FFTW3_LIBRARIES}, Eigen3 at ${EIGEN3_INCLUDE_DIRS}")
 endif()
 
 #----------------------------------------------------------------------------
@@ -157,6 +167,10 @@ include_directories(
   ${ECOSMIC_SRC}/include
 )
 
+if (SLAR_USE_NEW_MODEL)
+  include_directories(${FFTW3_INCLUDE_DIRS})
+endif()
+
 if (CLHEP_EXTERNAL) 
   include_directories(${CLHEP_EXTERNAL})
 endif()
@@ -226,6 +240,9 @@ target_link_libraries(solar_sim PRIVATE
   ECosmic::ECosmic
   ${MARLEY} ${MARLEY_ROOT}
 )
+if (SLAR_USE_NEW_MODEL)
+  target_link_libraries(solar_sim PRIVATE SLArLMFast)
+endif()
 if (SLAR_CRY_INTERFACE)
   target_link_libraries(solar_sim PRIVATE ${CRY_LIBRARIES})
 endif()
@@ -277,6 +294,7 @@ target_compile_definitions(solar_sim
   $<$<STREQUAL:${SLAR_EXTERNAL},ON>:SLAR_EXTERNAL>
   $<$<STREQUAL:${SLAR_CRY_INTERFACE},ON>:SLAR_CRY>
   $<$<STREQUAL:${SLAR_RADSRC_INTERFACE},ON>:SLAR_RADSRC>
+  $<$<BOOL:${SLAR_USE_NEW_MODEL}>:SLAR_USE_NEW_MODEL>
   SLAR_EXTERNAL_PARTICLE="${SLAR_EXTERNAL_PARTICLE}"
   PRIVATE
   "-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\""
