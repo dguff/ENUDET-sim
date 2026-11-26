@@ -452,7 +452,7 @@ void SLArDetectorConstruction::SetupReadoutTile(const rapidjson::Value& jtilemod
   readout_tile->GetMaterialsInfo().ReadFromJSON(jtilemodel);
   readout_tile->BuildComponentsDefinition(jtilemodel["components"]); 
   readout_tile->BuildUnitCellStructure(jtilemodel["unit_cell"]); 
-  readout_tile->BuildMaterials(fMaterialDBFile);
+  readout_tile->BuildMaterial(fMaterialDBFile);
   return;
 }
 

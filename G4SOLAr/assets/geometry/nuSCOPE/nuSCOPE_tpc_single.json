@@ -1,6 +1,7 @@
 {
   "TPC" : [
     {"copyID" : 10, 
+      "shape" : "box",
       "base_material" : "LAr",
       "position": {"xyz" : [0, 0, 0], "unit" : "cm"},
       "electric_field" : {"val" : 500, "unit" : "volt/cm", "direction" : [0, 1, 0]},
@@ -29,6 +30,7 @@
   ],
   "Cathode" : [
     {"copyID": 99, 
+      "shape" : "box",
       "base_material" : "Steel",
       "position" : {"xyz": [0, 200, 0], "unit" : "cm"}, 
       "dimensions" : [

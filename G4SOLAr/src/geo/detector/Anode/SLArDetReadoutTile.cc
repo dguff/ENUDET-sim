@@ -293,7 +293,7 @@ void SLArDetReadoutTile::SetVisAttributes(const int depth)
   return;
 }
 
-void SLArDetReadoutTile::BuildMaterials(G4String materials_db)
+void SLArDetReadoutTile::BuildMaterial(G4String materials_db)
 {
   if (fMatPCB) {delete fMatPCB; fMatPCB = nullptr;}
   if (fMatCopper) {delete fMatCopper; fMatCopper = nullptr;}

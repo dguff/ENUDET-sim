@@ -5,7 +5,10 @@
   "TPC" : {"@include" : "nuSCOPE_tpc_single.json::.TPC"},
   "Cathode" : {"@include" : "nuSCOPE_tpc_single.json::.Cathode"},
   "Anode" : {"@include" : "nuSCOPE_tpc_single.json::.Anode"},
-  "ReadoutTile" : {"@include" : "tile_model_36x48_full_coverage.json::.ReadoutTile",
+  "ReadoutTile" : {
+    "tile_model" : [
+      {"@include" : "tile_model_36x48_full_coverage.json"}
+    ],
     "tile_assembly" : [
       {
         "name" : "StdReadoutPlane",

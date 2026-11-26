@@ -1,5 +1,10 @@
 {
   "name" : "StandardTile36x48",
+  "materials" : [
+    {"module" : "base_material" , "material" : "LAr"},
+    {"module" : "front_material" , "material" : "CopperPassive"},
+    {"module" : "pcb_material" , "material" : "FR4"}
+  ],
   "dimensions" : [
     {"name" : "tile_x", "val" :360.0, "unit" : "mm" },
     {"name" : "tile_y", "val" :  2.5, "unit" : "mm" },

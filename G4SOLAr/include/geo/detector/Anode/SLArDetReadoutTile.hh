@@ -38,7 +38,7 @@ public:
   SLArDetReadoutTile(const SLArDetReadoutTile &detReadoutTile);
   ~SLArDetReadoutTile();
   
-  void BuildMaterials(G4String materials_db);
+  void BuildMaterial(G4String materials_db);
   void BuildComponentsDefinition(const rapidjson::Value&); 
   void BuildUnitCellPixMap(const rapidjson::Value&); 
   void BuildUnitCellStructure(const rapidjson::Value&); 
