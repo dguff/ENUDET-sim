@@ -3,16 +3,14 @@
 #include "integrator.hh"
 #include "GLT.hh"
 
-#include <algorithm>
 #include <cmath>
-#include <utility>
 
-integrator::integrator(double (&boundaries)[3][2], double (&origin)[3], double (&wallpoint)[3], bool RSb)
+integrator::integrator(double (&boundaries)[3][2], double (&origin)[3], double (&wallpoint)[3], bool RSb, double rsBin)
 : rsed(
         boundaries[0][1] - boundaries[0][0],
         boundaries[1][1] - boundaries[1][0],
         boundaries[2][1] - boundaries[2][0],
-        100, 100, 100,
+        rsBin, rsBin, rsBin, // uniform RSED grid spacing [mm] (default 100)
         origin[0] - boundaries[0][0],
         origin[1] - boundaries[1][0],
         origin[2] - boundaries[2][0],
@@ -45,333 +43,12 @@ integrator::integrator(double (&boundaries)[3][2], double (&origin)[3], double (
 
 }
 
-// ======== GEOMETRY ======== //
+// ======== GEOMETRY ======== // (2D surface model and helpers: see geometry.hh)
 
-void integrator::SetGeometry()
+void integrator::SetBaseGeometry(const geometry& g)
 {
-  surface surf;
-  // surfaceNormal norm;
-  surfaceCollection surfColl;
-
-  // right side wall
-    // norm = { 0, 0, -1 };
-    // surfColl.normal = norm;
-
-    surf = { 7000, 7500, 0, 500, 2000, 2000 };
-    surfColl.surf.push_back(surf);
-    surf = { -11000, 7000, -2000, 2000, 2000, 2000 };
-    surfColl.surf.push_back(surf);
-    surf = { 7500, 11000, -2000, 2000, 2000, 2000 };
-    surfColl.surf.push_back(surf);
-    surf = { 7000, 7500, -2000, 0, 2000, 2000 };
-    surfColl.surf.push_back(surf);
-    surf = { 7000, 7500, 500, 2000, 2000, 2000 };
-    surfColl.surf.push_back(surf);
-
-  baseGeo.surfColl.push_back(surfColl);
-  surfColl.surf.clear();
-
-  // bottom side wall
-
-    surf = { -11000, 11000, -2000, -2000, -2000, 2000 };
-    surfColl.surf.push_back(surf);
-
-  baseGeo.surfColl.push_back(surfColl);
-  surfColl.surf.clear();
-
-  // left side wall
-
-    surf = { -11000, 11000, -2000, 2000, -2000, -2000 };
-    surfColl.surf.push_back(surf);
-
-  baseGeo.surfColl.push_back(surfColl);
-  surfColl.surf.clear();
-
-  // top side wall
-
-    surf = { -11000, 11000, 2000, 2000, -2000, 2000 };
-    surfColl.surf.push_back(surf);
-
-  baseGeo.surfColl.push_back(surfColl);
-  surfColl.surf.clear();
-
-  // front side wall
-
-    surf = { -11000, -11000, -2000, 2000, -2000, 2000 };
-    surfColl.surf.push_back(surf);
-
-  baseGeo.surfColl.push_back(surfColl);
-  surfColl.surf.clear();
-
-  // back side wall
-
-    surf = { 11000, 11000, -2000, 2000, -2000, 2000 };
-    surfColl.surf.push_back(surf);
-
-  baseGeo.surfColl.push_back(surfColl);
-  surfColl.surf.clear();
-  
-}
-
-void integrator::PrintSurface(surface surf)
-{
-  std::cout << "\t( " << surf.xl << ", "
-                      << surf.xu << ", "
-                      << surf.yl << ", "
-                      << surf.yu << ", "
-                      << surf.zl << ", "
-                      << surf.zu << " )\n";
-}
-
-void integrator::PrintGeometry(geometry &geo)
-{
-  std::cout << "\n";
-  for( int i=0; i<geo.surfColl.size(); i++)
-  {
-    std::cout << "Surface Collection number " << i << "\n";
-              // << ", normal(x,y,z) = ("
-              // << geo.surfColl.normal.x << ", "
-              // << geo.surfColl.normal.y << ", "
-              // << geo.surfColl.normal.z << ")\n"
-
-    for( int j=0; j<geo.surfColl.at(i).surf.size(); j++ )
-    {
-      std::cout << "\tSurface number " << j << "\n";
-      PrintSurface( geo.surfColl.at(i).surf.at(j) );
-    }
-  }
-}
-
-void integrator::SegmentGeometry( const double (&point)[3] ) // need 2?: shifted and reflected light
-{
-  //  > exclude detector face on which the active point lies
-
-  //  > for each of the other 5 faces
-
-  //    > divide surface in 6 sectors finding the local maxima of visibility (origin-surface*surface-active_point)
-  //      (looking for it close to the projection of the light origin and active point)
-
-  //    > get a rough gradient in each sector and segment the base geometry surfaces
-  //      > or based on available parameters (light origin and others)? Known in advance -> no need of sampling
-
-  //  > 30 sectors  ...~n of surface segments? better many segments and fewer GL nodes or vice versa? depends on ^
-
-
-  // same for shifter (isotropic or Lambertian?) and reflection?
-
-  // avoid computing sufrace segments giving a negligible contribution? => fill geometry?
-
-
-  constexpr double eps = 1e-9;
-
-  // Face ordering:
-  // 0: +Z, 1: -Y, 2: -Z, 3: +Y, 4: -X, 5: +X
-  // Opposite pairs: 0 <-> 2, 1 <-> 3, 4 <-> 5
-
-  workGeo.surfColl.clear();
-
-  const std::size_t nFaces = baseGeo.surfColl.size();
-  if (nFaces != 6)
-    return;
-
-  workGeo.surfColl.resize(nFaces);
-
-  auto near = [](double a, double b) {
-    return std::abs(a - b) <= eps;
-  };
-
-  // Fixed axis for each collection.
-  const int faceAxis[6] = {2, 1, 2, 1, 0, 0};
-
-  // Fixed coordinate for each face, obtained from box boundaries.
-  const int faceSide[6] = {1, 0, 0, 1, 0, 1};
-
-  // Opposite collection index.
-  const int opposite[6] = {2, 3, 0, 1, 5, 4};
-
-  auto axes = [](int fixed) -> std::pair<int, int> {
-    if (fixed == 0) return {1, 2}; // Y, Z
-    if (fixed == 1) return {0, 2}; // X, Z
-    return {0, 1};                 // X, Y
-  };
-
-  auto getLower = [](const surface& s, int axis) {
-    if (axis == 0) return s.xl;
-    if (axis == 1) return s.yl;
-    return s.zl;
-  };
-
-  auto getUpper = [](const surface& s, int axis) {
-    if (axis == 0) return s.xu;
-    if (axis == 1) return s.yu;
-    return s.zu;
-  };
-
-  auto setBounds = [](surface& s, int axis,
-                      double lo, double hi) {
-    if (axis == 0) {
-        s.xl = lo; s.xu = hi;
-    } else if (axis == 1) {
-        s.yl = lo; s.yu = hi;
-    } else {
-        s.zl = lo; s.zu = hi;
-    }
-  };
-
-  auto fixedCoordinate = [&](int face) {
-    const int axis = faceAxis[face];
-    return fboundaries[axis][faceSide[face]];
-  };
-
-  // Locate the face containing point.
-  int activeFace = -1;
-
-  for (int f = 0; f < 6; ++f) {
-    const int axis = faceAxis[f];
-    const auto [uAxis, vAxis] = axes(axis);
-
-    if (!near(point[axis], fixedCoordinate(f)))
-      continue;
-
-    if (point[uAxis] < fboundaries[uAxis][0] - eps ||
-        point[uAxis] > fboundaries[uAxis][1] + eps ||
-        point[vAxis] < fboundaries[vAxis][0] - eps ||
-        point[vAxis] > fboundaries[vAxis][1] + eps)
-        continue;
-
-    activeFace = f;
-    break;
-  }
-
-  if (activeFace < 0)
-    return;
-
-  // Add a coordinate if it is inside the given face bounds.
-  auto addCut = [&](std::vector<double>& cuts,
-                  double x, double lo, double hi) {
-    if (x > lo + eps && x < hi - eps)
-      cuts.push_back(x);
-  };
-
-  auto normalizeCuts = [&](std::vector<double>& cuts) {
-    std::sort(cuts.begin(), cuts.end());
-
-    std::vector<double> uniqueCuts;
-    for (double x : cuts) {
-      if (uniqueCuts.empty() ||
-          std::abs(x - uniqueCuts.back()) > eps)
-          uniqueCuts.push_back(x);
-    }
-
-    cuts.swap(uniqueCuts);
-  };
-
-  // Process every face except the active one.
-  for (int f = 0; f < 6; ++f) {
-    if (f == activeFace)
-      continue;
-
-    const int axis = faceAxis[f];
-    const auto [uAxis, vAxis] = axes(axis);
-
-    const double uMin = fboundaries[uAxis][0];
-    const double uMax = fboundaries[uAxis][1];
-    const double vMin = fboundaries[vAxis][0];
-    const double vMax = fboundaries[vAxis][1];
-
-    if (uMax - uMin <= eps || vMax - vMin <= eps)
-      return;
-
-    // Begin with the full face boundaries.
-    std::vector<double> uCuts{uMin, uMax};
-    std::vector<double> vCuts{vMin, vMax};
-
-    // Add the projected coordinates of origin and active point.
-    // Points outside the face do not create cuts.
-    addCut(uCuts, forigin[uAxis], uMin, uMax);
-    addCut(uCuts, point[uAxis], uMin, uMax);
-    addCut(vCuts, forigin[vAxis], vMin, vMax);
-    addCut(vCuts, point[vAxis], vMin, vMax);
-
-    // Add all original surface boundaries, clipped to the box.
-    for (const auto& src : baseGeo.surfColl[f].surf) {
-      if (std::abs(getLower(src, axis) -
-                    fixedCoordinate(f)) > eps ||
-          std::abs(getUpper(src, axis) -
-                    fixedCoordinate(f)) > eps)
-        continue;
-
-      addCut(uCuts, getLower(src, uAxis), uMin, uMax);
-      addCut(uCuts, getUpper(src, uAxis), uMin, uMax);
-      addCut(vCuts, getLower(src, vAxis), vMin, vMax);
-      addCut(vCuts, getUpper(src, vAxis), vMin, vMax);
-    }
-
-    normalizeCuts(uCuts);
-    normalizeCuts(vCuts);
-
-    auto& out = workGeo.surfColl[f].surf;
-
-    // Build cells across the entire face. This fills holes because
-    // every cell not covered by an original rectangle is also emitted.
-    for (std::size_t i = 0; i + 1 < uCuts.size(); ++i) {
-      for (std::size_t j = 0; j + 1 < vCuts.size(); ++j) {
-        const double u0 = uCuts[i];
-        const double u1 = uCuts[i + 1];
-        const double v0 = vCuts[j];
-        const double v1 = vCuts[j + 1];
-
-        if (u1 - u0 <= eps || v1 - v0 <= eps)
-            continue;
-
-        const double um = 0.5 * (u0 + u1);
-        const double vm = 0.5 * (v0 + v1);
-
-        // Find whether this cell is covered by an original
-        // rectangle. Because all original boundaries are cuts,
-        // testing the midpoint is sufficient for valid input.
-        bool covered = false;
-
-        for (const auto& src : baseGeo.surfColl[f].surf) {
-          if (std::abs(getLower(src, axis) -
-                        fixedCoordinate(f)) > eps ||
-              std::abs(getUpper(src, axis) -
-                            fixedCoordinate(f)) > eps)
-              continue;
-
-          if (um >= getLower(src, uAxis) - eps &&
-              um <= getUpper(src, uAxis) + eps &&
-              vm >= getLower(src, vAxis) - eps &&
-              vm <= getUpper(src, vAxis) + eps) {
-              covered = true;
-              break;
-          }
-        }
-
-        // Create a rectangle for every cell, whether it was
-        // covered before or represents a previously empty hole.
-        surface piece{};
-
-        // Set the fixed coordinate and both in-plane bounds.
-        setBounds(piece, axis,
-                  fixedCoordinate(f), fixedCoordinate(f));
-
-        setBounds(piece, uAxis, u0, u1);
-        setBounds(piece, vAxis, v0, v1);
-
-        // 'covered' is intentionally not used to omit cells:
-        // uncovered cells are the holes we must fill.
-        (void)covered;
-
-        out.push_back(piece);
-      }
-    }
-  }
-}
-
-void integrator::UpdateGeometry() // update working geometry when most of the segmentation can be reutilized
-{
-  // modify sectors and update affected surface segments?
+  baseGeo = g;
+  baseGeo.surfColl.resize(kNFaces);
 }
 
 // ========================== //
@@ -1029,53 +706,21 @@ double integrator::integrateRegionWP( const region &reg, const double (&wallpoin
 }
 
 
-double integrator::integrateSurface( const surface &surf )
+double integrator::integrateSurface( int face, const surface &surf )
 {
-  // determine surface coordinates (probably should be changed upstream to feed already set)
+  // integrate over the 2D patch on the given box face:
+  // GL nodes in (u, v) are expanded to 3D points on the face
 
   double point[3];
-  surface s = surf;
-  double *a; double *b; double *al; double *bl; double *au; double *bu;
-
-  if( surf.xl == surf.xu )
-  {
-    al = &s.yl; au = &s.yu;
-    bl = &s.zl; bu = &s.zu;
-    // double &c  = surf.xl;
-    point[0] = s.xl;
-    a = &point[1];
-    b = &point[2];
-  }else if (surf.yl == surf.yu)
-  {
-    al = &s.xl; au = &s.xu;
-    bl = &s.zl; bu = &s.zu;
-    // double &c  = surf.yl;
-    point[1] = surf.yl;
-    a = &point[0];
-    b = &point[2];
-  }else if (surf.zl == surf.zu)
-  {
-    al = &s.xl; au = &s.xu;
-    bl = &s.yl; bu = &s.yu;
-    // double &c  = surf.zl;
-    point[2] = surf.zl;
-    a = &point[0];
-    b = &point[1];
-  }else{
-    std::cout << "error in surface coordinate determination at GL node step!\n";
-    return 1;
-  }
 
   // determine GL nodes and integrate over them
 
   double h[2];
-    double &ha = h[0];
-    double &hb = h[1];
-
-  ha = 0.5 * (*au - *al);
-  hb = 0.5 * (*bu - *bl);
-  double ca = 0.5 * (*au + *al);
-  double cb = 0.5 * (*bu + *bl);
+  double ha = 0.5 * (surf.uMax - surf.uMin);
+  double hb = 0.5 * (surf.vMax - surf.vMin);
+  h[0] = ha; h[1] = hb;
+  double ca = 0.5 * (surf.uMax + surf.uMin);
+  double cb = 0.5 * (surf.vMax + surf.vMin);
 
   // select number of Gauss-Legendre nodes for integration
   int nodes[2] = { 1, 1 };
@@ -1103,12 +748,14 @@ double integrator::integrateSurface( const surface &surf )
 
   for (int i = 0; i < nodes[0]+2; ++i)
   {
-    *a = ha * GLT.at(nodes[0])[i][0] + ca;
+    const double u = ha * GLT.at(nodes[0])[i][0] + ca;
 
     for (int j = 0; j < nodes[1]+2; ++j)
     {
-      *b = hb * GLT.at(nodes[1])[j][0] + cb;
- 
+      const double v = hb * GLT.at(nodes[1])[j][0] + cb;
+
+      ExpandSurfacePoint(fboundaries, face, u, v, point);
+
       double totalVisibility = integrateFromVolume( point ) + integrateFromSurface( point ) ;
 
       sum +=  GLT.at(nodes[0])[i][1]
@@ -1134,71 +781,39 @@ double integrator::integrateFromSurface( const double (&point)[3] )
   // determine GL nodes, compute their visibility and integrate over them
 
   // segmentation
-  SegmentGeometry( point );
-  // PrintGeometry( workGeo );
+  SegmentGeometry(baseGeo, workGeo, fboundaries, forigin, point);
+  // PrintGeometry( workGeo, fboundaries );
 
   double visibility = 0;
 
-  for( int i=0; i<workGeo.surfColl.size(); i++)
+  for( int f=0; f<(int)workGeo.surfColl.size(); f++)
   {
-    if( i==1 || i==3 ) continue; // skip faces (no shifter)
-    for( int j=0; j<workGeo.surfColl.at(i).surf.size(); j++ )
+    if( f==kFaceYMin || f==kFaceYMax ) continue; // skip faces (no shifter)
+    for( int j=0; j<(int)workGeo.surfColl.at(f).surf.size(); j++ )
     {
       // std::cout << "\tSurface number " << j << "\n";
-      visibility += integrateFromSurfaceSegment( workGeo.surfColl.at(i).surf.at(j), point );
+      visibility += integrateFromSurfaceSegment( f, workGeo.surfColl.at(f).surf.at(j), point );
     }
   }
 
   return visibility;
 }
 
-double integrator::integrateFromSurfaceSegment( const surface &surf, const double (&fromPoint)[3] )
+double integrator::integrateFromSurfaceSegment( int face, const surface &surf, const double (&fromPoint)[3] )
 {
-  // determine surface coordinates (probably sghould be changed upstream to feed already set)
+  // integrate over the 2D patch on the given box face:
+  // GL nodes in (u, v) are expanded to 3D points on the face
 
   double point[3];
-  surface s = surf;
-  double *a; double *b; double *al; double *bl; double *au; double *bu;
-
-  if( surf.xl == surf.xu )
-  {
-    al = &s.yl; au = &s.yu;
-    bl = &s.zl; bu = &s.zu;
-    // double &c  = surf.xl;
-    point[0] = s.xl;
-    a = &point[1];
-    b = &point[2];
-  }else if (surf.yl == surf.yu)
-  {
-    al = &s.xl; au = &s.xu;
-    bl = &s.zl; bu = &s.zu;
-    // double &c  = surf.yl;
-    point[1] = surf.yl;
-    a = &point[0];
-    b = &point[2];
-  }else if (surf.zl == surf.zu)
-  {
-    al = &s.xl; au = &s.xu;
-    bl = &s.yl; bu = &s.yu;
-    // double &c  = surf.zl;
-    point[2] = surf.zl;
-    a = &point[0];
-    b = &point[1];
-  }else{
-    std::cout << "error in surface coordinate determination at GL node step!\n";
-    return 1;
-  }
 
   // determine GL nodes and integrate over them
 
   double h[2];
-    double &ha = h[0];
-    double &hb = h[1];
-
-  ha = 0.5 * (*au - *al);
-  hb = 0.5 * (*bu - *bl);
-  double ca = 0.5 * (*au + *al);
-  double cb = 0.5 * (*bu + *bl);
+  double ha = 0.5 * (surf.uMax - surf.uMin);
+  double hb = 0.5 * (surf.vMax - surf.vMin);
+  h[0] = ha; h[1] = hb;
+  double ca = 0.5 * (surf.uMax + surf.uMin);
+  double cb = 0.5 * (surf.vMax + surf.vMin);
 
   // select number of Gauss-Legendre nodes for integration
   int nodes[2] = { 1, 1 };
@@ -1228,14 +843,16 @@ double integrator::integrateFromSurfaceSegment( const surface &surf, const doubl
 
   for (int i = 0; i < nodes[0]+2; ++i)
   {
-    *a = ha * GLT.at(nodes[0])[i][0] + ca;
+    const double u = ha * GLT.at(nodes[0])[i][0] + ca;
 
     for (int j = 0; j < nodes[1]+2; ++j)
     {
-      *b = hb * GLT.at(nodes[1])[j][0] + cb;
+      const double v = hb * GLT.at(nodes[1])[j][0] + cb;
+
+      ExpandSurfacePoint(fboundaries, face, u, v, point);
 
       r = sqrt( (point[0]-fromPoint[0])*(point[0]-fromPoint[0]) + (point[1]-fromPoint[1])*(point[1]-fromPoint[1]) + (point[2]-fromPoint[2])*(point[2]-fromPoint[2]) );
- 
+
       visibility = integrateFromVolume( point ) / (4*M_PI*r*r) ;
 
       sum +=  GLT.at(nodes[0])[i][1]
@@ -1353,7 +970,10 @@ double integrator::computeTestSurfaceVisibility()
   //   > compute visibility an each node
   //   > multiply by light propagation between the two nodes (take into account variables for reflectivity or other properties (but NO RS at these wl))
 
-  double visibility = integrateSurface( baseGeo.surfColl.at(0).surf.at(0) );
+  if (baseGeo.surfColl.empty() || baseGeo.surfColl.at(0).surf.empty())
+    return 0.;
+
+  double visibility = integrateSurface( 0, baseGeo.surfColl.at(0).surf.at(0) );
 
   return visibility;
 }

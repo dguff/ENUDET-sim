@@ -1,9 +1,10 @@
 # LMFast core (proof-of-concept fast light visibility computation), vendored from the
 # standalone LMFast prototype project. Only the library sources are built here
-# (integrator / RSED / GLT); the standalone demo main (LMFast.cc, ROOT GUI) is
-# intentionally not compiled into SOLAr-sim.
+# (geometry / integrator / RSED / GLT); the standalone demo main (LMFast.cc, ROOT GUI)
+# is intentionally not compiled into SOLAr-sim.
 
 set(SLAR_LMFAST_SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/integrator.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/RSED.cc"
 )
