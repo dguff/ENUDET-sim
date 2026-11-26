@@ -7,28 +7,30 @@
 #include "physics/SLArFLSNewModel.hh"
 
 #include "integrator.hh" // LMFast core, vendored in src/physics/lmfast
+#include "geometry.hh"   // LMFast 2D geometry model + flsGeometry translator
+
+#include "geo/detector/SLArDetectorConstruction.hh"
 
 #include "G4Exception.hh"
 #include "G4ios.hh"
+#include "G4RunManager.hh"
 
 #include "TString.h" // Form()
 
 #include <cmath>
 
 /**
- * Source the configuration of the NewModel module and set up the LMFast core machinery.
+ * Source the configuration of the NewModel module and build the simplified FLS geometry.
  *
  * Recognized (all optional) fields of the module config:
  *
  * | Field | Type | Default | Description |
  * |-------|------|---------|-------------|
- * | `boundaries` | array of 3 arrays of 2 numbers | LMFast PoC placeholder box | detector box `[[xl,xu],[yl,yu],[zl,zu]]` in mm |
- * | `bin_size` | number | `100` | wall grid bin / emission voxel size in mm |
+ * | `geometry_source` | string | `"detector"` | `"detector"`: per-TPC boxes translated from the active detector; `"config"`: use `boundaries` (testing) |
+ * | `boundaries` | array of 3 arrays of 2 numbers | LMFast PoC placeholder box | detector box `[[xl,xu],[yl,yu],[zl,zu]]` in mm; only used when `geometry_source == "config"` |
+ * | `bin_size` | number | `100` | filler surface grid bin [mm] |
+ * | `rs_grid_bin` | number | `100` | RSED grid spacing [mm], uniform in all 3 axes |
  * | `rs_enabled` | bool | `true` | enable Rayleigh scattering (RSED) in the LMFast core |
- *
- * @note The default `boundaries` are the placeholder geometry of the LMFast proof of
- *       concept (`LMFast.cc`). TODO(NewModel geometry): derive them from the active
- *       ENUDET-sim geometry.
  *
  * @param config rapidjson configuration object of this module
  */
@@ -36,18 +38,25 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
 {
   if (!config.IsObject()) {
     G4Exception("SLArFLSNewModel::Initialize", "ConfigError", JustWarning,
-        "NewModel module configuration is not a JSON object. Using the default placeholder geometry.");
+        "NewModel module configuration is not a JSON object. Using defaults.");
   }
 
-  // optional "boundaries": [[xl,xu],[yl,yu],[zl,zu]] in mm
+  // default box = LMFast PoC placeholder, used only in "config" mode
+  double boundaries[3][2] = {{-11000., 11000.}, {-2000., 2000.}, {-2000., 2000.}};
+
+  if (config.HasMember("geometry_source") && config["geometry_source"].IsString()) {
+    fGeometrySource = config["geometry_source"].GetString();
+  }
+
+  // optional "boundaries": [[xl,xu],[yl,yu],[zl,zu]] in mm (config mode only)
   if (config.HasMember("boundaries")) {
     const auto& jb = config["boundaries"];
     if (jb.IsArray() && jb.Size() == 3) {
       for (int i = 0; i < 3; i++) {
         if (jb[i].IsArray() && jb[i].Size() == 2 &&
             jb[i][0].IsNumber() && jb[i][1].IsNumber()) {
-          fBoundaries[i][0] = jb[i][0].GetDouble();
-          fBoundaries[i][1] = jb[i][1].GetDouble();
+          boundaries[i][0] = jb[i][0].GetDouble();
+          boundaries[i][1] = jb[i][1].GetDouble();
         }
         else {
           G4Exception("SLArFLSNewModel::Initialize", "ConfigError", JustWarning,
@@ -57,32 +66,29 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
     }
     else {
       G4Exception("SLArFLSNewModel::Initialize", "ConfigError", JustWarning,
-          "Invalid 'boundaries' (expected array of 3 [min, max] pairs). Keeping default placeholder geometry.");
+          "Invalid 'boundaries' (expected array of 3 [min, max] pairs). Keeping default placeholder box.");
     }
   }
 
   if (config.HasMember("bin_size") && config["bin_size"].IsNumber()) {
     fBinSize = config["bin_size"].GetDouble();
   }
+  if (config.HasMember("rs_grid_bin") && config["rs_grid_bin"].IsNumber()) {
+    fRSGridBin = config["rs_grid_bin"].GetDouble();
+  }
   if (config.HasMember("rs_enabled") && config["rs_enabled"].IsBool()) {
     fRSEnabled = config["rs_enabled"].GetBool();
   }
 
-  // Build the placeholder wall grid on the +z face of the box (as in the LMFast PoC,
-  // which computes the visibility map on the right wall at z = zu).
-  // TODO(NewModel geometry): replace with the actual photon detector surfaces.
-  fWallPoints.clear();
-  const double z_wall = fBoundaries[2][1];
-  const long nx = (long)((fBoundaries[0][1] - fBoundaries[0][0]) / fBinSize);
-  const long ny = (long)((fBoundaries[1][1] - fBoundaries[1][0]) / fBinSize);
-  fWallPoints.reserve((size_t)(nx * ny));
-  for (long ix = 0; ix < nx; ix++) {
-    for (long iy = 0; iy < ny; iy++) {
-      fWallPoints.push_back({
-          fBoundaries[0][0] + (ix + 0.5) * fBinSize,
-          fBoundaries[1][0] + (iy + 0.5) * fBinSize,
-          z_wall });
-    }
+  // Build the simplified FLS geometry. Initialize() runs in BeginOfRunAction, i.e. after
+  // runManager->Initialize() -> Construct(), so the detector geometry is fully built.
+  if (fGeometrySource == "config") {
+    fGeometry.BuildFromConfig(boundaries, fBinSize);
+  }
+  else {
+    const auto det = (const SLArDetectorConstruction*)
+        G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+    fGeometry.BuildFromDetector(det, fBinSize);
   }
 
   G4cout << "SLArFLSNewModel::Initialize: NewModel fast light sim initialized with the LMFast core."
@@ -91,23 +97,18 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
 }
 
 /**
- * Compute (and cache) the visibility of the placeholder wall grid for a given emission
- * point with the LMFast core (`integrator`, with the `RSED` grid if Rayleigh scattering
- * is enabled).
+ * Compute (and cache) the visibility of every surface of the given FLS box for a given
+ * emission point with the LMFast core (`integrator`, with the `RSED` grid if Rayleigh
+ * scattering is enabled).
  *
  * The emission point arrives in the detector (LAr target) frame in G4 internal units (mm),
- * which is the same unit used by the LMFast core.
+ * which is the same frame and unit used by the FLS geometry and the LMFast core.
+ * Visibilities are stored per surface, face-major (face 0..kNFaces-1, then surface index).
  */
-void SLArFLSNewModel::ComputeWallVisibility(const G4ThreeVector& emissionPoint)
+void SLArFLSNewModel::ComputeWallVisibility(const FLSBox* box, const G4String& volumeName,
+                                            const G4ThreeVector& emissionPoint)
 {
   double origin[3] = { emissionPoint.x(), emissionPoint.y(), emissionPoint.z() };
-
-  // TODO(NewModel geometry): the placeholder box may not contain the emission point
-  // (the active ENUDET-sim geometry can be larger); clamp for now.
-  for (int i = 0; i < 3; i++) {
-    if (origin[i] < fBoundaries[i][0]) origin[i] = fBoundaries[i][0];
-    if (origin[i] > fBoundaries[i][1]) origin[i] = fBoundaries[i][1];
-  }
 
   // emission voxel key (visibility depends only on the voxel of the emission point)
   const std::array<long,3> key = {
@@ -115,26 +116,35 @@ void SLArFLSNewModel::ComputeWallVisibility(const G4ThreeVector& emissionPoint)
     (long)std::lround(origin[1] / fBinSize),
     (long)std::lround(origin[2] / fBinSize) };
 
-  const auto it = fVisCache.find(key);
-  if (it != fVisCache.end()) {
+  auto& volCache = fVisCache[volumeName];
+  const auto it = volCache.find(key);
+  if (it != volCache.end()) {
     fLastVisibility = it->second;
     return;
   }
 
-  double wallpoint[3] = { 0., 0., fBoundaries[2][1] };
-  integrator ig(fBoundaries, origin, wallpoint, fRSEnabled);
+  // integrator takes boundaries by non-const reference: work on a local copy
+  double boundaries[3][2];
+  for (int a = 0; a < 3; a++) {
+    boundaries[a][0] = box->boundaries[a][0];
+    boundaries[a][1] = box->boundaries[a][1];
+  }
+
+  double wallpoint[3] = { 0., 0., FaceConstant(boundaries, kFaceZMax) }; // ctor arg (dormant wallpoint)
+  integrator ig(boundaries, origin, wallpoint, fRSEnabled, fRSGridBin);
   if (fRSEnabled) {
     ig.computeRSED(); // Rayleigh scattering energy density grid for this origin
   }
+  ig.SetBaseGeometry(box->geo);
 
   std::vector<double> vis;
-  vis.reserve(fWallPoints.size());
-  for (const auto& p : fWallPoints) {
-    double pt[3] = { p[0], p[1], p[2] };
-    vis.push_back(ig.integrateFromVolume(pt));
+  for (int f = 0; f < kNFaces && f < (int)box->geo.surfColl.size(); f++) {
+    for (const auto& s : box->geo.surfColl[f].surf) {
+      vis.push_back(ig.integrateSurface(f, s));
+    }
   }
 
-  fVisCache[key] = vis;
+  volCache[key] = vis;
   fLastVisibility = std::move(vis);
 }
 
@@ -142,8 +152,10 @@ void SLArFLSNewModel::ComputeWallVisibility(const G4ThreeVector& emissionPoint)
  * Propagate the scintillation photons from the emission point to the photon detector
  * modules.
  *
- * The machinery is in place: the visibility of the placeholder wall grid for the emission
- * point is computed at runtime with the LMFast core and cached per emission voxel.
+ * The FLS box of the emission volume is selected by `volumeName` (fallback: the box
+ * containing the emission point, then the config "default" box); the visibility of every
+ * surface of the box is computed at runtime with the LMFast core and cached per emission
+ * voxel.
  *
  * @note TODO(NewModel output): sample the detected photons per photon detector channel
  *       with `G4Poisson(numPhotons * visibility * pde)`, compute the time of flight with
@@ -159,8 +171,45 @@ void SLArFLSNewModel::PropagatePhotons(
     const std::vector<double>& emissionTime,
     const std::vector<double>& emissionEnergy)
 {
-  // machinery: compute (and cache) the wall visibilities for this emission point
-  ComputeWallVisibility(emissionPoint);
+  const double p[3] = { emissionPoint.x(), emissionPoint.y(), emissionPoint.z() };
+
+  // select the FLS box: by volume name, else the one containing the point, else the
+  // config-mode default box
+  const FLSBox* box = fGeometry.GetBox(volumeName.c_str());
+  if (!box) box = fGeometry.FindBoxContaining(p);
+  if (!box) box = fGeometry.GetBox("default");
+  if (!box) {
+    static G4bool warnedNoBox = false;
+    if (!warnedNoBox) {
+      G4cout << "SLArFLSNewModel::PropagatePhotons: WARNING - no FLS box for volume '"
+             << volumeName << "' and no box contains the emission point; skipping." << G4endl;
+      warnedNoBox = true;
+    }
+    return;
+  }
+
+  // containment check (the emission point is in LAr, hence inside its TPC box by
+  // construction; no clamping anymore)
+  bool inside = true;
+  for (int a = 0; a < 3; a++) {
+    if (p[a] < box->boundaries[a][0] - 1e-6 || p[a] > box->boundaries[a][1] + 1e-6) {
+      inside = false;
+      break;
+    }
+  }
+  if (!inside) {
+    static G4bool warnedOutside = false;
+    if (!warnedOutside) {
+      G4cout << "SLArFLSNewModel::PropagatePhotons: WARNING - emission point ("
+             << p[0] << ", " << p[1] << ", " << p[2] << ") mm is outside the FLS box of volume '"
+             << volumeName << "'; skipping." << G4endl;
+      warnedOutside = true;
+    }
+    return;
+  }
+
+  // machinery: compute (and cache) the surface visibilities for this emission point
+  ComputeWallVisibility(box, volumeName, emissionPoint);
 
   static G4bool warned = false;
   if (!warned) {
@@ -178,11 +227,10 @@ void SLArFLSNewModel::PropagatePhotons(
 void SLArFLSNewModel::Print() const
 {
   printf("%s SLArFLSNewModel configuration:\n", fName.c_str());
-  printf("\tboundaries [mm]: x [%g, %g], y [%g, %g], z [%g, %g] (placeholder geometry)\n",
-      fBoundaries[0][0], fBoundaries[0][1],
-      fBoundaries[1][0], fBoundaries[1][1],
-      fBoundaries[2][0], fBoundaries[2][1]);
-  printf("\tbin size [mm]: %g, RS enabled: %s\n", fBinSize, fRSEnabled ? "true" : "false");
-  printf("\twall grid points (+z face): %zu, cached emission voxels: %zu\n",
-      fWallPoints.size(), fVisCache.size());
+  printf("\tgeometry source: %s, bin size [mm]: %g, RSED grid bin [mm]: %g, RS enabled: %s\n",
+      fGeometrySource.c_str(), fBinSize, fRSGridBin, fRSEnabled ? "true" : "false");
+  size_t nVoxels = 0;
+  for (const auto& kv : fVisCache) nVoxels += kv.second.size();
+  printf("\tcached emission voxels: %zu\n", nVoxels);
+  fGeometry.Print();
 }

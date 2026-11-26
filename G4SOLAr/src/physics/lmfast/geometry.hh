@@ -12,6 +12,8 @@
 #ifndef LMFAST_GEOMETRY_HH
 #define LMFAST_GEOMETRY_HH
 
+#include <map>
+#include <string>
 #include <vector>
 
 // Box faces in the fixed order used everywhere a face index appears:
@@ -58,5 +60,71 @@ void SegmentGeometry(geometry& baseGeo, geometry& workGeo,
                      const double (&boundaries)[3][2],
                      const double (&origin)[3],
                      const double (&point)[3]);
+
+// ---------------------------------------------------------------------------
+// Translation from the active ENUDET-sim geometry to the simplified FLS one.
+// NOTE: this part of geometry.cc depends on ENUDET-sim / Geant4 headers, so
+// geometry.cc is compiled into solar_sim, NOT into the pure SLArLMFast lib.
+// The header itself stays G4-free (forward declaration only).
+// ---------------------------------------------------------------------------
+
+class SLArDetectorConstruction; // ENUDET-sim detector construction (translator input)
+
+enum EFLSModuleKind { kFLSPDSArray = 0, kFLSAnode = 1 };
+
+struct FLSModuleRef
+  {
+    EFLSModuleKind kind;   //!< what the tagged surface belongs to
+    int tpcId;             //!< TPC the module belongs to
+    int moduleId;          //!< parent module id in the ENUDET-sim config (SCArray / anode id)
+    int elementIdx = -1;   //!< index of the base element inside the parent (supercell / readout tile)
+  };
+
+// Simplified fast-light-sim geometry of one volume (one TPC box): box boundaries
+// (detector frame, mm) plus the 2D surface patches of its kNFaces faces.
+struct FLSBox
+  {
+    double boundaries[3][2];                 //!< [axis][min,max], detector frame, mm
+    geometry geo;                            //!< kNFaces surface collections, fixed face order
+    std::map<int, FLSModuleRef> moduleTags;  //!< surface.id -> owning module (id < 0: filler)
+    int tpcId = -1;                          //!< TPC this box belongs to (-1 in config mode)
+  };
+
+// Translator: builds the per-volume FLSBox map from the running ENUDET-sim
+// detector construction (per-TPC boxes; PDS SCArray + anode patches projected
+// onto the box faces; remaining face area filled with a regular grid of bare
+// filler surfaces), or from an explicit config box (testing override).
+class flsGeometry
+  {
+    public:
+      flsGeometry() = default;
+
+      //! Build one FLSBox per TPC of the detector (boxes only; tub -> fatal).
+      //! Detector frame = LAr-target-local frame, mm (same frame as the emission points).
+      void BuildFromDetector(const SLArDetectorConstruction* det, double binSize);
+      //! Testing override: a single box from explicit boundaries, filler-only faces.
+      void BuildFromConfig(const double (&boundaries)[3][2], double binSize);
+
+      const FLSBox* GetBox(const std::string& volumeName) const;
+      const FLSBox* FindBoxContaining(const double (&p)[3]) const;
+      const std::map<std::string, FLSBox>& Boxes() const { return fBoxes; }
+      void Print() const;
+
+    private:
+      void BuildTPC(const SLArDetectorConstruction* det, int tpcId, double binSize);
+      //! Project one axis-aligned base module (supercell / readout tile) onto the
+      //! nearest box face. center/msize are in the detector frame [mm].
+      void AddModule(FLSBox& box, int tpcId,
+                     const double (&center)[3], const double (&msize)[3],
+                     double phi, double theta, double psi,
+                     EFLSModuleKind kind, int moduleId, int elementIdx);
+      //! Fill the face area not covered by detector patches with a regular
+      //! grid of bare filler surfaces (id = -1).
+      void FillFaces(FLSBox& box);
+
+      std::map<std::string, FLSBox> fBoxes; //!< volume name ("TPC<id>", or "default" in config mode) -> box
+      double fBinSize = 100.;               //!< filler surface grid bin [mm]
+      int    fNextId  = 1;                   //!< next detector-patch tag id
+  };
 
 #endif

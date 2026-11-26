@@ -9,9 +9,12 @@
 
 #include <array>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "SLArFastLightSim.hh"
+
+#include "geometry.hh" // LMFast 2D geometry model + flsGeometry translator, vendored in src/physics/lmfast
 
 /**
  * @class SLArFLSNewModel
@@ -26,12 +29,11 @@
  * The light visibility is computed at runtime with the LMFast core (`integrator` / `RSED`,
  * vendored in `src/physics/lmfast/`), instead of being read from a LUT.
  *
- * @note The geometry currently uses the placeholder box of the LMFast proof of concept
- *       (see `LMFast.cc`: [-11000,11000] x [-2000,2000] x [-2000,2000] mm, wall at z = +2000 mm),
- *       overridable via the `boundaries` field of the module config.
- *       TODO(NewModel geometry): build the integrator geometry from the active ENUDET-sim
- *       geometry (detector construction / geometry JSON).
- *       TODO(NewModel output): map the computed wall visibilities to the photon detector
+ * The simplified FLS geometry (per-TPC box + 2D surface patches of the PDS/anode modules
+ * projected onto the box faces, empty face area filled with regular bare surfaces) is
+ * translated from the active ENUDET-sim detector by `flsGeometry` (see `geometry.hh`).
+ *
+ * @note TODO(NewModel output): map the computed surface visibilities to the photon detector
  *       channels and register `SLArEventPhotonHit` hits (as in
  *       `SLArFLSPhotonLibrary::PropagatePhotons`).
  */
@@ -71,20 +73,25 @@ class SLArFLSNewModel : public SLArFastLightSim {
 
   private:
     /**
-     * @brief Compute (and cache) the visibility of the placeholder wall grid for a given
-     *        emission point, using the LMFast core (`integrator` / `RSED`).
+     * @brief Compute (and cache) the visibility of every surface of the given FLS box for
+     *        the given emission point, using the LMFast core (`integrator` / `RSED`).
      *
+     * @param box FLS box of the emission volume (detector frame, mm)
+     * @param volumeName volume name (cache key)
      * @param emissionPoint emission point (detector frame, mm)
      */
-    void ComputeWallVisibility(const G4ThreeVector& emissionPoint);
+    void ComputeWallVisibility(const FLSBox* box, const G4String& volumeName,
+                               const G4ThreeVector& emissionPoint);
 
-    double fBoundaries[3][2] = {{-11000., 11000.}, {-2000., 2000.}, {-2000., 2000.}}; //!< detector box boundaries [mm] (default: LMFast PoC placeholder)
-    G4double fBinSize = 100.;   //!< wall grid bin / emission voxel size [mm]
-    G4bool   fRSEnabled = true; //!< enable Rayleigh scattering (RSED) in the LMFast core
+    flsGeometry fGeometry; //!< simplified FLS geometry translated from the active detector
 
-    std::vector<std::array<double,3>> fWallPoints; //!< placeholder wall (+z face) grid points [mm]
-    //! emission voxel key -> wall visibilities
-    std::map<std::array<long,3>, std::vector<double>> fVisCache;
+    G4String fGeometrySource = "detector"; //!< "detector" (default) or "config" (testing override)
+    G4double fBinSize   = 100.;  //!< surface grid bin [mm]
+    G4double fRSGridBin = 100.;  //!< RSED grid spacing [mm], uniform in all 3 axes
+    G4bool   fRSEnabled = true;  //!< enable Rayleigh scattering (RSED) in the LMFast core
+
+    //! volume -> (emission voxel key -> per-surface visibilities, face-major order)
+    std::map<G4String, std::map<std::array<long,3>, std::vector<double>>> fVisCache;
     std::vector<double> fLastVisibility; //!< visibilities of the last computed emission voxel
 };
 

@@ -1,10 +1,12 @@
 # LMFast core (proof-of-concept fast light visibility computation), vendored from the
-# standalone LMFast prototype project. Only the library sources are built here
-# (geometry / integrator / RSED / GLT); the standalone demo main (LMFast.cc, ROOT GUI)
-# is intentionally not compiled into SOLAr-sim.
+# standalone LMFast prototype project. Only the pure library sources are built here
+# (integrator / RSED / GLT; std + FFTW3 + Eigen only, no Geant4/ROOT/ENUDET-sim deps);
+# the standalone demo main (LMFast.cc, ROOT GUI) is intentionally not compiled into
+# SOLAr-sim. NOTE: geometry.cc also lives here but is compiled into solar_sim instead
+# (see src/physics/CMakeLists.txt), because its flsGeometry translator part includes
+# ENUDET-sim / Geant4 headers.
 
 set(SLAR_LMFAST_SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/geometry.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/integrator.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/RSED.cc"
 )

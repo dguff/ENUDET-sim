@@ -27,6 +27,7 @@ set(SLAR_PHYSICS_SOURCES
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFastLightSim.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFLSPhotonLibrary.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFLSNewModel.cc"
+  "${SLAR_PHYSICS_SOURCE_DIR}/lmfast/geometry.cc" # flsGeometry translator (needs ENUDET-sim includes; NOT in SLArLMFast)
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArFastLightSimMessenger.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArPhysicsList.cc"
   "${SLAR_PHYSICS_SOURCE_DIR}/SLArPhysicsListMessenger.cc"
