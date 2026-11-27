@@ -3,7 +3,23 @@
     {
       "type" : "NewModel",
       "label" : "newmodel",
-      "config" : {}
+      "config" : {
+        "material" : "LAr",
+        "targets" : [
+          { "pds_module" : "anode_10", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "anode_11", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_30", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_31", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_32", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_33", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_34", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_40", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_41", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_42", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_43", "pde_scale_factor" : 1.0 },
+          { "pds_module" : "scarray_44", "pde_scale_factor" : 1.0 }
+        ]
+      }
     }
   ],
   "volume_mapping" : [

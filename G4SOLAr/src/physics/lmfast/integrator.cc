@@ -756,7 +756,14 @@ double integrator::integrateSurface( int face, const surface &surf )
 
       ExpandSurfacePoint(fboundaries, face, u, v, point);
 
-      double totalVisibility = integrateFromVolume( point ) + integrateFromSurface( point ) ;
+      // NOTE (SLArFLSNewModel integration): the reflected-light wall term
+      // integrateFromSurface(point) is DISABLED here — as written it is too
+      // computationally heavy: it re-runs SegmentGeometry over the whole
+      // geometry and re-evaluates integrateFromVolume (incl. the RSED lookups)
+      // per segment Gauss node inside every outer Gauss node, i.e. O(n^2) per
+      // emission point. TODO: re-enable in a viable form (see
+      // LMFast-integration-notes.md §6 performance TODO).
+      double totalVisibility = integrateFromVolume( point ) /*+ integrateFromSurface( point )*/ ;
 
       sum +=  GLT.at(nodes[0])[i][1]
             * GLT.at(nodes[1])[j][1]

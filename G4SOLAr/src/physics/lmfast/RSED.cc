@@ -183,20 +183,14 @@ void RSED::initializeStorage()
     const double nyReal = yb_ / dy_;
     const double nzReal = zb_ / dz_;
 
-    const double tol = 1.0e-10;
-
-    if (std::abs(nxReal - std::round(nxReal)) > tol ||
-        std::abs(nyReal - std::round(nyReal)) > tol ||
-        std::abs(nzReal - std::round(nzReal)) > tol)
-    {
-        throw std::invalid_argument(
-            "RSED: box dimensions must be integer multiples "
-            "of the grid spacing.");
-    }
-
-    nx_ = static_cast<std::size_t>(std::llround(nxReal));
-    ny_ = static_cast<std::size_t>(std::llround(nyReal));
-    nz_ = static_cast<std::size_t>(std::llround(nzReal));
+    // NOTE (SLArFLSNewModel integration): real detector boxes translated by
+    // flsGeometry have arbitrary dimensions, not integer multiples of the grid
+    // spacing. Round the cell count UP so the grid always covers the physical
+    // box; the padded-FFT convolution is unchanged inside [0, xb_] x [0, yb_] x
+    // [0, zb_] and GetRSEDat() bounds-checks against the physical box size.
+    nx_ = static_cast<std::size_t>(std::ceil(nxReal));
+    ny_ = static_cast<std::size_t>(std::ceil(nyReal));
+    nz_ = static_cast<std::size_t>(std::ceil(nzReal));
 
     if (nx_ == 0 || ny_ == 0 || nz_ == 0)
         throw std::invalid_argument(
