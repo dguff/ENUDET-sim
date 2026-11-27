@@ -9,6 +9,7 @@
 
 #include <array>
 #include <map>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -93,9 +94,12 @@ class SLArFLSNewModel : public SLArFastLightSim {
     /**
      * @brief PDE scale factor of the channel owning the given tagged surface.
      *
-     * If a `targets` list was given in the module config, only the listed modules produce
-     * hits (unlisted ones return a negative factor); otherwise every tagged module is a
-     * target with scale factor 1.
+     * The default PDE of each module is read at `Initialize` from the module's own optical
+     * surface (`EFFICIENCY` property of the `G4OpticalSurface` found walking down from the
+     * module PV, evaluated at `fPDEWavelengthNm`), i.e. the same PDE the full optical
+     * simulation applies. A `pde_scale_factor` in a `targets` entry overrides it.
+     * If a `targets` list was given, only the listed modules produce hits (unlisted ones
+     * return a negative factor); otherwise every tagged module is a target.
      *
      * @param ref module tag of the surface (`FLSBox::moduleTags`)
      * @return pde_scale_factor, or a negative value if the module is not a target
@@ -124,10 +128,15 @@ class SLArFLSNewModel : public SLArFastLightSim {
 
     G4bool fTargetsConfigured = false; //!< true if a "targets" list was given in the config
     G4bool fTimeSimReady      = false; //!< true if a "material" was given (fTimeSim usable)
+    G4double fPDEWavelengthNm = 128.;  //!< wavelength at which module PDEs are evaluated [nm]
 
-    //! "anode_<tpcID>" targets: tpcId -> pde_scale_factor
+    //! resolved module PDEs from the optical surfaces: key = (EFLSModuleKind, moduleId)
+    std::map<std::pair<int,int>, double> fModulePDE;
+    //! ids of the modules listed in "targets" (per kind)
+    std::set<int> fAnodeTargetsListed;   //!< tpcIds listed as "anode_<tpcID>"
+    std::set<int> fPDSArrayTargetsListed; //!< SCArray ids listed as "..._<id>"
+    //! explicit "pde_scale_factor" overrides from "targets": tpcId / SCArray id -> pde
     std::map<int, double> fAnodeTargetPDE;
-    //! "(apex|scarray|xarapuca|arapuca)_<id>" targets: SCArray id -> pde_scale_factor
     std::map<int, double> fPDSArrayTargetPDE;
     //! tpcId -> anode elementIdx -> (megatile index, tile index), in the same enumeration
     //! order used by `flsGeometry` when tagging the anode surfaces (vector positions)

@@ -10,11 +10,15 @@
 #include "geometry.hh"   // LMFast 2D geometry model + flsGeometry translator
 
 #include "analysis/SLArAnalysisManager.hh"
-#include "event/SLArEventPhotonHit.hh"
 #include "geo/detector/SLArDetectorConstruction.hh"
 
 #include "G4Exception.hh"
 #include "G4ios.hh"
+#include "G4LogicalSkinSurface.hh"
+#include "G4LogicalVolume.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4MaterialPropertiesTable.hh"
+#include "G4OpticalSurface.hh"
 #include "G4Poisson.hh" // G4Poisson, G4UniformRand
 #include "G4RunManager.hh"
 
@@ -25,6 +29,19 @@
 
 #include <chrono>
 #include <cmath>
+
+namespace {
+// PDE of a detection optical surface: its EFFICIENCY property evaluated at
+// photonEnergy [MeV]. Returns -1 if the surface has no EFFICIENCY property.
+G4double opticalSurfacePDE(const G4OpticalSurface* os, G4double photonEnergy) {
+  if (!os) return -1.;
+  const auto* mpt = os->GetMaterialPropertiesTable();
+  if (!mpt) return -1.;
+  const auto* eff = mpt->GetProperty("EFFICIENCY"); // nullptr if not defined
+  if (!eff) return -1.;
+  return eff->Value(photonEnergy);
+}
+} // namespace
 
 /**
  * Source the configuration of the NewModel module, build the simplified FLS geometry and
@@ -41,7 +58,8 @@
  * | `rs_enabled` | bool | `true` | enable Rayleigh scattering (RSED) in the LMFast core |
  * | `material` | string | — | material name for the base-class `fTimeSim` (TOF); without it the TOF falls back to the vacuum speed of light (placeholder) |
  * | `time` | object | — | `fTimeSim` configuration (see `SLArFastLightSimTime::Initialize`) |
- * | `targets` | array of objects | all tagged modules, `pde_scale_factor` 1 | which photon detector modules produce hits; each entry has a `pds_module` string (`"anode_<tpcID>"` or `"(apex|scarray|xarapuca|arapuca)_<id>"`, `<id>` = `SLArCfgSuperCellArray` id/copyID) and an optional `pde_scale_factor` (default 1) |
+ * | `targets` | array of objects | all tagged modules | which photon detector modules produce hits; each entry has a `pds_module` string (`"anode_<tpcID>"` or `"(apex|scarray|xarapuca|arapuca)_<id>"`, `<id>` = `SLArCfgSuperCellArray` id/copyID) and an optional `pde_scale_factor` override (default: the PDE read from the module's own optical surface, see `pde_wavelength_nm`) |
+ * | `pde_wavelength_nm` | number | `128` | wavelength [nm] at which module PDEs (optical-surface `EFFICIENCY`) are evaluated |
  *
  * @param config rapidjson configuration object of this module
  */
@@ -90,6 +108,9 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
   if (config.HasMember("rs_enabled") && config["rs_enabled"].IsBool()) {
     fRSEnabled = config["rs_enabled"].GetBool();
   }
+  if (config.HasMember("pde_wavelength_nm") && config["pde_wavelength_nm"].IsNumber()) {
+    fPDEWavelengthNm = config["pde_wavelength_nm"].GetDouble();
+  }
 
   // material + time for the base-class time simulation (TOF), as in SLArFLSPhotonLibrary
   if (config.HasMember("material") && config["material"].IsString()) {
@@ -108,8 +129,9 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
   // targets: which tagged modules produce hits, and with which PDE scale factor.
   // Same pds_module naming as the LUT module: "anode_<tpcID>" selects the anode of that
   // TPC, "(apex|scarray|xarapuca|arapuca)_<id>" selects the PDS super-cell array with
-  // id = SLArCfgSuperCellArray id (copyID). Without a "targets" list every tagged
-  // module is a target with pde_scale_factor 1.
+  // id = SLArCfgSuperCellArray id (copyID). Without a "targets" list every tagged module
+  // is a target. The PDE defaults to the value read from the module's own optical surface
+  // (resolved below); an explicit "pde_scale_factor" overrides it.
   TPRegexp rgx_anode("anode_(\\d+)");
   TPRegexp rgx_scarray("^(apex|scarray|xarapuca|arapuca)_([0-9]+)$");
   if (config.HasMember("targets") && config["targets"].IsArray()) {
@@ -121,18 +143,19 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
         continue;
       }
       TString pds_module = jt["pds_module"].GetString();
-      const double pde = (jt.HasMember("pde_scale_factor") && jt["pde_scale_factor"].IsNumber())
-                           ? jt["pde_scale_factor"].GetDouble() : 1.0;
+      const bool hasPDE = jt.HasMember("pde_scale_factor") && jt["pde_scale_factor"].IsNumber();
       if (rgx_anode.MatchB(pds_module)) {
         TObjArray* matches = rgx_anode.MatchS(pds_module);
         const int tpc_id = std::stoi(static_cast<TObjString*>(matches->At(1))->GetString().Data());
-        fAnodeTargetPDE[tpc_id] = pde;
+        fAnodeTargetsListed.insert(tpc_id);
+        if (hasPDE) fAnodeTargetPDE[tpc_id] = jt["pde_scale_factor"].GetDouble();
         delete matches;
       }
       else if (rgx_scarray.MatchB(pds_module)) {
         TObjArray* matches = rgx_scarray.MatchS(pds_module);
         const int arr_id = std::stoi(static_cast<TObjString*>(matches->At(2))->GetString().Data());
-        fPDSArrayTargetPDE[arr_id] = pde;
+        fPDSArrayTargetsListed.insert(arr_id);
+        if (hasPDE) fPDSArrayTargetPDE[arr_id] = jt["pde_scale_factor"].GetDouble();
         delete matches;
       }
       else {
@@ -169,6 +192,42 @@ void SLArFLSNewModel::Initialize(const rapidjson::Value& config)
     const auto det = (const SLArDetectorConstruction*)
         G4RunManager::GetRunManager()->GetUserDetectorConstruction();
     fGeometry.BuildFromDetector(det, fBinSize);
+  }
+
+  // Resolve module PDEs from the detection optical surfaces in the geometry (the same
+  // EFFICIENCY the full optical simulation applies at detection), evaluated at the
+  // scintillation peak wavelength. Detection surfaces are found in the global skin-surface
+  // table and classified by LV name: super-cell sensitive coating ("...Coating...") -> PDS
+  // SCArrays, SiPM active ("...SiPM...") -> anodes.
+  const G4double pdeEnergy = 1.23984198e-3 / fPDEWavelengthNm; // h*c [MeV*nm] / lambda [nm]
+  double pdsPDE = -1., anodePDE = -1.;
+  for (auto* lv : *G4LogicalVolumeStore::GetInstance()) {
+    const G4LogicalSkinSurface* skin = G4LogicalSkinSurface::GetSurface(lv);
+    if (!skin) continue;
+    const auto* os = dynamic_cast<const G4OpticalSurface*>(skin->GetSurfaceProperty());
+    const G4double pde = opticalSurfacePDE(os, pdeEnergy);
+    if (pde < 0.) continue;
+    const G4String lvName = lv->GetName();
+    G4cout << "SLArFLSNewModel::Initialize: detection surface '" << skin->GetName()
+           << "' (LV '" << lvName << "', mat '" << lv->GetMaterial()->GetName()
+           << "'): EFFICIENCY @ " << fPDEWavelengthNm << " nm = " << pde << G4endl;
+    if (lvName.find("Coating") != G4String::npos && pdsPDE < 0.) pdsPDE = pde;
+    if (lvName.find("SiPM") != G4String::npos && anodePDE < 0.) anodePDE = pde;
+  }
+  if (pdsPDE < 0.)
+    G4cout << "SLArFLSNewModel::Initialize: WARNING - no super-cell coating EFFICIENCY surface "
+           << "found; PDS arrays will use pde_scale_factor 1." << G4endl;
+  if (anodePDE < 0.)
+    G4cout << "SLArFLSNewModel::Initialize: WARNING - no SiPM EFFICIENCY surface found; "
+           << "anodes will use pde_scale_factor 1." << G4endl;
+  for (const auto& bkv : fGeometry.Boxes()) {
+    for (const auto& tkv : bkv.second.moduleTags) {
+      const FLSModuleRef& ref = tkv.second;
+      const auto key = std::make_pair((int)ref.kind, ref.moduleId);
+      if (fModulePDE.count(key)) continue;
+      const G4double pde = (ref.kind == kFLSAnode) ? anodePDE : pdsPDE;
+      if (pde >= 0.) fModulePDE[key] = pde;
+    }
   }
 
   G4cout << "SLArFLSNewModel::Initialize: NewModel fast light sim initialized with the LMFast core."
@@ -260,13 +319,24 @@ const std::vector<double>& SLArFLSNewModel::ComputeWallVisibility(const FLSBox* 
 
 double SLArFLSNewModel::GetPDEScaleFactor(const FLSModuleRef& ref) const
 {
-  if (!fTargetsConfigured) return 1.0; // no "targets" list: every tagged module is a target
-  if (ref.kind == kFLSAnode) {
-    const auto it = fAnodeTargetPDE.find(ref.tpcId);
-    return (it != fAnodeTargetPDE.end()) ? it->second : -1.;
+  // default PDE: read from the module's own optical surface at Initialize (1 if not found)
+  double pde = 1.0;
+  const auto key = std::make_pair((int)ref.kind, ref.moduleId);
+  const auto pit = fModulePDE.find(key);
+  if (pit != fModulePDE.end()) pde = pit->second;
+
+  if (fTargetsConfigured) {
+    // only listed modules are targets
+    const int id = (ref.kind == kFLSAnode) ? ref.tpcId : ref.moduleId;
+    const bool listed = (ref.kind == kFLSAnode) ? fAnodeTargetsListed.count(id) > 0
+                                                 : fPDSArrayTargetsListed.count(id) > 0;
+    if (!listed) return -1.;
+    // explicit "pde_scale_factor" in the targets list overrides the geometry PDE
+    const auto& overrides = (ref.kind == kFLSAnode) ? fAnodeTargetPDE : fPDSArrayTargetPDE;
+    const auto oit = overrides.find(id);
+    if (oit != overrides.end()) pde = oit->second;
   }
-  const auto it = fPDSArrayTargetPDE.find(ref.moduleId);
-  return (it != fPDSArrayTargetPDE.end()) ? it->second : -1.;
+  return pde;
 }
 
 G4double SLArFLSNewModel::SampleTOF(const G4ThreeVector& emissionPoint,
@@ -445,7 +515,12 @@ void SLArFLSNewModel::Print() const
       printf("\t\tPDS array %d: pde_scale_factor %g\n", kv.first, kv.second);
   }
   else {
-    printf("\ttargets: all tagged modules, pde_scale_factor 1\n");
+    printf("\ttargets: all tagged modules (PDE from their optical surfaces)\n");
+  }
+  if (!fModulePDE.empty()) {
+    printf("\tmodule PDEs (optical-surface EFFICIENCY @ %g nm):\n", fPDEWavelengthNm);
+    for (const auto& kv : fModulePDE)
+      printf("\t\tkind %d, module %d: pde %g\n", kv.first.first, kv.first.second, kv.second);
   }
   size_t nVoxels = 0;
   for (const auto& kv : fVisCache) nVoxels += kv.second.size();
