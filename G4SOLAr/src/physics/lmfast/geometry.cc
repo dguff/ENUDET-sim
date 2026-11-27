@@ -292,7 +292,13 @@ bool flsRotation(double phi, double theta, double psi, G4RotationMatrix& R)
   for (int attempt = 0; attempt < 2; attempt++) {
     const double conv = (attempt == 0) ? 1.0 : M_PI / 180.0; // radians, then degrees
     R = G4RotationMatrix(phi * conv, theta * conv, psi * conv);
-    if (isAxisAligned(R)) return true;
+    if (isAxisAligned(R)) {
+      // G4PVPlacement applies the INVERSE of the given rotation to local
+      // coordinates (G4PVPlacement.cc stores getRotation().inverse()), so the
+      // world-frame extents/offsets of a placed module use R^-1 = R^T
+      R = R.inverse();
+      return true;
+    }
   }
   return false;
 }
