@@ -1,8 +1,10 @@
 #include "RSED.hh"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <limits>
+#include <map>
 #include <stdexcept>
 
 
@@ -115,23 +117,12 @@ RSED::~RSED()
 
 void RSED::releaseFFTResources()
 {
-    if (kernelForwardPlan_)
-    {
-        fftw_destroy_plan(kernelForwardPlan_);
-        kernelForwardPlan_ = nullptr;
-    }
-
-    if (densityForwardPlan_)
-    {
-        fftw_destroy_plan(densityForwardPlan_);
-        densityForwardPlan_ = nullptr;
-    }
-
-    if (densityBackwardPlan_)
-    {
-        fftw_destroy_plan(densityBackwardPlan_);
-        densityBackwardPlan_ = nullptr;
-    }
+    // NOTE: the FFTW plans are NOT destroyed here — they are shared through the static
+    // plan cache (see buildPlans), computed once per grid size (once per geometry), and
+    // live until process exit.
+    kernelForwardPlan_ = nullptr;
+    densityForwardPlan_ = nullptr;
+    densityBackwardPlan_ = nullptr;
 
     if (kernelReal_)
     {
@@ -257,6 +248,28 @@ void RSED::initializeStorage()
 
 // ============================================================================
 
+namespace
+{
+// FFTW plans depend only on the (padded) grid size, which is fixed per detector box and
+// RSED grid bin — i.e. they are defined ONCE PER GEOMETRY, not per RSED instance (which is
+// one per emission voxel). Cache them statically so they are computed once per grid size.
+// Plans are created with NULL arrays and executed via fftw_execute_dft_* on the instance
+// buffers (same size, same fftw_malloc alignment). They are never destroyed: they live
+// until process exit (the sim is non-MT; the OS reclaims them).
+struct FFTWPlanSet
+{
+    fftw_plan kernelForward = nullptr;
+    fftw_plan densityForward = nullptr;
+    fftw_plan densityBackward = nullptr;
+};
+
+std::map<std::array<int, 3>, FFTWPlanSet>& fftwPlanCache()
+{
+    static std::map<std::array<int, 3>, FFTWPlanSet> cache;
+    return cache;
+}
+} // namespace
+
 void RSED::buildPlans()
 {
     const int nx = checkedFFTWDimension(pnx_);
@@ -264,7 +277,7 @@ void RSED::buildPlans()
     const int nz = checkedFFTWDimension(pnz_);
 
     /*
-     * Out-of-place R2C transform:
+     * Out-of-place transforms on the padded grid:
      *
      *     real:    pnx x pny x pnz
      *     complex: pnx x pny x (pnz/2+1)
@@ -272,45 +285,33 @@ void RSED::buildPlans()
      * FFTW uses the last dimension as the fastest-changing
      * dimension in its C row-major layout.
      */
-    kernelForwardPlan_ =
-        fftw_plan_dft_r2c_3d(
-            nx,
-            ny,
-            nz,
-            kernelReal_,
-            kernelSpectrum_,
-            FFTW_MEASURE
-        );
-
-    densityForwardPlan_ =
-        fftw_plan_dft_r2c_3d(
-            nx,
-            ny,
-            nz,
-            densityReal_,
-            densitySpectrum_,
-            FFTW_MEASURE
-        );
-
-    densityBackwardPlan_ =
-        fftw_plan_dft_c2r_3d(
-            nx,
-            ny,
-            nz,
-            densitySpectrum_,
-            densityReal_,
-            FFTW_MEASURE
-        );
-
-    if (!kernelForwardPlan_ ||
-        !densityForwardPlan_ ||
-        !densityBackwardPlan_)
+    const std::array<int, 3> key = {nx, ny, nz};
+    auto& cache = fftwPlanCache();
+    auto it = cache.find(key);
+    if (it == cache.end())
     {
-        releaseFFTResources();
-
-        throw std::runtime_error(
-            "RSED: FFTW failed to create an FFT plan.");
+        // FFTW_MEASURE runs the transform during planning, so it needs real arrays —
+        // use this instance's buffers (harmless: they are filled only after buildPlans).
+        // Execution always goes through fftw_execute_dft_* on the instance buffers, which
+        // requires only matching size and fftw_malloc alignment.
+        FFTWPlanSet p;
+        p.kernelForward   = fftw_plan_dft_r2c_3d(nx, ny, nz, kernelReal_, kernelSpectrum_, FFTW_MEASURE);
+        p.densityForward  = fftw_plan_dft_r2c_3d(nx, ny, nz, densityReal_, densitySpectrum_, FFTW_MEASURE);
+        p.densityBackward = fftw_plan_dft_c2r_3d(nx, ny, nz, densitySpectrum_, densityReal_, FFTW_MEASURE);
+        if (!p.kernelForward || !p.densityForward || !p.densityBackward)
+        {
+            if (p.kernelForward)   fftw_destroy_plan(p.kernelForward);
+            if (p.densityForward)  fftw_destroy_plan(p.densityForward);
+            if (p.densityBackward) fftw_destroy_plan(p.densityBackward);
+            throw std::runtime_error(
+                "RSED: FFTW failed to create an FFT plan.");
+        }
+        it = cache.emplace(key, p).first;
     }
+
+    kernelForwardPlan_   = it->second.kernelForward;
+    densityForwardPlan_  = it->second.densityForward;
+    densityBackwardPlan_ = it->second.densityBackward;
 }
 
 
@@ -477,7 +478,7 @@ void RSED::buildKernel()
      * FFT the kernel once. Its spectrum remains fixed throughout
      * the entire multiple-scattering calculation.
      */
-    fftw_execute(kernelForwardPlan_);
+    fftw_execute_dft_r2c(kernelForwardPlan_, kernelReal_, kernelSpectrum_);
 }
 
 
@@ -577,7 +578,7 @@ void RSED::initializeDensity()
 
 void RSED::fftForward()
 {
-    fftw_execute(densityForwardPlan_);
+    fftw_execute_dft_r2c(densityForwardPlan_, densityReal_, densitySpectrum_);
 }
 
 
@@ -626,7 +627,7 @@ void RSED::convolve()
 
 void RSED::fftReverse()
 {
-    fftw_execute(densityBackwardPlan_);
+    fftw_execute_dft_c2r(densityBackwardPlan_, densitySpectrum_, densityReal_);
 
     /*
      * FFTW computes an unnormalized inverse transform.

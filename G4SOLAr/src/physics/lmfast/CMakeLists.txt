@@ -24,7 +24,10 @@ else()
   target_link_libraries(SLArLMFast PUBLIC fftw3 Eigen3::Eigen)
 endif()
 
-# -march=native -mavx2 from the standalone prototype are opt-in for portability
+# Always optimize the fast-sim core. -march=native (let the compiler detect the ISA
+# supported by the local machine, replacing the prototype's hardcoded -mavx2) is on by
+# default; disable SLAR_LMFAST_NATIVE_ARCH for portable builds.
+target_compile_options(SLArLMFast PRIVATE -O3)
 if (SLAR_LMFAST_NATIVE_ARCH)
-  target_compile_options(SLArLMFast PRIVATE -march=native -O3 -mavx2)
+  target_compile_options(SLArLMFast PRIVATE -march=native)
 endif()

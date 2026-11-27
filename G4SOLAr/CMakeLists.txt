@@ -29,7 +29,7 @@ option(SLAR_CRY_INTERFACE "Build interface to CRY cosmic shower generator" OFF)
 option(SLAR_RADSRC_INTERFACE "Build interface to RadSrc composite gamma spectrum generator" OFF)
 option(SLAR_USE_G4CASCADE "Use G4CASCADE for hadronic interactions" ON)
 option(SLAR_USE_NEW_MODEL "Build the NewModel fast light simulation module (LMFast core; requires FFTW3 and Eigen3)" ON)
-option(SLAR_LMFAST_NATIVE_ARCH "Compile the LMFast core with -march=native -mavx2" OFF)
+option(SLAR_LMFAST_NATIVE_ARCH "Compile the LMFast core with -march=native (auto-detect local CPU ISA)" ON)
 
 if (SLAR_PROFILE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
